@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backend Regression Suite — One-Shot Prompt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#080f08;--surface:#0f1a0f;--surface-2:#162116;--border:#1e3a1e;
+      --brand:#2d6a2d;--gold:#c9a84c;--gold-dim:#8a6f2e;--gold-glow:rgba(201,168,76,0.2);
+      --text:#e8f0e8;--muted:#6b8f6b;--profit:#4ade80;--loss:#f87171;
+      --info:#60a5fa;--warn:#fbbf24;
+      --font-d:'Playfair Display',Georgia,serif;--font-b:'Inter',system-ui,sans-serif;
+      --radius:10px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-b);line-height:1.65;}
+    .wrap{max-width:960px;margin:0 auto;padding:3rem 2rem;}
+
+    .hero{background:linear-gradient(135deg,#0f2a0f 0%,#162116 100%);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;margin-bottom:2.5rem;text-align:center;position:relative;overflow:hidden;}
+    .hero::before{content:"";position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:radial-gradient(circle,var(--gold-glow) 0%,transparent 70%);}
+    .hero .badge{display:inline-block;background:rgba(201,168,76,.12);border:1px solid var(--gold-dim);color:var(--gold);font-size:.7rem;padding:.25rem .85rem;border-radius:20px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;}
+    .hero h1{font-family:var(--font-d);font-size:2rem;color:var(--gold);margin-bottom:.5rem;}
+    .hero p{color:var(--muted);font-size:.95rem;max-width:620px;margin:0 auto;}
+
+    h2{font-family:var(--font-d);color:var(--gold);font-size:1.15rem;margin-bottom:1rem;}
+    h3{color:var(--info);font-size:.85rem;font-weight:600;margin-bottom:.55rem;text-transform:uppercase;letter-spacing:.07em;}
+
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.75rem;}
+    .card-red{border-left:4px solid var(--loss);}
+    .card-gold{border-left:4px solid var(--gold-dim);}
+    .card-blue{border-left:4px solid var(--info);}
+    .card-green{border-left:4px solid var(--profit);}
+
+    .row{display:flex;gap:.75rem;padding:.55rem 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:.875rem;}
+    .row:last-child{border-bottom:none;}
+    .tag{flex-shrink:0;padding:.1rem .5rem;border-radius:4px;font-size:.72rem;font-weight:600;margin-top:.15rem;}
+    .tag-red{background:rgba(248,113,113,.15);color:var(--loss);border:1px solid #5a2020;}
+    .tag-blue{background:rgba(96,165,250,.12);color:var(--info);border:1px solid #1e3a5a;}
+    .tag-green{background:rgba(74,222,128,.1);color:var(--profit);border:1px solid #1a4a2a;}
+    .tag-warn{background:rgba(251,191,36,.1);color:var(--warn);border:1px solid #5a4a10;}
+
+    .step{display:flex;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:.875rem;}
+    .step:last-child{border-bottom:none;}
+    .step-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold-dim);color:var(--gold);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+    pre{background:#0a0f0a;border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.25rem;font-size:.77rem;overflow-x:auto;margin:.6rem 0 1rem;line-height:1.6;color:#b0d4b0;}
+    code{font-family:'JetBrains Mono','Fira Code',monospace;}
+    .comment{color:#4a7a4a;}
+    .kw{color:#c9a84c;}
+    .str{color:#a8d5a8;}
+    .type{color:#60a5fa;}
+    .ann{color:#c084fc;}
+
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+    @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+    .matrix{width:100%;border-collapse:collapse;font-size:.8rem;margin:.75rem 0 1rem;}
+    .matrix th{background:var(--surface-2);color:var(--gold);padding:.5rem .75rem;text-align:left;border:1px solid var(--border);font-weight:600;}
+    .matrix td{padding:.45rem .75rem;border:1px solid var(--border);color:var(--text);}
+    .matrix td.yes{color:var(--profit);}
+    .matrix td.no{color:var(--loss);}
+    .matrix tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+
+    .warn-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;color:var(--warn);margin:.75rem 0;}
+    .info-box{background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;color:#93c5fd;margin:.75rem 0;}
+
+    footer{text-align:center;padding:2rem 0;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="badge">Quality</div>
+    <h1>Backend Regression Suite</h1>
+    <p>Restructure all backend tests to be human-readable, plug every coverage gap in the permission matrix, fix discovered bugs, and return a fully green build.</p>
+  </div>
+
+  <!-- PREAMBLE -->
+  <div class="card card-gold">
+    <h2>Before You Touch Any Code</h2>
+    <div class="step"><div class="step-num">1</div><div>Read <code>CONTEXT.md</code> only. It contains the full domain model, permission matrix, endpoint list, test patterns (Pattern D), and engineering rules. Do not read other files unless a specific test gap forces you to.</div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>TDD order</strong>: run the existing suite first (<code>cd booking-api &amp;&amp; ./mvnw test</code>), record every failure. Write failing tests that expose each gap, then implement fixes. Never fix without a failing test first.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Peer review gate</strong>: after all tests are green, do a second-pass review of your own diff as if you were a senior engineer who didn't write it. Look for missed edge cases, copy-paste errors, and tests that can't actually fail. Fix anything you find, re-run.</div></div>
+    <div class="step"><div class="step-num">4</div><div><strong>Simplicity</strong>: no new Maven dependencies (CBOR library already in pom). No Cucumber, no TestNG. Use JUnit 5 <code>@Nested</code> + <code>@DisplayName</code> — zero extra setup, produces beautiful tree output in IDEs and CI.</div></div>
+  </div>
+
+  <!-- TESTING FRAMEWORK -->
+  <div class="card card-blue">
+    <h2>Human-Readable Format — JUnit 5 @Nested + @DisplayName</h2>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:.9rem;">
+      Restructure every test class to use nested groups with display names. This produces readable test trees in Maven output, GitHub Actions, and every IDE without any new dependency.
+    </p>
+    <pre><code><span class="ann">@QuarkusTest</span>
+<span class="ann">@QuarkusTestResource</span>(MongoTestResource.class)
+<span class="ann">@TestProfile</span>(SecurityEnabledProfile.class)
+<span class="ann">@DisplayName</span>(<span class="str">"Item API"</span>)
+<span class="kw">class</span> <span class="type">ItemResourceTest</span> {
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"POST /items"</span>)
+    <span class="kw">class</span> <span class="type">Create</span> {
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"valid item → 201 with id"</span>)
+        <span class="kw">void</span> valid() { ... }
+
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"missing name → 400"</span>)
+        <span class="kw">void</span> missingName() { ... }
+    }
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"role enforcement"</span>)
+    <span class="kw">class</span> <span class="type">Roles</span> {
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"SELLER cannot create item → 403"</span>)
+        <span class="kw">void</span> sellerBlocked() { ... }
+    }
+}</code></pre>
+    <div class="info-box">
+      Every test class in <code>booking-api/src/test</code> must be restructured this way.
+      Method names become the last segment of the display label — keep them descriptive.
+    </div>
+  </div>
+
+  <!-- KNOWN BUGS TO HUNT -->
+  <div class="card card-red">
+    <h2>Known Problems to Find and Fix</h2>
+    <div class="row"><span class="tag tag-red">BUG</span><span><strong><code>ItemResourceTest</code> runs without <code>@TestProfile(SecurityEnabledProfile.class)</code></strong> — all tests pass with no <code>Authorization</code> header, meaning the role checks are never actually exercised. This hides security regressions. Add the profile and fix any tests that break.</span></div>
+    <div class="row"><span class="tag tag-red">GAP</span><span><strong>No tests for immutable fields</strong>: CONTEXT.md says <code>purchasePrice</code> and <code>purchaseDate</code> cannot change after creation. Write a test that sends a PATCH with these fields and asserts they are silently ignored (value unchanged in response).</span></div>
+    <div class="row"><span class="tag tag-red">GAP</span><span><strong>No test for sold-item delete</strong>: CONTEXT.md says sold items cannot be soft-deleted. Write a test: create item → record sale → try DELETE → expect 409 (or whichever 4xx the implementation returns — check the source and assert accordingly).</span></div>
+    <div class="row"><span class="tag tag-red">GAP</span><span><strong>No test for platformFees &gt; salePrice</strong>: SaleResource should reject this as invalid. Write a test. If the validation is missing from the implementation, add it (with failing test first).</span></div>
+    <div class="row"><span class="tag tag-red">GAP</span><span><strong>No AnalyticsResource tests</strong>: CONTEXT.md shows it exists and is ADMIN+ACCOUNTANT only. Write a full test class covering: valid range returns totals, BUYER/SELLER get 403, unauthenticated gets 401.</span></div>
+    <div class="row"><span class="tag tag-warn">CHECK</span><span><strong>Password login endpoint</strong>: after the passkey migration <code>POST /api/v1/auth/login</code> (password) must no longer exist. Write a test asserting it returns 404 or 405. If the endpoint still exists, remove it.</span></div>
+    <div class="row"><span class="tag tag-warn">CHECK</span><span><strong>No unauthenticated-request tests</strong>: Every protected endpoint should return 401 with no token. Write a parameterized test or a <code>@Nested</code> class covering all protected routes.</span></div>
+  </div>
+
+  <!-- FULL COVERAGE MATRIX -->
+  <div class="card card-blue">
+    <h2>Required Test Coverage — Permission Matrix</h2>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:.9rem;">
+      Every cell below must have at least one test. If a test already exists, confirm it runs with security enabled. The existing <code>RoleAccessTest</code> covers some cells — extend it or create focused <code>@Nested</code> classes.
+    </p>
+    <table class="matrix">
+      <thead><tr><th>Endpoint</th><th>ADMIN</th><th>BUYER</th><th>SELLER</th><th>ACCOUNTANT</th><th>No Token</th></tr></thead>
+      <tbody>
+        <tr><td>POST /items</td><td class="yes">✓ 201</td><td class="yes">✓ 201</td><td class="no">✗ 403</td><td class="no">✗ 403</td><td class="no">✗ 401</td></tr>
+        <tr><td>GET /items</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="no">✗ 401</td></tr>
+        <tr><td>PATCH /items/:id</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="no">✗ 401</td></tr>
+        <tr><td>DELETE /items/:id</td><td class="yes">✓ 204</td><td class="no">✗ 403</td><td class="no">✗ 403</td><td class="no">✗ 403</td><td class="no">✗ 401</td></tr>
+        <tr><td>POST /sales</td><td class="yes">✓ 201</td><td class="no">✗ 403</td><td class="yes">✓ 201</td><td class="no">✗ 403</td><td class="no">✗ 401</td></tr>
+        <tr><td>GET /sales</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="yes">✓ 200</td><td class="no">✗ 401</td></tr>
+        <tr><td>GET /analytics</td><td class="yes">✓ 200</td><td class="no">✗ 403</td><td class="no">✗ 403</td><td class="yes">✓ 200</td><td class="no">✗ 401</td></tr>
+        <tr><td>POST /users</td><td class="yes">✓ 201</td><td class="no">✗ 403</td><td class="no">✗ 403</td><td class="no">✗ 403</td><td class="no">✗ 401</td></tr>
+        <tr><td>GET /users</td><td class="yes">✓ 200</td><td class="no">✗ 403</td><td class="no">✗ 403</td><td class="no">✗ 403</td><td class="no">✗ 401</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Business Logic Tests (each needs a dedicated @Nested group)</h3>
+    <div class="two-col">
+      <div>
+        <pre><code><span class="comment">// Items</span>
+<span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"immutable fields"</span>)
+<span class="comment">// PATCH with purchasePrice/purchaseDate → value unchanged</span>
+
+<span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"soft delete rules"</span>)
+<span class="comment">// sold item DELETE → 4xx</span>
+<span class="comment">// DELETED item cannot be sold</span>
+
+<span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"status filtering"</span>)
+<span class="comment">// ?status=AVAILABLE only returns AVAILABLE</span>
+<span class="comment">// SOLD/DELETED not included in default list</span></code></pre>
+      </div>
+      <div>
+        <pre><code><span class="comment">// Sales</span>
+<span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"fee validation"</span>)
+<span class="comment">// platformFees > salePrice → 400</span>
+<span class="comment">// negative salePrice → 400</span>
+
+<span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"computed fields"</span>)
+<span class="comment">// netProceeds = salePrice - platformFees</span>
+<span class="comment">// profit = netProceeds - purchasePrice</span>
+<span class="comment">// verify exact Decimal128 precision</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- CROSS-ORG + AUTH SUITES -->
+  <div class="card card-blue">
+    <h2>Cross-Org Isolation Suite</h2>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:.9rem;">
+      <code>CrossOrgIsolationTest</code> already exists — run it and confirm it uses <code>@TestProfile(SecurityEnabledProfile.class)</code>. If not, add it. Extend with any missing scenarios:
+    </p>
+    <pre><code><span class="ann">@DisplayName</span>(<span class="str">"Cross-org isolation"</span>)
+<span class="kw">class</span> <span class="type">CrossOrgIsolationTest</span> {
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"items are org-scoped"</span>)
+    <span class="kw">class</span> <span class="type">ItemIsolation</span> {
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"org A cannot read org B items"</span>)
+        <span class="kw">void</span> cannotReadOtherOrgItems() { ... }
+
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"org A cannot update org B item"</span>)
+        <span class="kw">void</span> cannotPatchOtherOrgItem() { ... }  <span class="comment">// expect 404, not 403</span>
+    }
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"sales are org-scoped"</span>)
+    <span class="kw">class</span> <span class="type">SaleIsolation</span> { ... }
+}</code></pre>
+
+    <h2 style="margin-top:1.5rem;">Auth Suite</h2>
+    <pre><code><span class="ann">@DisplayName</span>(<span class="str">"Auth API"</span>)
+<span class="kw">class</span> <span class="type">AuthResourceTest</span> {
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"organisation registration"</span>)
+    <span class="kw">class</span> <span class="type">Register</span> {
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"valid request → 201 with orgId + userId + role"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"duplicate slug → 409"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"missing field → 400"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"response contains no password or token"</span>)
+        <span class="comment">// assert response body does NOT contain "password" or "token" keys</span>
+    }
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"passkey registration flow"</span>)
+    <span class="kw">class</span> <span class="type">PasskeyRegistration</span> {
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"begin for existing user → 200 with challenge + rpId"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"begin for unknown email → 401 (no user enumeration)"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"complete with valid attestation → 200 accessToken + refreshToken"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"complete with replayed challenge → 401"</span>)
+        <span class="comment">// call begin once, use challenge in two different complete calls — second must fail</span>
+    }
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"passkey login flow"</span>)
+    <span class="kw">class</span> <span class="type">PasskeyLogin</span> {
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"valid assertion → 200 accessToken + refreshToken"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"tampered signature → 401"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"unknown email → 401 identical response"</span>)
+    }
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"password login endpoint removed"</span>)
+    <span class="kw">class</span> <span class="type">PasswordLoginGone</span> {
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"POST /api/v1/auth/login → 404 or 405"</span>)
+        <span class="kw">void</span> passwordEndpointDoesNotExist() {
+            given().contentType(JSON)
+                .body(<span class="str">"""{"email":"a@b.com","password":"secret"}"""</span>)
+                .post(<span class="str">"/api/v1/auth/login"</span>)
+                .then().statusCode(anyOf(is(404), is(405)));
+        }
+    }
+
+    <span class="ann">@Nested</span> <span class="ann">@DisplayName</span>(<span class="str">"token lifecycle"</span>)
+    <span class="kw">class</span> <span class="type">TokenLifecycle</span> {
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"refresh with valid token → new accessToken"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"refresh with expired token → 401"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"logout then refresh → 401"</span>)
+        <span class="ann">@Test</span> <span class="ann">@DisplayName</span>(<span class="str">"logout with no token → 204 (idempotent)"</span>)
+    }
+}</code></pre>
+  </div>
+
+  <!-- PROCESS -->
+  <div class="card card-gold">
+    <h2>Execution Order</h2>
+    <div class="step"><div class="step-num">1</div><div><strong>Run baseline</strong>: <code>./mvnw test 2&gt;&1 | tee /tmp/baseline.txt</code>. Record every failure.</div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>Restructure first, then extend</strong>: Convert each existing test class to <code>@Nested</code>/<code>@DisplayName</code> without changing test logic. Run again — all previous passes must still pass.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Add security profile to ItemResourceTest</strong>: Add <code>@TestProfile(SecurityEnabledProfile.class)</code>. Run. Some tests will now fail (no auth header). That is correct — they were broken before. Fix each by adding a generated JWT per Pattern D in CONTEXT.md.</div></div>
+    <div class="step"><div class="step-num">4</div><div><strong>Write gap tests (red)</strong>: For each row in the coverage matrix and each item in "Known Problems", write a failing test first. One test → one implementation fix → green.</div></div>
+    <div class="step"><div class="step-num">5</div><div><strong>Peer review pass</strong>: Read every new test as if you're reviewing someone else's PR. Ask: "Can this test ever return a false positive? Is the assertion specific enough? Does it clean up in <code>@BeforeEach</code>?"</div></div>
+    <div class="step"><div class="step-num">6</div><div><strong>Final run</strong>: <code>./mvnw test</code> — 0 failures, 0 errors. Do not return until this is the result.</div></div>
+  </div>
+
+  <!-- CONSTRAINTS -->
+  <div class="card" style="border-left:3px solid var(--muted);">
+    <h2>Hard Constraints</h2>
+    <div class="row"><span class="tag tag-green">MUST</span><span>Every test class uses <code>@BeforeEach deleteAll()</code> on all touched repositories — no state bleeds between tests.</span></div>
+    <div class="row"><span class="tag tag-green">MUST</span><span>Every protected endpoint test uses a JWT generated via <code>authService.generateUserJwt(user)</code> (Pattern D). Never hardcode a token string.</span></div>
+    <div class="row"><span class="tag tag-green">MUST</span><span>Money assertions use exact <code>BigDecimal</code> comparison — <code>equalTo(250.00f)</code> is acceptable for REST-assured, but document why if using float in assertions.</span></div>
+    <div class="row"><span class="tag tag-blue">NO NEW DEPS</span><span>No Cucumber, no TestNG, no extra libraries. JUnit 5 <code>@Nested</code>/<code>@DisplayName</code> only. The CBOR library is already in pom.xml.</span></div>
+    <div class="row"><span class="tag tag-blue">SIMPLICITY</span><span>If a gap exposes a missing implementation, fix the implementation with minimal code. No over-engineering.</span></div>
+  </div>
+
+</div>
+<footer class="wrap">TAV Inventory Ledger · Backend Regression Suite Prompt · 2026-03-17</footer>
+</body>
+</html>

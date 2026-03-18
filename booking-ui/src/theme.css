@@ -1,0 +1,39 @@
+:root {
+  /* Backgrounds */
+  --color-bg:         #080f08;
+  --color-surface:    #0f1a0f;
+  --color-surface-2:  #162116;
+
+  /* Borders */
+  --color-border:     #1e3a1e;
+  --color-border-subtle: #162116;
+
+  /* Brand greens */
+  --color-brand:      #2d6a2d;
+  --color-brand-hover:#3d8a3d;
+
+  /* Gold accent — the luxury signal */
+  --color-gold:       #c9a84c;
+  --color-gold-hover: #e0bc5a;
+  --color-gold-dim:   #8a6f2e;
+  --color-gold-glow:  rgba(201, 168, 76, 0.2);
+
+  /* Text */
+  --color-text:       #e8f0e8;
+  --color-text-muted: #6b8f6b;
+
+  /* Semantic */
+  --color-profit:     #4ade80;
+  --color-loss:       #f87171;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+
+  /* Spacing & shape */
+  --radius-sm:    4px;
+  --radius-md:    8px;
+  --radius-lg:    12px;
+  --shadow-card:  0 2px 16px rgba(0,0,0,0.5);
+  --shadow-gold:  0 0 16px rgba(201,168,76,0.25);
+}

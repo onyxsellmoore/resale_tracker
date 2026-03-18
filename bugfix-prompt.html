@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bug Fix — One-Shot Prompt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #080f08;
+      --surface:   #0f1a0f;
+      --surface-2: #162116;
+      --border:    #1e3a1e;
+      --brand:     #2d6a2d;
+      --gold:      #c9a84c;
+      --gold-dim:  #8a6f2e;
+      --gold-glow: rgba(201,168,76,0.2);
+      --text:      #e8f0e8;
+      --muted:     #6b8f6b;
+      --profit:    #4ade80;
+      --loss:      #f87171;
+      --font-d:    'Playfair Display', Georgia, serif;
+      --font-b:    'Inter', system-ui, sans-serif;
+      --radius:    10px;
+      --shadow:    0 2px 16px rgba(0,0,0,0.5);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-b); line-height: 1.65; }
+
+    .wrap { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+
+    /* Hero */
+    .hero { background: linear-gradient(135deg, #0f2a0f 0%, #162116 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem; margin-bottom: 2.5rem; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content:""; position:absolute; top:-50px; right:-50px; width:180px; height:180px; background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%); }
+    .hero .badge { display:inline-block; background:rgba(201,168,76,0.12); border:1px solid var(--gold-dim); color:var(--gold); font-size:0.7rem; padding:0.25rem 0.85rem; border-radius:20px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.9rem; }
+    .hero h1 { font-family: var(--font-d); font-size: 2.1rem; color: var(--gold); margin-bottom: 0.5rem; }
+    .hero p { color: var(--muted); font-size: 0.95rem; max-width: 560px; margin: 0 auto; }
+
+    /* Issue list */
+    .issues { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--loss); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2.5rem; }
+    .issues h2 { font-family: var(--font-d); color: var(--loss); font-size: 1.1rem; margin-bottom: 1rem; }
+    .issue-row { display: flex; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); align-items: flex-start; font-size: 0.875rem; }
+    .issue-row:last-child { border-bottom: none; }
+    .issue-num { background: rgba(248,113,113,0.15); color: var(--loss); border: 1px solid #5a2020; border-radius: 4px; padding: 0.1rem 0.5rem; font-size: 0.72rem; font-weight: 600; flex-shrink: 0; margin-top: 0.15rem; }
+    .issue-text { color: var(--text); }
+
+    /* Rule box */
+    .rules { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--gold-dim); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2.5rem; display: flex; gap: 2rem; flex-wrap: wrap; }
+    .rule-item { display: flex; gap: 0.5rem; align-items: flex-start; flex: 1; min-width: 200px; }
+    .rule-item span { color: var(--muted); font-size: 0.82rem; }
+    .rule-item strong { color: var(--gold); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+    /* Prompt card */
+    .prompt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .prompt-header { background: var(--surface-2); border-bottom: 1px solid var(--border); padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .prompt-header h2 { font-family: var(--font-d); color: var(--gold); font-size: 1.15rem; }
+    .prompt-header p { color: var(--muted); font-size: 0.82rem; margin-top: 0.15rem; }
+    .copy-hint { margin-left: auto; background: rgba(201,168,76,0.12); border: 1px solid var(--gold-dim); color: var(--gold); font-size: 0.72rem; padding: 0.3rem 0.85rem; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+    .prompt-body { padding: 0; }
+    pre { background: var(--bg); padding: 2rem; font-family: 'JetBrains Mono','Fira Code','Courier New',monospace; font-size: 0.82rem; line-height: 1.8; color: var(--text); white-space: pre-wrap; word-break: break-word; border: none; border-radius: 0; }
+
+    /* DoD */
+    .dod { background: var(--surface-2); border-top: 1px solid var(--border); padding: 1.5rem; }
+    .dod h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--profit); margin-bottom: 0.85rem; }
+    .dod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.4rem; }
+    .dod-item { display: flex; gap: 0.5rem; font-size: 0.83rem; color: var(--text); align-items: flex-start; }
+    .dod-item::before { content: "✓"; color: var(--profit); font-weight: 700; flex-shrink: 0; margin-top: 0.05rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="badge">One-Shot Fix</div>
+    <h1>Bug Fix Prompt</h1>
+    <p>Paste the prompt below into Claude Code. It fixes all seven issues, adds tests first, and leaves the suite green.</p>
+  </div>
+
+  <!-- Issues being fixed -->
+  <div class="issues">
+    <h2>Issues Being Fixed</h2>
+    <div class="issue-row">
+      <span class="issue-num">#1</span>
+      <span class="issue-text">README has no clear instructions for running the app locally</span>
+    </div>
+    <div class="issue-row">
+      <span class="issue-num">#2</span>
+      <span class="issue-text">Login page should be the entry point; analytics should be the home screen after login</span>
+    </div>
+    <div class="issue-row">
+      <span class="issue-num">#3</span>
+      <span class="issue-text">Sales tab should be removed from nav; "Record a Sale" button added to the nav bar instead</span>
+    </div>
+    <div class="issue-row">
+      <span class="issue-num">#4</span>
+      <span class="issue-text">"Book a Sale" label should be "Record a Sale" throughout the app</span>
+    </div>
+    <div class="issue-row">
+      <span class="issue-num">#5</span>
+      <span class="issue-text">Record a Sale form crashes or shows broken UI when inventory is empty</span>
+    </div>
+    <div class="issue-row">
+      <span class="issue-num">#6</span>
+      <span class="issue-text">Purchase date field has no default and no calendar picker</span>
+    </div>
+    <div class="issue-row">
+      <span class="issue-num">#7</span>
+      <span class="issue-text">Adding inventory items does not work (critical — items never appear)</span>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div class="rules">
+    <div class="rule-item">
+      <div>
+        <strong>🧪 Tests first</strong>
+        <span>Write a failing test for every fix before touching implementation code.</span>
+      </div>
+    </div>
+    <div class="rule-item">
+      <div>
+        <strong>✅ Suite stays green</strong>
+        <span>Run <code>./mvnw test &amp;&amp; npm test -- --run</code> before starting and after each fix.</span>
+      </div>
+    </div>
+    <div class="rule-item">
+      <div>
+        <strong>🔍 Investigate #7 fully</strong>
+        <span>Trace the entire add-item path — form, API call, CORS, backend validation, field names.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- The prompt -->
+  <div class="prompt-card">
+    <div class="prompt-header">
+      <div>
+        <h2>Paste into Claude Code</h2>
+        <p>Copy everything inside the code block below</p>
+      </div>
+      <span class="copy-hint">Copy prompt</span>
+    </div>
+    <div class="prompt-body">
+      <pre>
+You are fixing a set of known bugs in the inventory and sales ledger app.
+
+RULES:
+- Write a failing test BEFORE fixing each issue. No exceptions.
+- Run ./mvnw test &amp;&amp; npm test -- --run at the very start.
+  Record which tests are currently failing so pre-existing failures
+  are not confused with regressions you introduce.
+- All tests must be green when this prompt is complete.
+- Backend changes are permitted where needed (CORS, validation, etc).
+
+═══════════════════════════════════════════════════════════════════
+ISSUE 1 — README: no local dev instructions
+═══════════════════════════════════════════════════════════════════
+
+Rewrite README.md so a developer can get the app running in under
+five minutes. Include:
+
+  ## Prerequisites
+  Java 21, Node 20+, Docker Desktop
+
+  ## Run locally
+  1. docker compose up -d
+     (starts MongoDB on 27017, mongo-express on 8081, Mailhog on 8025)
+  2. cd booking-api &amp;&amp; ./mvnw quarkus:dev
+     Backend starts on http://localhost:8080
+     Live reload is active — changes take effect immediately.
+  3. cd booking-ui &amp;&amp; npm install &amp;&amp; npm run dev
+     Frontend starts on http://localhost:5173
+
+  ## Run tests
+  Backend : ./mvnw test
+  Frontend: npm test -- --run
+
+  ## Environment variables
+  Copy .env.example to .env and fill in values before deploying.
+  Local dev works without .env — defaults are set in application.properties.
+
+No test required for documentation.
+
+═══════════════════════════════════════════════════════════════════
+ISSUE 2 — Login is not the entry point; home should be analytics
+═══════════════════════════════════════════════════════════════════
+
+Write RouterTest first:
+  a. Navigating to / redirects to /login.
+  b. Navigating to /analytics when no auth token is present
+     redirects to /login.
+  c. Navigating to /inventory when no auth token is present
+     redirects to /login.
+  d. After a successful login, the user is redirected to /analytics.
+
+Fix:
+- Route / redirects to /login.
+- All protected routes (/analytics, /inventory, /sales, /sales/new)
+  check for an auth token (localStorage key or cookie — use whatever
+  the existing auth stub uses) and redirect to /login if absent.
+- Successful login navigates to /analytics, not /inventory.
+- Create a ProtectedRoute wrapper component that handles the redirect.
+  Reuse it for all protected routes — no duplicated guard logic.
+
+═══════════════════════════════════════════════════════════════════
+ISSUE 3 — Sales tab in nav should be removed; add "Record a Sale"
+          button to the nav bar instead
+═══════════════════════════════════════════════════════════════════
+
+Update NavBarTest:
+  a. NavBar renders "Inventory" and "Analytics" links.
+  b. NavBar does NOT render a "Sales" link.
+  c. NavBar renders a button or link labelled "Record a Sale".
+  d. Clicking "Record a Sale" navigates to /sales/new.
+
+Fix:
+- Remove the Sales link from NavBar.
+- Add a "Record a Sale" button to the right side of NavBar.
+  Style it as the primary gold button (matches the design system).
+- /sales and /sales/new routes still exist and function — they are
+  just no longer reachable from the main navigation except via
+  this button.
+- The default authenticated route remains /analytics.
+
+═══════════════════════════════════════════════════════════════════
+ISSUE 4 — "Book a Sale" must be renamed "Record a Sale" everywhere
+═══════════════════════════════════════════════════════════════════
+
+No new tests needed. Update existing text assertions to match the
+new label.
+
+Search the entire codebase (both booking-api/ and booking-ui/) for:
+  "Book a Sale", "book a sale", "BookSale", "bookSale",
+  "book-sale", "BOOK_A_SALE"
+Replace with:
+  "Record a Sale", "record a sale", "RecordSale", "recordSale",
+  "record-sale", "RECORD_A_SALE"
+
+Check: button text, page headings, route labels, component display
+names, aria-labels, test assertions, and any console/error messages.
+
+Run npm test -- --run after the rename to catch broken text assertions.
+Fix any that now fail.
+
+═══════════════════════════════════════════════════════════════════
+ISSUE 5 — Record a Sale form crashes or breaks when inventory is empty
+═══════════════════════════════════════════════════════════════════
+
+Write RecordSaleFormTest (or update if it exists):
+  a. When the available items API returns an empty array, the form
+     renders an EmptyState — not an error and not a broken dropdown.
+  b. The EmptyState shows the text "No items in inventory yet"
+     and a link to /inventory.
+  c. The submit button is absent or disabled when no items exist.
+  d. When items exist, the item dropdown renders them normally.
+
+Fix:
+- In the RecordSaleForm component, after items load:
+  - If the list is empty: render EmptyState with title
+    "No items in inventory yet", description
+    "Add items to your inventory before recording a sale.",
+    and a "Go to Inventory" link pointing to /inventory.
+  - Do not render the form fields or submit button.
+- If the items query is loading: render LoadingSkeleton.
+- If the items query errors: render ErrorMessage with retry.
+
+═══════════════════════════════════════════════════════════════════
+ISSUE 6 — Purchase date has no default and no calendar picker
+═══════════════════════════════════════════════════════════════════
+
+Update AddItemFormTest:
+  a. The purchaseDate input has type="date".
+  b. On initial render, the purchaseDate input value equals
+     today's date formatted as YYYY-MM-DD.
+  c. Submitting the form sends purchaseDate as a valid ISO-8601
+     date string (not an empty string).
+
+Fix:
+- Set the purchaseDate input to type="date".
+  This gives a native calendar picker in all modern browsers.
+- Initialise the field value to today:
+    new Date().toISOString().split('T')[0]
+  Use this as the controlled field's initial state — not just
+  a defaultValue — so the value is always included in the
+  submit payload even if the user does not interact with it.
+- When sending to the API, append T00:00:00Z if the backend
+  expects a full ISO-8601 Instant rather than a bare date.
+  Check CreateItemRequest.java to confirm the expected format
+  and adjust accordingly.
+
+═══════════════════════════════════════════════════════════════════
+ISSUE 7 — Adding inventory items does not work (CRITICAL)
+═══════════════════════════════════════════════════════════════════
+
+This is the most important fix. Trace the full add-item path and
+repair every breakage found.
+
+Write or update AddItemFormTest:
+  a. Submitting a fully valid form calls POST /api/v1/items.
+  b. The request body contains all required fields with the correct
+     names and types (name: string, purchasePrice: number,
+     purchaseDate: ISO string, businessId: string).
+  c. After a successful 201 response, the React Query cache for
+     items is invalidated so the InventoryTable refetches.
+  d. After success, all form fields reset (purchaseDate resets
+     to today; all others clear).
+  e. A 400 response from the API displays an error message;
+     the form is NOT reset.
+
+Write or update ItemResourceIT (integration test, backend):
+  a. POST /api/v1/items with valid body returns 201 and a document
+     with a non-null id.
+  b. POST /api/v1/items with a missing name returns 400.
+  c. POST /api/v1/items with purchasePrice &lt; 0 returns 400.
+
+Investigate and fix every issue found in the following checklist.
+Work through each point; fix whatever is broken:
+
+CHECKLIST — FRONTEND:
+[ ] API base URL: confirm VITE_API_URL (or equivalent env var) is
+    set to http://localhost:8080 in .env.local or vite.config.ts.
+    If it is missing, requests go to the wrong host.
+[ ] Request body field names: compare what the form sends against
+    what CreateItemRequest.java declares. Names must match exactly
+    (case-sensitive). Fix whichever side is wrong.
+[ ] purchasePrice type: HTML number inputs return strings. Ensure
+    the value is cast to Number() or parseFloat() before sending.
+[ ] purchaseDate format: if the backend field is Instant, the
+    frontend must send a full ISO-8601 string
+    (e.g. "2024-03-16T00:00:00Z"), not just "2024-03-16".
+[ ] businessId: confirm businessId is included in the request body.
+    If auth is not yet wired, hardcode a placeholder UUID that
+    matches what the backend expects, and add a TODO comment.
+[ ] Error handling: if the fetch throws (network error, non-2xx
+    response), the error must surface visibly — not fail silently.
+    Add a try/catch or React Query onError handler that displays
+    the error message to the user.
+[ ] Cache invalidation: after a successful POST, call
+    queryClient.invalidateQueries({ queryKey: ['items'] })
+    so the table refreshes automatically.
+
+CHECKLIST — BACKEND:
+[ ] CORS: open application.properties and confirm:
+      quarkus.http.cors=true
+      quarkus.http.cors.origins=http://localhost:5173
+    If these lines are missing or the origin is wrong, add them.
+[ ] CreateItemRequest fields: confirm every field the frontend
+    sends has a matching @JsonProperty or matching camelCase name
+    in CreateItemRequest.java. Fix any mismatch.
+[ ] purchaseDate deserialization: if the field type is Instant,
+    confirm Jackson can deserialize ISO-8601 strings. If not, add
+    @JsonDeserialize(using = InstantDeserializer.class) or
+    register JavaTimeModule in the ObjectMapper config.
+[ ] Validation annotations: confirm @NotBlank on name,
+    @NotNull @DecimalMin("0") on purchasePrice,
+    @NotNull on purchaseDate. Fix any that are missing.
+[ ] businessId handling: confirm the endpoint does not reject
+    requests that include businessId in the body.
+
+After working through every checklist item, run the app locally
+(docker compose up -d &amp;&amp; ./mvnw quarkus:dev &amp;&amp; npm run dev) and
+manually add one item. Confirm it appears in the inventory table.
+
+═══════════════════════════════════════════════════════════════════
+FINAL
+═══════════════════════════════════════════════════════════════════
+
+Run ./mvnw test &amp;&amp; npm test -- --run.
+
+All tests must be green. If any test is still failing, fix it
+before finishing. List any pre-existing failures that were present
+at the start and are unrelated to these seven issues.</pre>
+    </div>
+
+    <!-- Definition of Done -->
+    <div class="dod">
+      <h3>Definition of Done — All must be true before the prompt is complete</h3>
+      <div class="dod-grid">
+        <div class="dod-item">README has clear local dev steps (Docker, backend, frontend)</div>
+        <div class="dod-item">Navigating to / redirects to /login</div>
+        <div class="dod-item">Unauthenticated access to any protected route redirects to /login</div>
+        <div class="dod-item">Successful login lands on /analytics</div>
+        <div class="dod-item">NavBar shows Inventory and Analytics links only (no Sales tab)</div>
+        <div class="dod-item">"Record a Sale" button in NavBar navigates to /sales/new</div>
+        <div class="dod-item">No "Book a Sale" text anywhere in the codebase</div>
+        <div class="dod-item">RecordSaleForm shows empty state when no inventory exists</div>
+        <div class="dod-item">Purchase date defaults to today and opens a calendar picker</div>
+        <div class="dod-item">Adding an item via the form creates a visible record in the table</div>
+        <div class="dod-item">CORS configured for localhost:5173</div>
+        <div class="dod-item">./mvnw test exits 0</div>
+        <div class="dod-item">npm test -- --run exits 0</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory &amp; Sales Ledger — Implementation Plan</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #0c0c12; color: #e5e5e5; line-height: 1.6; }
+    .container { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar { width: 280px; background-color: #161620; border-right: 1px solid #2a2a3e; padding: 2rem 0; overflow-y: auto; position: fixed; height: 100vh; top: 0; left: 0; }
+    .sidebar-brand { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid #2a2a3e; margin-bottom: 1rem; }
+    .sidebar-brand h1 { font-size: 1rem; font-weight: 700; color: #7c3aed; }
+    .sidebar-brand p { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; }
+    .sidebar-section { padding: 0.5rem 1.5rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-top: 1rem; }
+    .sidebar a { display: block; padding: 0.5rem 1.5rem; color: #d1d5db; text-decoration: none; font-size: 0.85rem; border-left: 3px solid transparent; transition: all 0.2s; }
+    .sidebar a:hover { background-color: #1f1f2e; color: #fff; }
+    .sidebar a.done { color: #4ade80; opacity: 0.65; font-size: 0.8rem; }
+    .sidebar a.done::before { content: "✓ "; }
+    .sidebar a.s0:hover  { border-left-color: #7c3aed; color: #a78bfa; background: #1f1f2e; }
+    .sidebar a.s1:hover  { border-left-color: #10b981; color: #6ee7b7; background: #1f1f2e; }
+    .sidebar a.s2:hover  { border-left-color: #3b82f6; color: #93c5fd; background: #1f1f2e; }
+    .sidebar a.s3:hover  { border-left-color: #14b8a6; color: #5eead4; background: #1f1f2e; }
+    .sidebar a.s4:hover  { border-left-color: #f59e0b; color: #fcd34d; background: #1f1f2e; }
+    .sidebar a.s5:hover  { border-left-color: #8b5cf6; color: #c4b5fd; background: #1f1f2e; }
+
+    /* ── Main ── */
+    .main { flex: 1; margin-left: 280px; padding: 2rem; max-width: 1100px; }
+
+    /* ── Hero ── */
+    .hero { background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); border-radius: 12px; padding: 3rem; margin-bottom: 3rem; text-align: center; }
+    .hero h1 { font-size: 2.25rem; margin-bottom: 0.75rem; font-weight: 700; }
+    .hero p { font-size: 1.05rem; opacity: 0.92; max-width: 640px; margin: 0 auto; }
+
+    /* ── Pillars ── */
+    .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 3rem; }
+    .pillar { background-color: #161620; border-radius: 10px; padding: 1.5rem; text-align: center; }
+    .pillar .icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .pillar h3 { font-size: 0.9rem; color: #fff; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pillar p { font-size: 0.8rem; color: #9ca3af; }
+    .pillar.red   { border-top: 3px solid #ef4444; }
+    .pillar.green { border-top: 3px solid #10b981; }
+    .pillar.blue  { border-top: 3px solid #3b82f6; }
+
+    /* ── General rules ── */
+    .general-rules { background-color: #161620; border: 2px solid #f97316; border-radius: 12px; padding: 2rem; margin-bottom: 3rem; }
+    .general-rules h2 { color: #f97316; margin-bottom: 1.5rem; font-size: 1.4rem; }
+    .rule { display: flex; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #2a2a3e; align-items: flex-start; }
+    .rule:last-child { border-bottom: none; }
+    .rule-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .rule-text strong { color: #fff; display: block; margin-bottom: 0.2rem; }
+    .rule-text span { color: #9ca3af; font-size: 0.875rem; }
+
+    /* ── Sprint headings ── */
+    .sprint-heading { margin: 3rem 0 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid; scroll-margin-top: 80px; }
+    .sprint-heading h2 { font-size: 1.5rem; font-weight: 700; }
+    .sprint-heading p { color: #9ca3af; font-size: 0.9rem; margin-top: 0.25rem; }
+    .sprint-heading.done { opacity: 0.5; }
+    .sprint-heading.s0 { border-color: #7c3aed; }
+    .sprint-heading.s0 h2 { color: #a78bfa; }
+    .sprint-heading.s1 { border-color: #10b981; }
+    .sprint-heading.s1 h2 { color: #6ee7b7; }
+    .sprint-heading.s2 { border-color: #3b82f6; }
+    .sprint-heading.s2 h2 { color: #93c5fd; }
+    .sprint-heading.s3 { border-color: #14b8a6; }
+    .sprint-heading.s3 h2 { color: #5eead4; }
+    .sprint-heading.s4 { border-color: #f59e0b; }
+    .sprint-heading.s4 h2 { color: #fcd34d; }
+    .sprint-heading.s5 { border-color: #8b5cf6; }
+    .sprint-heading.s5 h2 { color: #c4b5fd; }
+
+    /* ── Complete cards ── */
+    .complete-card { background-color: #0d1f12; border: 1px solid #1c3a22; border-left: 4px solid #10b981; border-radius: 8px; padding: 0.9rem 1.25rem; margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 1rem; opacity: 0.7; scroll-margin-top: 80px; }
+    .cc-check { color: #10b981; font-size: 1.2rem; font-weight: 700; flex-shrink: 0; margin-top: 0.1rem; }
+    .cc-label { font-size: 0.9rem; color: #6ee7b7; font-weight: 600; }
+    .cc-desc { font-size: 0.8rem; color: #4b7a57; margin-top: 0.15rem; }
+
+    /* ── Prompt cards ── */
+    .prompt-card { background-color: #161620; border: 1px solid #2a2a3e; border-radius: 12px; margin-bottom: 2rem; overflow: hidden; scroll-margin-top: 80px; }
+    .prompt-header { padding: 1.25rem 1.5rem; border-bottom: 2px solid; display: flex; align-items: center; gap: 1rem; }
+    .prompt-badge { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: white; flex-shrink: 0; }
+    .prompt-title h3 { font-size: 1.1rem; color: #fff; margin-bottom: 0.35rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .tag { padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .tag-green  { background: #064e3b; color: #6ee7b7; }
+    .tag-blue   { background: #1e3a5f; color: #93c5fd; }
+    .tag-orange { background: #431407; color: #fdba74; }
+    .tag-teal   { background: #134e4a; color: #5eead4; }
+    .tag-amber  { background: #451a03; color: #fcd34d; }
+    .tag-violet { background: #2e1065; color: #e9d5ff; }
+    .tag-red    { background: #450a0a; color: #fca5a5; }
+    .tag-purple { background: #3b1f6e; color: #c4b5fd; }
+    .prompt-body { padding: 1.5rem; }
+
+    .card-s0 .prompt-header { border-color: #7c3aed; }
+    .card-s0 .prompt-badge { background: #7c3aed; }
+    .card-s1 .prompt-header { border-color: #10b981; }
+    .card-s1 .prompt-badge { background: #10b981; }
+    .card-s2 .prompt-header { border-color: #3b82f6; }
+    .card-s2 .prompt-badge { background: #3b82f6; }
+    .card-s3 .prompt-header { border-color: #14b8a6; }
+    .card-s3 .prompt-badge { background: #14b8a6; }
+    .card-s4 .prompt-header { border-color: #f59e0b; }
+    .card-s4 .prompt-badge { background: #f59e0b; }
+    .card-s5 .prompt-header { border-color: #8b5cf6; }
+    .card-s5 .prompt-badge { background: #8b5cf6; }
+
+    /* ── Body elements ── */
+    .section-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 0.5rem; margin-top: 1.25rem; }
+    .section-label:first-child { margin-top: 0; }
+    pre { background-color: #0c0c12; border: 1px solid #2a2a3e; border-radius: 8px; padding: 1.25rem; font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace; font-size: 0.82rem; line-height: 1.7; color: #e2e8f0; white-space: pre-wrap; word-break: break-word; }
+    .dod { background-color: #0c0c12; border: 1px solid #2a2a3e; border-radius: 8px; padding: 1.25rem; margin-top: 1.25rem; }
+    .dod h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #10b981; margin-bottom: 0.75rem; }
+    .dod ul { list-style: none; }
+    .dod li { padding: 0.3rem 0 0.3rem 1.5rem; position: relative; font-size: 0.875rem; color: #d1d5db; }
+    .dod li::before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: bold; }
+    .removed-box { background-color: #1a0a0a; border: 1px solid #3f1212; border-left: 4px solid #ef4444; border-radius: 6px; padding: 1.25rem; margin-bottom: 1.25rem; }
+    .removed-box h4 { color: #ef4444; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
+    .removed-box ul { list-style: none; }
+    .removed-box li { padding: 0.25rem 0 0.25rem 1.5rem; position: relative; font-size: 0.85rem; color: #fca5a5; }
+    .removed-box li::before { content: "✕"; position: absolute; left: 0; color: #ef4444; font-weight: bold; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <h1>Inventory &amp; Sales Ledger</h1>
+      <p>Implementation Plan · 9 Prompts</p>
+    </div>
+
+    <div class="sidebar-section">Sprint 0 · Setup</div>
+    <a href="#p0-1" class="s0 done">P0.1 · Project Scaffold</a>
+    <a href="#p0-2" class="s0">P0.2 · Clean Slate + Domain Model</a>
+
+    <div class="sidebar-section">Sprint 1 · Core Features</div>
+    <a href="#p1-1" class="s1">P1.1 · Inventory API</a>
+    <a href="#p1-2" class="s1">P1.2 · Sales Recording API</a>
+    <a href="#p1-3" class="s1">P1.3 · React Inventory UI</a>
+    <a href="#p1-4" class="s1">P1.4 · React Sales UI</a>
+
+    <div class="sidebar-section">Sprint 2 · Analytics</div>
+    <a href="#p2-1" class="s2">P2.1 · Analytics API</a>
+    <a href="#p2-2" class="s2">P2.2 · Analytics Dashboard</a>
+
+    <div class="sidebar-section">Sprint 3 · Ship It</div>
+    <a href="#p3-1" class="s3">P3.1 · Owner Auth</a>
+    <a href="#p3-2" class="s3">P3.2 · Production Deploy</a>
+  </nav>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="main">
+
+    <!-- Hero -->
+    <div class="hero">
+      <h1>Inventory &amp; Sales Ledger</h1>
+      <p>Track what you own, book what you sell, see where the money goes. 9 copy-paste Claude Code prompts. Test-Driven Development at every step.</p>
+    </div>
+
+    <!-- Pillars -->
+    <div class="pillars">
+      <div class="pillar red">
+        <div class="icon">🔴</div>
+        <h3>Tests First Always</h3>
+        <p>Write the failing test before a single line of implementation. No exceptions.</p>
+      </div>
+      <div class="pillar green">
+        <div class="icon">🟢</div>
+        <h3>Simplicity Over Cleverness</h3>
+        <p>The simplest solution that passes all tests is the right one.</p>
+      </div>
+      <div class="pillar blue">
+        <div class="icon">🔵</div>
+        <h3>Assume You Made a Mistake</h3>
+        <p>Run the full test suite after every change, even tiny ones.</p>
+      </div>
+    </div>
+
+    <!-- General Rules -->
+    <div class="general-rules">
+      <h2>⚠ General Rules — Apply to Every Prompt</h2>
+      <div class="rule">
+        <span class="rule-icon">🧪</span>
+        <div class="rule-text">
+          <strong>TDD is non-negotiable</strong>
+          <span>Red → Green → Refactor on every feature. No implementation file before its test file.</span>
+        </div>
+      </div>
+      <div class="rule">
+        <span class="rule-icon">✅</span>
+        <div class="rule-text">
+          <strong>Full suite green before finishing any prompt</strong>
+          <span>Run <code>./mvnw test</code> and <code>npm test -- --run</code> after every change. Fix failures before moving on.</span>
+        </div>
+      </div>
+      <div class="rule">
+        <span class="rule-icon">🏛️</span>
+        <div class="rule-text">
+          <strong>businessId on every document</strong>
+          <span>Every MongoDB document carries <code>businessId</code> and every query filters by it. Data must never leak between businesses.</span>
+        </div>
+      </div>
+      <div class="rule">
+        <span class="rule-icon">💰</span>
+        <div class="rule-text">
+          <strong>BigDecimal for all money</strong>
+          <span>Never use <code>double</code> or <code>float</code> for any price, fee, or profit field. MongoDB Decimal128 codec must be configured.</span>
+        </div>
+      </div>
+      <div class="rule">
+        <span class="rule-icon">🚫</span>
+        <div class="rule-text">
+          <strong>Build only what was asked for</strong>
+          <span>No extra endpoints, abstractions, or "nice to haves." Every unasked-for addition is a bug waiting to happen.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ SPRINT 0 ═══════ -->
+    <div class="sprint-heading s0 done">
+      <h2>Sprint 0 · Setup</h2>
+      <p>P0.1 is complete. P0.2 clears out all booking code and builds the correct domain.</p>
+    </div>
+
+    <div id="p0-1" class="complete-card">
+      <span class="cc-check">✓</span>
+      <div>
+        <div class="cc-label">P0.1 · Project Scaffold</div>
+        <div class="cc-desc">Quarkus backend, React/Vite frontend, Docker Compose with MongoDB, health-check test passing</div>
+      </div>
+    </div>
+
+    <!-- P0.2 -->
+    <div id="p0-2" class="prompt-card card-s0">
+      <div class="prompt-header">
+        <div class="prompt-badge">0.2</div>
+        <div class="prompt-title">
+          <h3>Clean Slate + Inventory Domain Model</h3>
+          <div class="tags">
+            <span class="tag tag-red">Teardown</span>
+            <span class="tag tag-green">TDD</span>
+            <span class="tag tag-purple">Domain</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="removed-box">
+          <h4>Delete everything below — none of it belongs in this app</h4>
+          <ul>
+            <li>Appointment entity, repository, service, and REST resource</li>
+            <li>ScheduleRule entity and repository</li>
+            <li>Staff entity and repository</li>
+            <li>Service entity and repository</li>
+            <li>BookingService and AvailabilityService</li>
+            <li>All booking/availability REST endpoints and their tests</li>
+            <li>All React components built in P1.1–P1.4: SlotPicker, ServiceSelector, ClientForm, BookingConfirmation, DateTimePicker, and any booking API wrappers</li>
+          </ul>
+        </div>
+
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>You are continuing the project. The Quarkus backend, React frontend,
+Docker Compose stack, and MongoDB connection from P0.1 are good —
+keep all of that.
+
+Everything else that was built must be deleted. This is an inventory
+and sales ledger, not a booking/scheduling platform.
+
+─── STEP 1: DELETE ALL PRIOR DOMAIN CODE ────────────────────────
+
+Delete the following files and their tests entirely:
+- Appointment.java + AppointmentRepository.java
+- ScheduleRule.java + any ScheduleRuleRepository.java
+- Staff.java + any StaffRepository.java
+- Service.java + any ServiceRepository.java
+- BookingService.java, AvailabilityService.java
+- Any BookingResource.java, AvailabilityResource.java,
+  StaffResource.java, ServiceResource.java
+- On the frontend: delete all components except App.tsx and main.tsx.
+  Delete any api/ wrappers created for booking.
+
+Run ./mvnw test &amp;&amp; npm test -- --run after deletions.
+The only passing tests should be the health check from P0.1.
+
+─── STEP 2: BUILD THE INVENTORY DOMAIN ──────────────────────────
+
+Write entity tests FIRST (they will be red), then implement.
+
+ENTITY 1 — Item
+Represents a physical product the owner has purchased for resale.
+
+Fields:
+  id (ObjectId), businessId (String, indexed),
+  name (String, required), brand (String), category (String),
+  condition (enum: EXCELLENT / GOOD / FAIR / POOR),
+  purchasePrice (Decimal128, required, >= 0),
+  purchaseDate (Instant, required),
+  description (String), notes (String),
+  status (enum: AVAILABLE / SOLD, default AVAILABLE),
+  createdAt (Instant), updatedAt (Instant)
+
+ENTITY 2 — Sale
+Represents a completed sale — the act of "booking" a sale in the ledger.
+Created when an Item is sold. Immutable after creation.
+
+Fields:
+  id (ObjectId), businessId (String, indexed),
+  itemId (String, required — must reference an Item),
+  platform (String, required — e.g. "Poshmark", "Vestiaire", "Mercari"),
+  salePrice (Decimal128, required, > 0),
+  platformFees (Decimal128, required, >= 0),
+  netProceeds (Decimal128 — computed: salePrice - platformFees),
+  profit (Decimal128 — computed: netProceeds - item.purchasePrice),
+  soldAt (Instant, required),
+  notes (String),
+  createdAt (Instant)
+
+Note: netProceeds and profit are computed at write time and stored.
+Do not recompute them on read — purchasePrice may be corrected later
+and stored profit must reflect what was recorded at the time of sale.
+
+INDEXES:
+  Item:  { businessId: 1, status: 1 }
+  Item:  { businessId: 1, brand: 1 }
+  Sale:  { businessId: 1, soldAt: -1 }
+  Sale:  { businessId: 1, itemId: 1 }
+
+DECIMAL128 CODEC: Register a MongoClientCustomizer bean that
+configures Decimal128 codec for BigDecimal fields. Verify with
+a MoneyTest: $12.50 stored and retrieved without precision loss.
+
+WRITE TESTS FIRST, then implement:
+ItemRepositoryTest:
+  a. save and findById — item round-trips correctly
+  b. findByBusinessId — only returns items for that business
+  c. findByStatus — AVAILABLE filter excludes SOLD items
+  d. businessId isolation — wrong businessId returns empty
+
+SaleRepositoryTest:
+  a. save and findById — sale round-trips with correct computed fields
+  b. findByBusinessId — only returns sales for that business
+  c. findBySoldAtRange — date range filter works
+
+MoneyTest:
+  a. BigDecimal $12.50 stored as Decimal128 and retrieved as $12.50
+  b. profit = salePrice - platformFees - purchasePrice (no rounding)
+
+Run ./mvnw test. All green before finishing.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>No Appointment, ScheduleRule, Staff, or Service file anywhere in the codebase</li>
+            <li>No booking/availability/scheduling tests remaining</li>
+            <li>Item and Sale entities exist with all fields as specified</li>
+            <li>All 8 repository tests pass</li>
+            <li>MoneyTest proves BigDecimal precision is preserved</li>
+            <li><code>./mvnw test</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ SPRINT 1 ═══════ -->
+    <div id="sprint-1" class="sprint-heading s1">
+      <h2>Sprint 1 · Core Features</h2>
+      <p>Add items to inventory, book sales, and view everything in a simple React UI.</p>
+    </div>
+
+    <!-- P1.1 -->
+    <div id="p1-1" class="prompt-card card-s1">
+      <div class="prompt-header">
+        <div class="prompt-badge">1.1</div>
+        <div class="prompt-title">
+          <h3>Inventory API</h3>
+          <div class="tags">
+            <span class="tag tag-green">Sprint 1</span>
+            <span class="tag tag-blue">REST</span>
+            <span class="tag tag-green">TDD</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>Continue. All existing tests must remain green.
+
+TASK: Inventory management REST API. Write tests first.
+
+ENDPOINTS — write ItemResourceTest before ItemResource:
+
+POST /api/v1/items
+  Body: { businessId, name, brand, category, condition,
+          purchasePrice, purchaseDate, description, notes }
+  Returns: 201 + ItemDTO
+
+GET /api/v1/items?businessId=X&amp;status=AVAILABLE
+  Returns all items for the business. status filter is optional.
+
+GET /api/v1/items/{id}?businessId=X
+  Returns 200 + ItemDTO, or 404 if not found or wrong businessId.
+
+PATCH /api/v1/items/{id}
+  Body: { businessId, name, brand, category, condition,
+          description, notes }
+  Updatable fields: name, brand, category, condition,
+  description, notes only.
+  purchasePrice and purchaseDate cannot be changed after creation.
+  Returns 200 + updated ItemDTO.
+
+DELETE /api/v1/items/{id}?businessId=X
+  Soft-delete: sets status = DELETED (add DELETED to the enum).
+  Only allowed if status = AVAILABLE. A sold item is in the ledger
+  and cannot be removed.
+  Returns 204.
+
+TEST CASES in ItemResourceTest:
+1. POST valid item → 201 with all fields present.
+2. POST missing name → 400 with field error.
+3. POST negative purchasePrice → 400.
+4. GET list → only returns items for the requesting businessId.
+5. GET list with status=AVAILABLE → excludes SOLD items.
+6. GET by id correct businessId → 200.
+7. GET by id wrong businessId → 404.
+8. PATCH updates name and condition; purchasePrice unchanged.
+9. DELETE AVAILABLE item → 204; item no longer appears in list.
+10. DELETE SOLD item → 409 (sold items are permanent ledger entries).
+
+Run ./mvnw test. All green before finishing.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>All 10 inventory tests pass</li>
+            <li>purchasePrice cannot be changed via PATCH (tested)</li>
+            <li>SOLD item cannot be deleted (409 test passes)</li>
+            <li>businessId isolation: wrong businessId returns 404 (tested)</li>
+            <li><code>./mvnw test</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- P1.2 -->
+    <div id="p1-2" class="prompt-card card-s1">
+      <div class="prompt-header">
+        <div class="prompt-badge">1.2</div>
+        <div class="prompt-title">
+          <h3>Sales Recording API — "Book a Sale"</h3>
+          <div class="tags">
+            <span class="tag tag-green">Sprint 1</span>
+            <span class="tag tag-blue">REST</span>
+            <span class="tag tag-amber">Ledger</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>Continue. All existing tests must remain green.
+
+TASK: Sales recording API — the act of booking a sale in the ledger.
+Write tests first.
+
+ENDPOINTS — write SaleResourceTest before SaleResource:
+
+POST /api/v1/sales
+  Body: { businessId, itemId, platform, salePrice,
+          platformFees, soldAt, notes }
+  This is the primary write operation. On success:
+    1. Validates item exists, belongs to businessId, and is AVAILABLE.
+    2. Computes netProceeds = salePrice - platformFees.
+    3. Fetches item.purchasePrice; computes profit = netProceeds - purchasePrice.
+    4. Saves the Sale with all computed fields.
+    5. Sets item.status = SOLD.
+  Returns 201 + SaleDTO (including computed profit and item name).
+  This operation is atomic: if the Sale save fails, item stays AVAILABLE.
+
+GET /api/v1/sales?businessId=X
+  Returns all sales for the business, newest first (sorted by soldAt).
+  Optional filters: platform, from (ISO date), to (ISO date).
+
+GET /api/v1/sales/{id}?businessId=X
+  Returns 200 + SaleDTO with embedded item name and brand, or 404.
+
+TEST CASES in SaleResourceTest:
+1. POST valid sale → 201; item status becomes SOLD.
+2. POST profit computed correctly:
+   purchasePrice=$40, salePrice=$100, platformFees=$15
+   → netProceeds=$85.00, profit=$45.00 (exact BigDecimal).
+3. POST item already SOLD → 409 "Item is already sold".
+4. POST itemId not found → 404.
+5. POST itemId belonging to different businessId → 404.
+6. POST salePrice = 0 → 400.
+7. POST platformFees &gt; salePrice → 400
+   (fees cannot exceed sale price).
+8. GET list → newest sale appears first.
+9. GET list with platform filter → only matching platform returned.
+10. GET by id → 200 with item name embedded.
+11. GET by id wrong businessId → 404.
+
+Run ./mvnw test. All green before finishing.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>All 11 sales tests pass</li>
+            <li>Profit arithmetic test passes with exact BigDecimal values (no rounding)</li>
+            <li>Double-sale prevented: SOLD item returns 409 (tested)</li>
+            <li>Cross-business item access returns 404 (tested)</li>
+            <li>Item status atomically updated to SOLD on sale creation</li>
+            <li><code>./mvnw test</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- P1.3 -->
+    <div id="p1-3" class="prompt-card card-s1">
+      <div class="prompt-header">
+        <div class="prompt-badge">1.3</div>
+        <div class="prompt-title">
+          <h3>React — Inventory UI</h3>
+          <div class="tags">
+            <span class="tag tag-green">Sprint 1</span>
+            <span class="tag tag-violet">Frontend</span>
+            <span class="tag tag-green">TDD</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>Continue. All existing tests must remain green.
+
+TASK: React inventory UI. Write component tests first, then implement.
+
+ROUTING (react-router-dom v6):
+  /              → redirect to /inventory
+  /inventory     → InventoryPage
+  /sales         → SalesPage (built in P1.4)
+  /analytics     → AnalyticsPage (built in P2.2)
+  /login         → LoginPage (stub — real auth in P3.1)
+
+COMPONENTS to build:
+
+InventoryPage:
+  - Renders InventoryTable and AddItemForm side by side (or tabbed).
+  - Loads items via GET /api/v1/items?businessId=X.
+
+InventoryTable:
+  Columns: Name, Brand, Category, Condition, Purchase Price,
+           Date Purchased, Status, Actions.
+  - Status badge: AVAILABLE = green, SOLD = grey.
+  - "Book a Sale" button visible only for AVAILABLE items.
+  - "Book a Sale" button navigates to /sales/new?itemId=X.
+  - Supports filtering by status (All / Available / Sold).
+
+AddItemForm:
+  Fields: name (required), brand, category,
+          condition (dropdown: Excellent / Good / Fair / Poor),
+          purchasePrice (required, number), purchaseDate (required),
+          description, notes.
+  - On submit: POST /api/v1/items, then refresh the table.
+  - Inline validation before submit.
+
+COMPONENT TESTS (Vitest + React Testing Library):
+
+InventoryTableTest:
+  a. Renders correct number of rows from mock item data.
+  b. AVAILABLE item shows green badge.
+  c. SOLD item shows grey badge.
+  d. "Book a Sale" button present for AVAILABLE item.
+  e. "Book a Sale" button absent for SOLD item.
+  f. Status filter "Available" hides SOLD rows.
+
+AddItemFormTest:
+  a. Submit with empty name shows validation error.
+  b. Submit with negative purchasePrice shows validation error.
+  c. Valid submit calls the create API with correct payload.
+  d. Form resets after successful submission.
+
+Use React Query for all data fetching. Mock the API calls in tests.
+
+Run npm test -- --run. All green before finishing.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>All 10 component tests pass</li>
+            <li>SOLD item has no "Book a Sale" button (tested)</li>
+            <li>Status filter hides/shows rows correctly (tested)</li>
+            <li>Form validation prevents bad data reaching the API (tested)</li>
+            <li><code>npm test -- --run</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- P1.4 -->
+    <div id="p1-4" class="prompt-card card-s1">
+      <div class="prompt-header">
+        <div class="prompt-badge">1.4</div>
+        <div class="prompt-title">
+          <h3>React — Sales UI</h3>
+          <div class="tags">
+            <span class="tag tag-green">Sprint 1</span>
+            <span class="tag tag-violet">Frontend</span>
+            <span class="tag tag-green">TDD</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>Continue. All existing tests must remain green.
+
+TASK: React sales UI. Write component tests first, then implement.
+
+COMPONENTS to build:
+
+SalesPage (/sales):
+  - Renders SalesTable.
+  - "Book a Sale" button at top navigates to /sales/new.
+  - Loads sales via GET /api/v1/sales?businessId=X.
+
+SalesTable:
+  Columns: Item Name, Brand, Platform, Sale Price, Fees,
+           Net Proceeds, Profit, Date Sold.
+  - Profit shown in green if positive, red if negative.
+  - Supports filtering by platform.
+  - All money values formatted as "$X,XXX.00".
+
+BookSaleForm (/sales/new, optional ?itemId=X pre-selects the item):
+  Fields:
+    - Item dropdown (only AVAILABLE items, loaded from inventory API).
+    - Platform (text input — free entry so new platforms work).
+    - Sale Price (number, required, > 0).
+    - Platform Fees (number, required, >= 0).
+    - Date Sold (date input, defaults to today).
+    - Notes (textarea).
+  - Live profit preview below the form:
+    "Profit: $XX.XX" updates as the user types prices and fees.
+    Preview also shows: "Purchase price: $XX.XX | Net proceeds: $XX.XX"
+  - On submit: POST /api/v1/sales.
+  - On success: navigate to /sales with a success message.
+  - On 409 (item already sold): show inline error, do not navigate.
+
+COMPONENT TESTS:
+
+SalesTableTest:
+  a. Renders correct number of rows from mock data.
+  b. Positive profit displays in green.
+  c. Negative profit displays in red.
+  d. All money values formatted as "$X,XXX.00".
+  e. Platform filter hides non-matching rows.
+
+BookSaleFormTest:
+  a. Item dropdown shows only AVAILABLE items.
+  b. Profit preview updates when salePrice changes.
+  c. Profit preview updates when platformFees change.
+  d. Submit with salePrice = 0 shows validation error.
+  e. Valid submit calls the sales API with correct payload.
+  f. 409 response shows "Item is already sold" inline error.
+
+Run npm test -- --run. All green before finishing.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>All 11 component tests pass</li>
+            <li>Profit preview updates live without submitting (tested)</li>
+            <li>Only AVAILABLE items appear in the item dropdown (tested)</li>
+            <li>409 error shown inline without navigating away (tested)</li>
+            <li>Money formatted as currency throughout (tested)</li>
+            <li><code>npm test -- --run</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ SPRINT 2 ═══════ -->
+    <div id="sprint-2" class="sprint-heading s2">
+      <h2>Sprint 2 · Analytics</h2>
+      <p>Revenue, profit, and cash flow — the numbers that tell you how the business is doing.</p>
+    </div>
+
+    <!-- P2.1 -->
+    <div id="p2-1" class="prompt-card card-s2">
+      <div class="prompt-header">
+        <div class="prompt-badge">2.1</div>
+        <div class="prompt-title">
+          <h3>Analytics API</h3>
+          <div class="tags">
+            <span class="tag tag-blue">Sprint 2</span>
+            <span class="tag tag-green">TDD</span>
+            <span class="tag tag-teal">Cash Flow</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>Continue. All existing tests must remain green.
+
+TASK: Analytics endpoint. Write AnalyticsServiceTest first.
+
+ENDPOINT:
+GET /api/v1/analytics?businessId=X&amp;from=YYYY-MM-DD&amp;to=YYYY-MM-DD
+
+Both from and to are required. The range is inclusive.
+Filters on Sale.soldAt.
+
+RESPONSE SHAPE:
+{
+  "summary": {
+    "itemsSold":      integer,
+    "totalRevenue":   Decimal128,   // sum of salePrice
+    "totalFees":      Decimal128,   // sum of platformFees
+    "totalNetProceeds": Decimal128, // sum of netProceeds
+    "totalCostOfGoods": Decimal128, // sum of item.purchasePrice for sold items
+    "totalProfit":    Decimal128,   // sum of profit
+    "averageMargin":  number        // totalProfit / totalRevenue * 100, 1 decimal place
+  },
+  "byPlatform": [
+    { "platform": string, "itemsSold": integer,
+      "totalRevenue": Decimal128, "totalProfit": Decimal128 }
+  ],
+  "byCategory": [
+    { "category": string, "itemsSold": integer,
+      "totalRevenue": Decimal128, "totalProfit": Decimal128 }
+  ],
+  "byMonth": [
+    { "month": "YYYY-MM", "itemsSold": integer,
+      "totalRevenue": Decimal128, "totalProfit": Decimal128 }
+  ]
+}
+
+byPlatform and byCategory sorted by totalProfit descending.
+byMonth sorted by month ascending (chronological).
+
+TEST CASES in AnalyticsServiceTest:
+1. basicSums — 2 sales in range:
+   sale1: price=$100, fees=$15, purchaseCost=$40 → profit=$45
+   sale2: price=$60,  fees=$8,  purchaseCost=$20 → profit=$32
+   Verify: totalRevenue=$160, totalFees=$23, totalProfit=$77,
+           totalCostOfGoods=$60, itemsSold=2.
+2. averageMargin — $77 profit / $160 revenue = 48.1% (1 decimal).
+3. byPlatform — 1 Poshmark + 1 Vestiaire → 2 groups, sorted by profit.
+4. byCategory — 1 Bags + 1 Shoes → 2 groups.
+5. byMonth — sales in Jan and Feb appear in separate month buckets.
+6. dateRangeFilter — sale outside range excluded from all totals.
+7. emptyRange — no sales in period → all zeros, no error,
+   no division-by-zero.
+8. businessIdIsolation — another business's sales not included.
+
+Run ./mvnw test. All green before finishing.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>All 8 analytics tests pass</li>
+            <li>Arithmetic test passes with exact BigDecimal values</li>
+            <li>Empty-range test passes with no division-by-zero error</li>
+            <li>businessId isolation test passes</li>
+            <li>byMonth sorted chronologically; byPlatform/byCategory sorted by profit desc</li>
+            <li><code>./mvnw test</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- P2.2 -->
+    <div id="p2-2" class="prompt-card card-s2">
+      <div class="prompt-header">
+        <div class="prompt-badge">2.2</div>
+        <div class="prompt-title">
+          <h3>Analytics Dashboard</h3>
+          <div class="tags">
+            <span class="tag tag-blue">Sprint 2</span>
+            <span class="tag tag-violet">Frontend</span>
+            <span class="tag tag-green">TDD</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>Continue. All existing tests must remain green.
+
+TASK: Analytics dashboard React page. Tests first.
+
+AnalyticsPage (/analytics):
+  - Date range picker (from / to, defaults to current month).
+  - Loads data from GET /api/v1/analytics on mount and on
+    date range change.
+  - Renders: SummaryCards, ProfitByPlatformChart,
+    MonthlyTrendChart, CategoryTable.
+
+SummaryCards:
+  Six cards in a grid:
+  Items Sold | Total Revenue | Total Fees |
+  Net Proceeds | Cost of Goods | Total Profit
+  - All money formatted as "$X,XXX.00".
+  - Profit card coloured green if positive, red if negative.
+
+ProfitByPlatformChart (Recharts BarChart):
+  - One bar per platform showing totalProfit.
+  - X-axis: platform name. Y-axis: profit in dollars.
+  - Bars green for positive profit, red for negative.
+
+MonthlyTrendChart (Recharts LineChart):
+  - Two lines: totalRevenue and totalProfit over time.
+  - X-axis: month (YYYY-MM). Y-axis: dollars.
+
+CategoryTable:
+  Columns: Category, Items Sold, Revenue, Profit.
+  - Sorted by Profit descending.
+  - All money formatted as "$X,XXX.00".
+
+COMPONENT TESTS (Vitest + React Testing Library):
+
+SummaryCardsTest:
+  a. Renders all 6 cards.
+  b. Revenue formatted as "$X,XXX.00".
+  c. Positive profit card has green styling.
+  d. Negative profit card has red styling.
+
+CategoryTableTest:
+  a. Renders correct rows from mock data.
+  b. Rows sorted by profit descending.
+  c. Revenue and profit formatted as currency.
+
+ProfitByPlatformChartTest:
+  a. Renders without crashing given mock data (smoke test).
+
+MonthlyTrendChartTest:
+  a. Renders without crashing given mock data (smoke test).
+
+Mock the analytics API call in all tests — no real network calls.
+
+Run npm test -- --run. All green before finishing.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>All component tests pass</li>
+            <li>Profit colour coding tested (green positive, red negative)</li>
+            <li>CategoryTable sorted by profit descending (tested)</li>
+            <li>All money formatted as "$X,XXX.00" (tested)</li>
+            <li>Charts render without crashing (smoke tests pass)</li>
+            <li><code>npm test -- --run</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ SPRINT 3 ═══════ -->
+    <div id="sprint-3" class="sprint-heading s3">
+      <h2>Sprint 3 · Ship It</h2>
+      <p>Single-owner login and a production deployment to GCP Cloud Run.</p>
+    </div>
+
+    <!-- P3.1 -->
+    <div id="p3-1" class="prompt-card card-s3">
+      <div class="prompt-header">
+        <div class="prompt-badge">3.1</div>
+        <div class="prompt-title">
+          <h3>Owner Authentication</h3>
+          <div class="tags">
+            <span class="tag tag-teal">Sprint 3</span>
+            <span class="tag tag-red">Security</span>
+            <span class="tag tag-green">TDD</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>Continue. All existing tests must remain green.
+
+TASK: Owner login and route protection. TDD required.
+
+ADD DEPENDENCY: quarkus-smallrye-jwt.
+
+ONE OWNER PER BUSINESS. No roles. Keep it simple.
+
+ENDPOINTS:
+POST /api/v1/auth/login
+  Body: { email, password }
+  Returns: { accessToken (JWT, 15 min), refreshToken (opaque, 7d) }
+  JWT claims: { sub: ownerId, businessId }
+
+POST /api/v1/auth/refresh
+  Body: { refreshToken }
+  Returns: { accessToken }
+
+POST /api/v1/auth/logout
+  Body: { refreshToken }
+  Marks the token used in MongoDB so it cannot be reused.
+
+PROTECTION:
+All /api/v1/** routes require a valid JWT, EXCEPT:
+  POST /api/v1/auth/login
+  POST /api/v1/auth/refresh
+The businessId claim in the JWT must match the businessId in every
+request body or query param — mismatch returns 403.
+
+WRITE AuthResourceTest and SecurityFilterTest FIRST.
+
+TEST CASES — AuthResourceTest:
+1. login_valid → 200 with both tokens.
+2. login_wrongPassword → 401.
+3. login_unknownEmail → 401 with identical response to wrong
+   password (no user enumeration).
+4. refresh_valid → 200 with new accessToken.
+5. refresh_expired → 401.
+6. logout_thenRefresh → 401 after logout.
+
+TEST CASES — SecurityFilterTest:
+7. inventoryRoute_noToken → 401.
+8. inventoryRoute_validToken_matchingBusiness → 200.
+9. inventoryRoute_validToken_wrongBusiness → 403.
+
+PASSWORDS: bcrypt, cost factor 12. Never store plaintext.
+REFRESH TOKENS: SHA-256 hash stored in MongoDB with TTL index.
+
+Run ./mvnw test. All green before finishing.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>All 9 auth tests pass</li>
+            <li>Wrong password and unknown email return identical 401 (no user enumeration)</li>
+            <li>businessId mismatch returns 403 (tested)</li>
+            <li>Passwords stored as bcrypt hash — no plaintext anywhere</li>
+            <li>Refresh token TTL index configured (expired tokens auto-delete)</li>
+            <li><code>./mvnw test</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- P3.2 -->
+    <div id="p3-2" class="prompt-card card-s3">
+      <div class="prompt-header">
+        <div class="prompt-badge">3.2</div>
+        <div class="prompt-title">
+          <h3>Production Deployment — GCP Cloud Run</h3>
+          <div class="tags">
+            <span class="tag tag-teal">Sprint 3</span>
+            <span class="tag tag-blue">CI/CD</span>
+            <span class="tag tag-green">TDD</span>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">Copy-paste prompt</div>
+        <pre>Continue. All existing tests must remain green.
+
+TASK: Production Dockerfiles and GitHub Actions CI/CD pipeline.
+
+DOCKERFILES:
+
+booking-api/Dockerfile:
+  FROM eclipse-temurin:21-jre-alpine
+  COPY target/quarkus-app/ /deployments/
+  CMD ["java", "-jar", "/deployments/quarkus-run.jar"]
+
+booking-ui/Dockerfile:
+  FROM node:20-alpine AS build
+  WORKDIR /app
+  COPY package*.json ./
+  RUN npm ci
+  COPY . .
+  RUN npm run build
+
+  FROM nginx:alpine
+  COPY --from=build /app/dist /usr/share/nginx/html
+  COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+booking-ui/nginx.conf must contain:
+  try_files $uri $uri/ /index.html;
+  (Required so React Router works on direct URL loads.)
+
+GITHUB ACTIONS — .github/workflows/ci-cd.yml:
+
+CI job (every push and pull request):
+  1. ./mvnw test         — must exit 0
+  2. npm test -- --run   — must exit 0
+  3. Either failure blocks the PR.
+
+CD job (push to main only, after CI passes):
+  1. Build and push backend Docker image to GCR.
+  2. Build and push frontend Docker image to GCR.
+  3. Deploy backend to Cloud Run (us-central1).
+     --set-env-vars: MONGODB_URI, JWT_SECRET
+  4. Deploy frontend to Cloud Run.
+  5. Smoke test: curl /q/health/ready → must be 200.
+     Fail the deployment if not.
+
+HEALTH PROBES:
+  Liveness:  GET /q/health/live
+  Readiness: GET /q/health/ready
+
+All sensitive values via environment variables only.
+Nothing hardcoded in Dockerfiles or committed config files.
+Add .env.example listing every required variable.
+
+Verify: ./mvnw test &amp;&amp; npm test -- --run still green after
+adding all deployment files.</pre>
+
+        <div class="dod">
+          <h4>Definition of Done</h4>
+          <ul>
+            <li>Backend Dockerfile builds successfully (<code>docker build</code> exits 0)</li>
+            <li>Frontend Dockerfile includes nginx.conf with React Router fallback</li>
+            <li>CI job blocks PRs when either test suite fails</li>
+            <li>CD deploys only on push to main after CI passes</li>
+            <li>Smoke test fails the deployment if health check returns non-200</li>
+            <li>No secrets hardcoded anywhere</li>
+            <li>.env.example documents all required variables</li>
+            <li><code>./mvnw test &amp;&amp; npm test -- --run</code> exits 0</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

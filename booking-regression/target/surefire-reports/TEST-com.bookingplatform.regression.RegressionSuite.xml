@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.bookingplatform.regression.RegressionSuite" time="2.467" tests="80" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="25"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/jaredmoore/business/tav/booking/booking-regression/target/test-classes:/Users/jaredmoore/business/tav/booking/booking-regression/target/classes:/Users/jaredmoore/.m2/repository/io/karatelabs/karate-junit5/1.5.2.RC5/karate-junit5-1.5.2.RC5.jar:/Users/jaredmoore/.m2/repository/io/karatelabs/karate-core/1.5.2.RC5/karate-core-1.5.2.RC5.jar:/Users/jaredmoore/.m2/repository/org/graalvm/js/js-scriptengine/24.0.0/js-scriptengine-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/polyglot/polyglot/24.0.0/polyglot-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/sdk/collections/24.0.0/collections-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/sdk/nativeimage/24.0.0/nativeimage-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/sdk/word/24.0.0/word-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/js/js-language/24.0.0/js-language-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/regex/regex/24.0.0/regex-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/truffle/truffle-api/24.0.0/truffle-api-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/shadowed/icu4j/24.0.0/icu4j-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/thymeleaf/thymeleaf/3.1.2.RELEASE/thymeleaf-3.1.2.RELEASE.jar:/Users/jaredmoore/.m2/repository/ognl/ognl/3.3.4/ognl-3.3.4.jar:/Users/jaredmoore/.m2/repository/org/javassist/javassist/3.29.0-GA/javassist-3.29.0-GA.jar:/Users/jaredmoore/.m2/repository/org/attoparser/attoparser/2.0.7.RELEASE/attoparser-2.0.7.RELEASE.jar:/Users/jaredmoore/.m2/repository/org/unbescape/unbescape/1.1.6.RELEASE/unbescape-1.1.6.RELEASE.jar:/Users/jaredmoore/.m2/repository/com/linecorp/armeria/armeria/1.31.3/armeria-1.31.3.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.18.1/jackson-core-2.18.1.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.18.1/jackson-annotations-2.18.1.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.18.1/jackson-databind-2.18.1.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.18.1/jackson-datatype-jdk8-2.18.1.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.18.1/jackson-datatype-jsr310-2.18.1.jar:/Users/jaredmoore/.m2/repository/io/micrometer/micrometer-core/1.13.6/micrometer-core-1.13.6.jar:/Users/jaredmoore/.m2/repository/io/micrometer/micrometer-commons/1.13.6/micrometer-commons-1.13.6.jar:/Users/jaredmoore/.m2/repository/io/micrometer/micrometer-observation/1.13.6/micrometer-observation-1.13.6.jar:/Users/jaredmoore/.m2/repository/org/hdrhistogram/HdrHistogram/2.2.2/HdrHistogram-2.2.2.jar:/Users/jaredmoore/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport/4.1.115.Final/netty-transport-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-common/4.1.115.Final/netty-common-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-buffer/4.1.115.Final/netty-buffer-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver/4.1.115.Final/netty-resolver-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-haproxy/4.1.115.Final/netty-codec-haproxy-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec/4.1.115.Final/netty-codec-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-http2/4.1.115.Final/netty-codec-http2-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-handler/4.1.115.Final/netty-handler-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-http/4.1.115.Final/netty-codec-http-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver-dns/4.1.115.Final/netty-resolver-dns-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-dns/4.1.115.Final/netty-codec-dns-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final-linux-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final-linux-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final-osx-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final-osx-aarch_64.jar:/Users/jaredmoore/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/Users/jaredmoore/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-handler-proxy/4.1.115.Final/netty-handler-proxy-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-socks/4.1.115.Final/netty-codec-socks-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-epoll/4.1.115.Final/netty-transport-native-epoll-4.1.115.Final-linux-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.115.Final/netty-transport-classes-epoll-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-epoll/4.1.115.Final/netty-transport-native-epoll-4.1.115.Final-linux-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-kqueue/4.1.115.Final/netty-transport-native-kqueue-4.1.115.Final-osx-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-classes-kqueue/4.1.115.Final/netty-transport-classes-kqueue-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.115.Final/netty-resolver-dns-native-macos-4.1.115.Final-osx-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver-dns-classes-macos/4.1.115.Final/netty-resolver-dns-classes-macos-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-kqueue/4.1.115.Final/netty-transport-native-kqueue-4.1.115.Final-osx-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.115.Final/netty-resolver-dns-native-macos-4.1.115.Final-osx-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-linux-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-classes/2.0.69.Final/netty-tcnative-classes-2.0.69.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-linux-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-osx-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-osx-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-windows-x86_64.jar:/Users/jaredmoore/.m2/repository/com/aayushatharva/brotli4j/brotli4j/1.17.0/brotli4j-1.17.0.jar:/Users/jaredmoore/.m2/repository/com/aayushatharva/brotli4j/service/1.17.0/service-1.17.0.jar:/Users/jaredmoore/.m2/repository/com/aayushatharva/brotli4j/native-osx-aarch64/1.17.0/native-osx-aarch64-1.17.0.jar:/Users/jaredmoore/.m2/repository/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.jar:/Users/jaredmoore/.m2/repository/org/apache/httpcomponents/httpcore/4.4.16/httpcore-4.4.16.jar:/Users/jaredmoore/.m2/repository/commons-codec/commons-codec/1.16.1/commons-codec-1.16.1.jar:/Users/jaredmoore/.m2/repository/ch/qos/logback/logback-classic/1.5.4/logback-classic-1.5.4.jar:/Users/jaredmoore/.m2/repository/ch/qos/logback/logback-core/1.5.4/logback-core-1.5.4.jar:/Users/jaredmoore/.m2/repository/org/slf4j/jcl-over-slf4j/2.0.12/jcl-over-slf4j-2.0.12.jar:/Users/jaredmoore/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/Users/jaredmoore/.m2/repository/org/antlr/antlr4-runtime/4.13.1/antlr4-runtime-4.13.1.jar:/Users/jaredmoore/.m2/repository/com/jayway/jsonpath/json-path/2.9.0/json-path-2.9.0.jar:/Users/jaredmoore/.m2/repository/net/minidev/json-smart/2.5.1/json-smart-2.5.1.jar:/Users/jaredmoore/.m2/repository/net/minidev/accessors-smart/2.5.1/accessors-smart-2.5.1.jar:/Users/jaredmoore/.m2/repository/org/ow2/asm/asm/9.6/asm-9.6.jar:/Users/jaredmoore/.m2/repository/org/yaml/snakeyaml/2.3/snakeyaml-2.3.jar:/Users/jaredmoore/.m2/repository/de/siegmar/fastcsv/3.4.0/fastcsv-3.4.0.jar:/Users/jaredmoore/.m2/repository/info/picocli/picocli/4.7.6/picocli-4.7.6.jar:/Users/jaredmoore/.m2/repository/io/github/classgraph/classgraph/4.8.181/classgraph-4.8.181.jar:/Users/jaredmoore/.m2/repository/io/github/t12y/resemble/1.1.0/resemble-1.1.0.jar:/Users/jaredmoore/.m2/repository/io/github/t12y/ssim/1.0.0/ssim-1.0.0.jar:/Users/jaredmoore/.m2/repository/org/brotli/dec/0.1.2/dec-0.1.2.jar:/Users/jaredmoore/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.11.4/junit-jupiter-api-5.11.4.jar:/Users/jaredmoore/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/jaredmoore/.m2/repository/org/junit/platform/junit-platform-commons/1.11.4/junit-platform-commons-1.11.4.jar:/Users/jaredmoore/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/jaredmoore/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.11.4/junit-jupiter-engine-5.11.4.jar:/Users/jaredmoore/.m2/repository/org/junit/platform/junit-platform-engine/1.11.4/junit-platform-engine-1.11.4.jar:"/>
+    <property name="java.vm.vendor" value="Eclipse Adoptium"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://adoptium.net/"/>
+    <property name="user.timezone" value="America/New_York"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="25"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.boot.library.path" value="/Users/jaredmoore/.sdkman/candidates/java/25.0.1-tem/lib"/>
+    <property name="sun.java.command" value="/Users/jaredmoore/business/tav/booking/booking-regression/target/surefire/surefirebooter-20260317222450247_3.jar /Users/jaredmoore/business/tav/booking/booking-regression/target/surefire 2026-03-17T22-24-50_212-jvmRun1 surefire-20260317222450247_1tmp surefire_0-20260317222450247_2tmp"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/Users/jaredmoore/business/tav/booking/booking-regression/target/test-classes:/Users/jaredmoore/business/tav/booking/booking-regression/target/classes:/Users/jaredmoore/.m2/repository/io/karatelabs/karate-junit5/1.5.2.RC5/karate-junit5-1.5.2.RC5.jar:/Users/jaredmoore/.m2/repository/io/karatelabs/karate-core/1.5.2.RC5/karate-core-1.5.2.RC5.jar:/Users/jaredmoore/.m2/repository/org/graalvm/js/js-scriptengine/24.0.0/js-scriptengine-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/polyglot/polyglot/24.0.0/polyglot-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/sdk/collections/24.0.0/collections-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/sdk/nativeimage/24.0.0/nativeimage-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/sdk/word/24.0.0/word-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/js/js-language/24.0.0/js-language-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/regex/regex/24.0.0/regex-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/truffle/truffle-api/24.0.0/truffle-api-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/graalvm/shadowed/icu4j/24.0.0/icu4j-24.0.0.jar:/Users/jaredmoore/.m2/repository/org/thymeleaf/thymeleaf/3.1.2.RELEASE/thymeleaf-3.1.2.RELEASE.jar:/Users/jaredmoore/.m2/repository/ognl/ognl/3.3.4/ognl-3.3.4.jar:/Users/jaredmoore/.m2/repository/org/javassist/javassist/3.29.0-GA/javassist-3.29.0-GA.jar:/Users/jaredmoore/.m2/repository/org/attoparser/attoparser/2.0.7.RELEASE/attoparser-2.0.7.RELEASE.jar:/Users/jaredmoore/.m2/repository/org/unbescape/unbescape/1.1.6.RELEASE/unbescape-1.1.6.RELEASE.jar:/Users/jaredmoore/.m2/repository/com/linecorp/armeria/armeria/1.31.3/armeria-1.31.3.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.18.1/jackson-core-2.18.1.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.18.1/jackson-annotations-2.18.1.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.18.1/jackson-databind-2.18.1.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.18.1/jackson-datatype-jdk8-2.18.1.jar:/Users/jaredmoore/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.18.1/jackson-datatype-jsr310-2.18.1.jar:/Users/jaredmoore/.m2/repository/io/micrometer/micrometer-core/1.13.6/micrometer-core-1.13.6.jar:/Users/jaredmoore/.m2/repository/io/micrometer/micrometer-commons/1.13.6/micrometer-commons-1.13.6.jar:/Users/jaredmoore/.m2/repository/io/micrometer/micrometer-observation/1.13.6/micrometer-observation-1.13.6.jar:/Users/jaredmoore/.m2/repository/org/hdrhistogram/HdrHistogram/2.2.2/HdrHistogram-2.2.2.jar:/Users/jaredmoore/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport/4.1.115.Final/netty-transport-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-common/4.1.115.Final/netty-common-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-buffer/4.1.115.Final/netty-buffer-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver/4.1.115.Final/netty-resolver-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-haproxy/4.1.115.Final/netty-codec-haproxy-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec/4.1.115.Final/netty-codec-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-http2/4.1.115.Final/netty-codec-http2-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-handler/4.1.115.Final/netty-handler-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-http/4.1.115.Final/netty-codec-http-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver-dns/4.1.115.Final/netty-resolver-dns-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-dns/4.1.115.Final/netty-codec-dns-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final-linux-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final-linux-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final-osx-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final-osx-aarch_64.jar:/Users/jaredmoore/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/Users/jaredmoore/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-handler-proxy/4.1.115.Final/netty-handler-proxy-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-codec-socks/4.1.115.Final/netty-codec-socks-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-epoll/4.1.115.Final/netty-transport-native-epoll-4.1.115.Final-linux-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.115.Final/netty-transport-classes-epoll-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-epoll/4.1.115.Final/netty-transport-native-epoll-4.1.115.Final-linux-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-kqueue/4.1.115.Final/netty-transport-native-kqueue-4.1.115.Final-osx-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-classes-kqueue/4.1.115.Final/netty-transport-classes-kqueue-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.115.Final/netty-resolver-dns-native-macos-4.1.115.Final-osx-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver-dns-classes-macos/4.1.115.Final/netty-resolver-dns-classes-macos-4.1.115.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-transport-native-kqueue/4.1.115.Final/netty-transport-native-kqueue-4.1.115.Final-osx-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.115.Final/netty-resolver-dns-native-macos-4.1.115.Final-osx-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-linux-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-classes/2.0.69.Final/netty-tcnative-classes-2.0.69.Final.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-linux-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-osx-x86_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-osx-aarch_64.jar:/Users/jaredmoore/.m2/repository/io/netty/netty-tcnative-boringssl-static/2.0.69.Final/netty-tcnative-boringssl-static-2.0.69.Final-windows-x86_64.jar:/Users/jaredmoore/.m2/repository/com/aayushatharva/brotli4j/brotli4j/1.17.0/brotli4j-1.17.0.jar:/Users/jaredmoore/.m2/repository/com/aayushatharva/brotli4j/service/1.17.0/service-1.17.0.jar:/Users/jaredmoore/.m2/repository/com/aayushatharva/brotli4j/native-osx-aarch64/1.17.0/native-osx-aarch64-1.17.0.jar:/Users/jaredmoore/.m2/repository/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.jar:/Users/jaredmoore/.m2/repository/org/apache/httpcomponents/httpcore/4.4.16/httpcore-4.4.16.jar:/Users/jaredmoore/.m2/repository/commons-codec/commons-codec/1.16.1/commons-codec-1.16.1.jar:/Users/jaredmoore/.m2/repository/ch/qos/logback/logback-classic/1.5.4/logback-classic-1.5.4.jar:/Users/jaredmoore/.m2/repository/ch/qos/logback/logback-core/1.5.4/logback-core-1.5.4.jar:/Users/jaredmoore/.m2/repository/org/slf4j/jcl-over-slf4j/2.0.12/jcl-over-slf4j-2.0.12.jar:/Users/jaredmoore/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/Users/jaredmoore/.m2/repository/org/antlr/antlr4-runtime/4.13.1/antlr4-runtime-4.13.1.jar:/Users/jaredmoore/.m2/repository/com/jayway/jsonpath/json-path/2.9.0/json-path-2.9.0.jar:/Users/jaredmoore/.m2/repository/net/minidev/json-smart/2.5.1/json-smart-2.5.1.jar:/Users/jaredmoore/.m2/repository/net/minidev/accessors-smart/2.5.1/accessors-smart-2.5.1.jar:/Users/jaredmoore/.m2/repository/org/ow2/asm/asm/9.6/asm-9.6.jar:/Users/jaredmoore/.m2/repository/org/yaml/snakeyaml/2.3/snakeyaml-2.3.jar:/Users/jaredmoore/.m2/repository/de/siegmar/fastcsv/3.4.0/fastcsv-3.4.0.jar:/Users/jaredmoore/.m2/repository/info/picocli/picocli/4.7.6/picocli-4.7.6.jar:/Users/jaredmoore/.m2/repository/io/github/classgraph/classgraph/4.8.181/classgraph-4.8.181.jar:/Users/jaredmoore/.m2/repository/io/github/t12y/resemble/1.1.0/resemble-1.1.0.jar:/Users/jaredmoore/.m2/repository/io/github/t12y/ssim/1.0.0/ssim-1.0.0.jar:/Users/jaredmoore/.m2/repository/org/brotli/dec/0.1.2/dec-0.1.2.jar:/Users/jaredmoore/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.11.4/junit-jupiter-api-5.11.4.jar:/Users/jaredmoore/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/jaredmoore/.m2/repository/org/junit/platform/junit-platform-commons/1.11.4/junit-platform-commons-1.11.4.jar:/Users/jaredmoore/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/jaredmoore/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.11.4/junit-jupiter-engine-5.11.4.jar:/Users/jaredmoore/.m2/repository/org/junit/platform/junit-platform-engine/1.11.4/junit-platform-engine-1.11.4.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/jaredmoore"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-10-21"/>
+    <property name="java.home" value="/Users/jaredmoore/.sdkman/candidates/java/25.0.1-tem"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/Users/jaredmoore/business/tav/booking/booking-regression"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="apple.awt.application.name" value="ForkedBooter"/>
+    <property name="surefire.real.class.path" value="/Users/jaredmoore/business/tav/booking/booking-regression/target/surefire/surefirebooter-20260317222450247_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.runtime.version" value="25.0.1+8-LTS"/>
+    <property name="user.name" value="jaredmoore"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="26.3.1"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Temurin-25.0.1+8"/>
+    <property name="localRepository" value="/Users/jaredmoore/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/adoptium/adoptium-support/issues"/>
+    <property name="java.io.tmpdir" value="/var/folders/vh/0c9mbgvn2zq4pzn4w7kttm1w0000gn/T/"/>
+    <property name="java.version" value="25.0.1"/>
+    <property name="user.dir" value="/Users/jaredmoore/business/tav/booking/booking-regression"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/jaredmoore/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vendor" value="Eclipse Adoptium"/>
+    <property name="java.vm.version" value="25.0.1+8-LTS"/>
+    <property name="stdin.encoding" value="UTF-8"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.class.version" value="69.0"/>
+  </properties>
+  <testcase name="[1:7] ADMIN with valid date range returns 200 with summary" classname="features/analytics/access" time="0.472">
+    <system-out><![CDATA[22:24:51.020 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.042 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:51.175 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:34] ACCOUNTANT can view analytics" classname="features/analytics/access" time="0.267">
+    <system-out><![CDATA[22:24:51.207 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.211 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/create-user.feature') { adminToken: '#(token)', role: 'ACCOUNTANT' }
+22:24:51.222 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/create-user.feature') { adminToken: '#(token)', role: 'ACCOUNTANT' }
+---------------------------------------------------------
+feature: classpath:features/analytics/access.feature
+scenarios:  2 | passed:  2 | failed:  0 | time: 0.1822
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:6] login/begin with unknown email returns 401" classname="features/auth/passkey-login" time="0.007">
+    <system-out><![CDATA[22:24:51.474 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[2:12] login/complete with invalid data returns 401" classname="features/auth/passkey-login" time="0.006">
+    <system-out><![CDATA[22:24:51.480 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:18] register/begin with blank email returns 401" classname="features/auth/passkey-login" time="0.005">
+    <system-out><![CDATA[22:24:51.487 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[4:24] register/complete with invalid data returns 401" classname="features/auth/passkey-login" time="0.034">
+    <system-out><![CDATA[22:24:51.491 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/auth/passkey-login.feature
+scenarios:  4 | passed:  4 | failed:  0 | time: 0.0113
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:3] valid registration returns 201 with orgId, userId, and ADMIN role" classname="features/auth/register" time="0.011">
+    <system-out><![CDATA[22:24:51.525 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[2:16] duplicate slug returns 409" classname="features/auth/register" time="0.011">
+    <system-out><![CDATA[22:24:51.536 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:28] password login endpoint no longer exists" classname="features/auth/register" time="0.035">
+    <system-out><![CDATA[22:24:51.547 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/auth/register.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.0211
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:6] refresh with invalid token returns 401" classname="features/auth/token-lifecycle" time="0.007">
+    <system-out><![CDATA[22:24:51.582 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[2:12] logout with nonexistent token returns 204 (idempotent)" classname="features/auth/token-lifecycle" time="0.006">
+    <system-out><![CDATA[22:24:51.590 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:18] logout with null body returns 204" classname="features/auth/token-lifecycle" time="0.02">
+    <system-out><![CDATA[22:24:51.596 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/auth/token-lifecycle.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.0094
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] valid item returns 201 with all fields" classname="features/items/create" time="0.019">
+    <system-out><![CDATA[22:24:51.616 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.617 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:51.628 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:23] missing name returns 400" classname="features/items/create" time="0.004">
+    <system-out><![CDATA[22:24:51.636 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:30] negative purchasePrice returns 400" classname="features/items/create" time="0.031">
+    <system-out><![CDATA[22:24:51.640 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/items/create.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.0225
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] delete AVAILABLE item returns 204" classname="features/items/delete" time="0.029">
+    <system-out><![CDATA[22:24:51.672 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.672 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:51.683 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:28] delete SOLD item returns 409" classname="features/items/delete" time="0.013">
+    <system-out><![CDATA[22:24:51.700 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:47] delete nonexistent item returns 404" classname="features/items/delete" time="0.029">
+    <system-out><![CDATA[22:24:51.713 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/items/delete.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.0405
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] PATCH with purchasePrice does not change the stored value" classname="features/items/immutable-fields" time="0.037">
+    <system-out><![CDATA[22:24:51.743 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.743 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:51.752 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+---------------------------------------------------------
+feature: classpath:features/items/immutable-fields.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 0.0194
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] list items returns 200" classname="features/items/read" time="0.018">
+    <system-out><![CDATA[22:24:51.780 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.781 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:51.790 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:23] get item by id returns 200" classname="features/items/read" time="0.008">
+    <system-out><![CDATA[22:24:51.798 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:37] status filter AVAILABLE excludes SOLD items" classname="features/items/read" time="0.039">
+    <system-out><![CDATA[22:24:51.807 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/items/read.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.0377
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] PATCH updates name and condition" classname="features/items/update" time="0.021">
+    <system-out><![CDATA[22:24:51.847 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.847 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:51.857 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:24] PATCH nonexistent item returns 404" classname="features/items/update" time="0.018">
+    <system-out><![CDATA[22:24:51.867 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/items/update.feature
+scenarios:  2 | passed:  2 | failed:  0 | time: 0.0217
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] netProceeds and profit are computed correctly" classname="features/sales/computed-fields" time="0.05">
+    <system-out><![CDATA[22:24:51.886 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.887 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:51.895 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+---------------------------------------------------------
+feature: classpath:features/sales/computed-fields.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 0.0207
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] valid sale returns 201 with all fields" classname="features/sales/create" time="0.027">
+    <system-out><![CDATA[22:24:51.937 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:51.938 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:51.948 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:26] sale on already-sold item returns 409" classname="features/sales/create" time="0.021">
+    <system-out><![CDATA[22:24:51.964 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:48] negative salePrice returns 400" classname="features/sales/create" time="0.042">
+    <system-out><![CDATA[22:24:51.986 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/sales/create.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.0502
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] platformFees greater than salePrice returns 400" classname="features/sales/fee-validation" time="0.033">
+    <system-out><![CDATA[22:24:52.029 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:52.031 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:52.050 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:21] platformFees equal to salePrice is allowed" classname="features/sales/fee-validation" time="0.069">
+    <system-out><![CDATA[22:24:52.062 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/sales/fee-validation.feature
+scenarios:  2 | passed:  2 | failed:  0 | time: 0.0440
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] list sales returns 200" classname="features/sales/read" time="0.039">
+    <system-out><![CDATA[22:24:52.131 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:52.132 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:52.145 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:29] get sale by id returns 200" classname="features/sales/read" time="0.056">
+    <system-out><![CDATA[22:24:52.172 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/sales/read.feature
+scenarios:  2 | passed:  2 | failed:  0 | time: 0.0529
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:6] org A cannot see org B items" classname="features/security/cross-org-isolation" time="0.046">
+    <system-out><![CDATA[22:24:52.227 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[2:27] org A cannot PATCH org B items" classname="features/security/cross-org-isolation" time="0.043">
+    <system-out><![CDATA[22:24:52.275 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:44] org A cannot DELETE org B items" classname="features/security/cross-org-isolation" time="0.037">
+    <system-out><![CDATA[22:24:52.318 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[4:60] org A cannot see org B sales" classname="features/security/cross-org-isolation" time="0.04">
+    <system-out><![CDATA[22:24:52.354 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[5:85] org A list does not include org B items" classname="features/security/cross-org-isolation" time="0.081">
+    <system-out><![CDATA[22:24:52.395 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/security/cross-org-isolation.feature
+scenarios:  5 | passed:  5 | failed:  0 | time: 0.1786
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:25] SELLER cannot POST /items → 403" classname="features/security/role-enforcement" time="0.035">
+    <system-out><![CDATA[22:24:52.475 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:52.475 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:52.484 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+22:24:52.485 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/create-user.feature') { adminToken: '#(token)', role: 'BUYER' }
+22:24:52.491 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/create-user.feature') { adminToken: '#(token)', role: 'BUYER' }
+22:24:52.492 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/create-user.feature') { adminToken: '#(token)', role: 'SELLER' }
+22:24:52.498 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/create-user.feature') { adminToken: '#(token)', role: 'SELLER' }
+22:24:52.499 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/create-user.feature') { adminToken: '#(token)', role: 'ACCOUNTANT' }
+22:24:52.507 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/create-user.feature') { adminToken: '#(token)', role: 'ACCOUNTANT' }
+]]></system-out>
+  </testcase>
+  <testcase name="[2:32] ACCOUNTANT cannot POST /items → 403" classname="features/security/role-enforcement" time="0.005">
+    <system-out><![CDATA[22:24:52.510 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:39] BUYER can POST /items → 201" classname="features/security/role-enforcement" time="0.007">
+    <system-out><![CDATA[22:24:52.515 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[4:48] BUYER can GET /items → 200" classname="features/security/role-enforcement" time="0.004">
+    <system-out><![CDATA[22:24:52.522 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[5:54] SELLER can GET /items → 200" classname="features/security/role-enforcement" time="0.004">
+    <system-out><![CDATA[22:24:52.527 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[6:60] ACCOUNTANT can GET /items → 200" classname="features/security/role-enforcement" time="0.005">
+    <system-out><![CDATA[22:24:52.531 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[7:68] BUYER can PATCH /items → 200" classname="features/security/role-enforcement" time="0.009">
+    <system-out><![CDATA[22:24:52.536 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[8:83] SELLER can PATCH /items → 200" classname="features/security/role-enforcement" time="0.011">
+    <system-out><![CDATA[22:24:52.545 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[9:97] ACCOUNTANT can PATCH /items → 200" classname="features/security/role-enforcement" time="0.01">
+    <system-out><![CDATA[22:24:52.556 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[10:113] BUYER cannot DELETE /items → 403" classname="features/security/role-enforcement" time="0.008">
+    <system-out><![CDATA[22:24:52.567 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[11:126] SELLER cannot DELETE /items → 403" classname="features/security/role-enforcement" time="0.008">
+    <system-out><![CDATA[22:24:52.575 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[12:139] ACCOUNTANT cannot DELETE /items → 403" classname="features/security/role-enforcement" time="0.007">
+    <system-out><![CDATA[22:24:52.583 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[13:154] BUYER cannot POST /sales → 403" classname="features/security/role-enforcement" time="0.006">
+    <system-out><![CDATA[22:24:52.590 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[14:168] ACCOUNTANT cannot POST /sales → 403" classname="features/security/role-enforcement" time="0.007">
+    <system-out><![CDATA[22:24:52.597 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[15:182] SELLER can POST /sales → 201" classname="features/security/role-enforcement" time="0.012">
+    <system-out><![CDATA[22:24:52.604 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[16:198] BUYER can GET /sales → 200" classname="features/security/role-enforcement" time="0.006">
+    <system-out><![CDATA[22:24:52.616 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[17:204] SELLER can GET /sales → 200" classname="features/security/role-enforcement" time="0.006">
+    <system-out><![CDATA[22:24:52.622 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[18:210] ACCOUNTANT can GET /sales → 200" classname="features/security/role-enforcement" time="0.006">
+    <system-out><![CDATA[22:24:52.628 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[19:218] BUYER cannot GET /analytics → 403" classname="features/security/role-enforcement" time="0.004">
+    <system-out><![CDATA[22:24:52.634 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[20:226] SELLER cannot GET /analytics → 403" classname="features/security/role-enforcement" time="0.003">
+    <system-out><![CDATA[22:24:52.638 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[21:234] ACCOUNTANT can GET /analytics → 200" classname="features/security/role-enforcement" time="0.005">
+    <system-out><![CDATA[22:24:52.642 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[22:244] BUYER cannot POST /users → 403" classname="features/security/role-enforcement" time="0.003">
+    <system-out><![CDATA[22:24:52.647 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[23:251] SELLER cannot POST /users → 403" classname="features/security/role-enforcement" time="0.003">
+    <system-out><![CDATA[22:24:52.651 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[24:258] ACCOUNTANT cannot POST /users → 403" classname="features/security/role-enforcement" time="0.004">
+    <system-out><![CDATA[22:24:52.654 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[25:267] BUYER cannot GET /users → 403" classname="features/security/role-enforcement" time="0.003">
+    <system-out><![CDATA[22:24:52.658 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[26:273] SELLER cannot GET /users → 403" classname="features/security/role-enforcement" time="0.002">
+    <system-out><![CDATA[22:24:52.661 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[27:279] ACCOUNTANT cannot GET /users → 403" classname="features/security/role-enforcement" time="0.071">
+    <system-out><![CDATA[22:24:52.664 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/security/role-enforcement.feature
+scenarios: 27 | passed: 27 | failed:  0 | time: 0.1515
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:6] POST /items without token → 401" classname="features/security/unauthenticated" time="0.003">
+    <system-out><![CDATA[22:24:52.737 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[2:12] GET /items without token → 401" classname="features/security/unauthenticated" time="0.002">
+    <system-out><![CDATA[22:24:52.740 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:17] GET /items/:id without token → 401" classname="features/security/unauthenticated" time="0.002">
+    <system-out><![CDATA[22:24:52.742 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[4:22] PATCH /items/:id without token → 401" classname="features/security/unauthenticated" time="0.003">
+    <system-out><![CDATA[22:24:52.744 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[5:28] DELETE /items/:id without token → 401" classname="features/security/unauthenticated" time="0.002">
+    <system-out><![CDATA[22:24:52.747 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[6:33] POST /sales without token → 401" classname="features/security/unauthenticated" time="0.002">
+    <system-out><![CDATA[22:24:52.750 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[7:39] GET /sales without token → 401" classname="features/security/unauthenticated" time="0.003">
+    <system-out><![CDATA[22:24:52.752 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[8:44] GET /sales/:id without token → 401" classname="features/security/unauthenticated" time="0.002">
+    <system-out><![CDATA[22:24:52.755 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[9:49] GET /analytics without token → 401" classname="features/security/unauthenticated" time="0.002">
+    <system-out><![CDATA[22:24:52.757 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[10:56] POST /users without token → 401" classname="features/security/unauthenticated" time="0.001">
+    <system-out><![CDATA[22:24:52.758 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[11:62] GET /users without token → 401" classname="features/security/unauthenticated" time="0.012">
+    <system-out><![CDATA[22:24:52.760 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/security/unauthenticated.feature
+scenarios: 11 | passed: 11 | failed:  0 | time: 0.0107
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] ADMIN creates user with valid role returns 201" classname="features/users/create" time="0.014">
+    <system-out><![CDATA[22:24:52.774 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:52.774 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:52.783 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:19] duplicate email returns 409" classname="features/users/create" time="0.006">
+    <system-out><![CDATA[22:24:52.788 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+]]></system-out>
+  </testcase>
+  <testcase name="[3:35] missing email returns 400" classname="features/users/create" time="0.014">
+    <system-out><![CDATA[22:24:52.795 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/users/create.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.0197
+---------------------------------------------------------
+
+]]></system-out>
+  </testcase>
+  <testcase name="[1:7] ADMIN can list users and sees the admin user" classname="features/users/list" time="0.013">
+    <system-out><![CDATA[22:24:52.810 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+22:24:52.810 [main] INFO  com.intuit.karate - >> lock acquired, begin callonce: read('classpath:helpers/auth.feature')
+22:24:52.817 [main] INFO  com.intuit.karate - << lock released, cached callonce: read('classpath:helpers/auth.feature')
+]]></system-out>
+  </testcase>
+  <testcase name="[2:15] creating a user increases the list count" classname="features/users/list" time="0.074">
+    <system-out><![CDATA[22:24:52.822 [main] INFO  com.intuit.karate - baseUrl = http://localhost:8080 
+---------------------------------------------------------
+feature: classpath:features/users/list.feature
+scenarios:  2 | passed:  2 | failed:  0 | time: 0.0167
+---------------------------------------------------------
+
+Karate version: 1.5.2.RC5
+======================================================
+elapsed:   2.21 | threads:    1 | thread time: 0.91 
+features:    18 | skipped:    0 | efficiency: 0.41
+scenarios:   80 | passed:    80 | failed: 0
+======================================================
+
+HTML report: (paste into browser to view) | Karate version: 1.5.2.RC5
+file:///Users/jaredmoore/business/tav/booking/booking-regression/target/karate-reports/karate-summary.html
+===================================================================
+
+]]></system-out>
+  </testcase>
+</testsuite>

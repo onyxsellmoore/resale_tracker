@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passkey Migration — One-Shot Prompt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#080f08;--surface:#0f1a0f;--surface-2:#162116;--border:#1e3a1e;
+      --brand:#2d6a2d;--gold:#c9a84c;--gold-dim:#8a6f2e;--gold-glow:rgba(201,168,76,0.2);
+      --text:#e8f0e8;--muted:#6b8f6b;--profit:#4ade80;--loss:#f87171;
+      --info:#60a5fa;--warn:#fbbf24;
+      --font-d:'Playfair Display',Georgia,serif;--font-b:'Inter',system-ui,sans-serif;
+      --radius:10px;--shadow:0 2px 16px rgba(0,0,0,0.5);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-b);line-height:1.65;}
+    .wrap{max-width:960px;margin:0 auto;padding:3rem 2rem;}
+
+    .hero{background:linear-gradient(135deg,#0f2a0f 0%,#162116 100%);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;margin-bottom:2.5rem;text-align:center;position:relative;overflow:hidden;}
+    .hero::before{content:"";position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:radial-gradient(circle,var(--gold-glow) 0%,transparent 70%);}
+    .hero .badge{display:inline-block;background:rgba(201,168,76,.12);border:1px solid var(--gold-dim);color:var(--gold);font-size:.7rem;padding:.25rem .85rem;border-radius:20px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;}
+    .hero h1{font-family:var(--font-d);font-size:2rem;color:var(--gold);margin-bottom:.5rem;}
+    .hero p{color:var(--muted);font-size:.95rem;max-width:600px;margin:0 auto;}
+
+    h2{font-family:var(--font-d);color:var(--gold);font-size:1.15rem;margin-bottom:1rem;}
+    h3{color:var(--info);font-size:.9rem;font-weight:600;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.07em;}
+
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.75rem;}
+    .card-red{border-left:4px solid var(--loss);}
+    .card-gold{border-left:4px solid var(--gold-dim);}
+    .card-green{border-left:4px solid var(--profit);}
+    .card-blue{border-left:4px solid var(--info);}
+
+    .row{display:flex;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:.875rem;}
+    .row:last-child{border-bottom:none;}
+    .tag{flex-shrink:0;padding:.1rem .5rem;border-radius:4px;font-size:.72rem;font-weight:600;margin-top:.15rem;}
+    .tag-red{background:rgba(248,113,113,.15);color:var(--loss);border:1px solid #5a2020;}
+    .tag-blue{background:rgba(96,165,250,.12);color:var(--info);border:1px solid #1e3a5a;}
+    .tag-gold{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid var(--gold-dim);}
+    .tag-green{background:rgba(74,222,128,.1);color:var(--profit);border:1px solid #1a4a2a;}
+
+    .step{display:flex;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:.875rem;}
+    .step:last-child{border-bottom:none;}
+    .step-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold-dim);color:var(--gold);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+    pre{background:#0a0f0a;border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.25rem;font-size:.78rem;overflow-x:auto;margin:.6rem 0 1rem;line-height:1.55;color:#b0d4b0;}
+    code{font-family:'JetBrains Mono','Fira Code',monospace;}
+    .comment{color:#4a7a4a;}
+    .kw{color:#c9a84c;}
+    .str{color:#a8d5a8;}
+    .type{color:#60a5fa;}
+
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+    @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+    .pill{display:inline-block;background:rgba(96,165,250,.1);border:1px solid #1e3a5a;color:var(--info);border-radius:20px;padding:.1rem .65rem;font-size:.72rem;font-weight:600;margin:.1rem;}
+    .pill-gold{background:rgba(201,168,76,.1);border-color:var(--gold-dim);color:var(--gold);}
+    .pill-red{background:rgba(248,113,113,.1);border-color:#5a2020;color:var(--loss);}
+    .pill-green{background:rgba(74,222,128,.08);border-color:#1a4a2a;color:var(--profit);}
+
+    .warn-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;color:var(--warn);margin:.75rem 0;}
+    .info-box{background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;color:#93c5fd;margin:.75rem 0;}
+
+    footer{text-align:center;padding:2rem 0;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="badge">Auth Migration</div>
+    <h1>Passkey-Only Authentication</h1>
+    <p>Remove all password auth. Implement WebAuthn passkeys end-to-end, seed a dev test user, and verify every flow.</p>
+  </div>
+
+  <!-- ── PREAMBLE ── -->
+  <div class="card card-gold">
+    <h2>Before You Touch Any Code</h2>
+    <div class="step"><div class="step-num">1</div><div>Read <code>CONTEXT.md</code> — it is the single source of truth for the stack, domain model, patterns and rules.</div></div>
+    <div class="step"><div class="step-num">2</div><div>Follow <strong>TDD always</strong>: write failing tests first, then implement. One failing test → one implementation → green → next.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Simplicity over everything.</strong> No new frameworks. Use the browser's native <code>navigator.credentials</code> API (zero extra npm packages). For CBOR parsing on the backend, add only <code>jackson-dataformat-cbor</code>.</div></div>
+  </div>
+
+  <!-- ── CURRENT BUGS ── -->
+  <div class="card card-red">
+    <h2>Current Bugs / What Is Wrong</h2>
+    <div class="row"><span class="tag tag-red">BE</span><span><code>POST /api/v1/auth/register</code> requires <code>adminPassword</code>, BCrypt-hashes it, stores <code>passwordHash</code> on User — passkeys are never registered during setup.</span></div>
+    <div class="row"><span class="tag tag-red">BE</span><span><code>POST /api/v1/auth/login</code> is a password endpoint. WebAuthn login endpoints exist (<code>/login/begin</code>, <code>/login/complete</code>) but the UI never calls them.</span></div>
+    <div class="row"><span class="tag tag-red">BE</span><span>No <code>/register/begin</code> or <code>/register/complete</code> endpoints exist — there is no way for the browser to register a passkey credential.</span></div>
+    <div class="row"><span class="tag tag-red">FE</span><span><code>LoginPage.tsx</code> shows email + password fields. It calls the password <code>/login</code> endpoint.</span></div>
+    <div class="row"><span class="tag tag-red">FE</span><span><code>OrgSetupPage.tsx</code> shows Password + Confirm Password fields. It passes <code>adminPassword</code> to <code>/register</code>.</span></div>
+    <div class="row"><span class="tag tag-red">FE</span><span><code>authApi.ts</code> — <code>RegisterPayload</code> includes <code>adminPassword</code>; <code>LoginPayload</code> includes <code>password</code>. No passkey API functions exist.</span></div>
+  </div>
+
+  <!-- ── BACKEND CHANGES ── -->
+  <div class="card card-blue">
+    <h2>Backend Changes (booking-api)</h2>
+
+    <h3>1 — pom.xml</h3>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:.5rem;">Add CBOR support for parsing <code>attestationObject</code> during passkey registration:</p>
+    <pre><code><span class="comment">&lt;!-- CBOR for WebAuthn attestationObject parsing --&gt;</span>
+&lt;<span class="kw">dependency</span>&gt;
+  &lt;<span class="kw">groupId</span>&gt;com.fasterxml.jackson.dataformat&lt;/<span class="kw">groupId</span>&gt;
+  &lt;<span class="kw">artifactId</span>&gt;jackson-dataformat-cbor&lt;/<span class="kw">artifactId</span>&gt;
+&lt;/<span class="kw">dependency</span>&gt;</code></pre>
+
+    <h3>2 — User.java</h3>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:.5rem;">Remove the <code>passwordHash</code> field. Passkey-only means no passwords stored.</p>
+    <pre><code><span class="comment">// DELETE this field:</span>
+<span class="kw">public</span> <span class="type">String</span> passwordHash;  <span class="comment">// ← remove</span></code></pre>
+
+    <h3>3 — AuthResource.java — API contract changes</h3>
+    <div class="two-col">
+      <div>
+        <p style="font-size:.8rem;color:var(--loss);margin-bottom:.4rem;">REMOVE</p>
+        <pre><code><span class="comment">// Remove entire record + endpoint:</span>
+record PasswordLoginRequest(...)
+record PasswordLoginResponse(...)
+POST /login  → passwordLogin()</code></pre>
+      </div>
+      <div>
+        <p style="font-size:.8rem;color:var(--profit);margin-bottom:.4rem;">MODIFY</p>
+        <pre><code><span class="comment">// RegisterRequest — drop adminPassword:</span>
+record <span class="type">RegisterRequest</span>(
+  <span class="type">String</span> orgName, <span class="type">String</span> orgSlug,
+  <span class="type">String</span> adminEmail,
+  <span class="type">String</span> adminDisplayName  <span class="comment">// no password</span>
+)
+<span class="comment">// RegisterResponse — no JWT at this stage:</span>
+record <span class="type">RegisterResponse</span>(
+  <span class="type">String</span> orgId, <span class="type">String</span> userId,
+  <span class="type">String</span> role
+)</code></pre>
+      </div>
+    </div>
+    <p style="font-size:.875rem;color:var(--muted);margin:.75rem 0 .4rem;">Add two new endpoints for passkey registration:</p>
+    <pre><code><span class="comment">// Begin passkey registration — returns creation options</span>
+record <span class="type">RegisterBeginRequest</span>(<span class="type">String</span> email) {}
+POST /register/begin → authService.registerBegin(email)
+  → 200: { challenge, rp: {id, name}, user: {id, name, displayName},
+            pubKeyCredParams: [{type:"public-key", alg:-7}],
+            timeout: 60000, attestation: "none" }
+  → 404 if user not found
+
+<span class="comment">// Complete passkey registration — stores credential, issues JWT pair</span>
+record <span class="type">RegisterCompleteRequest</span>(
+  <span class="type">String</span> email,
+  <span class="type">String</span> credentialId,     <span class="comment">// base64url, from browser</span>
+  <span class="type">String</span> attestationObject, <span class="comment">// base64url CBOR blob from browser</span>
+  <span class="type">String</span> clientDataJSON    <span class="comment">// base64url from browser</span>
+) {}
+POST /register/complete → authService.registerComplete(...)
+  → 200: { accessToken, refreshToken }  <span class="comment">// same AuthResponse record</span>
+  → 401 on any verification failure</code></pre>
+
+    <h3>4 — AuthService.java — new &amp; modified methods</h3>
+    <pre><code><span class="comment">// REMOVE passwordLogin() entirely
+// MODIFY register() — drop adminPassword param, remove BCrypt, no JWT returned</span>
+<span class="kw">public</span> Optional&lt;<span class="type">RegisterResult</span>&gt; register(
+    <span class="type">String</span> orgName, <span class="type">String</span> orgSlug,
+    <span class="type">String</span> adminEmail, <span class="type">String</span> adminDisplayName) {
+  <span class="comment">// slug uniqueness check → persist org → persist user (no passwordHash) → return orgId/userId/role</span>
+}
+record <span class="type">RegisterResult</span>(<span class="type">String</span> orgId, <span class="type">String</span> userId, <span class="type">String</span> role) {}
+
+<span class="comment">// NEW: generate WebAuthn creation options for passkey registration</span>
+<span class="kw">public</span> Optional&lt;Map&lt;<span class="type">String</span>,<span class="type">Object</span>&gt;&gt; registerBegin(<span class="type">String</span> email) {
+  <span class="comment">// find user by email → empty if not found
+  // generate 32-byte random challenge, store in challenges map (5 min TTL)
+  // return creation options map:
+  //   challenge, rp:{id:rpId, name:rpName}, user:{id:userId, name:email, displayName},
+  //   pubKeyCredParams:[{type:"public-key",alg:-7}], timeout:60000, attestation:"none"</span>
+}
+
+<span class="comment">// NEW: verify attestation, store credential, issue token pair</span>
+<span class="kw">public</span> Optional&lt;<span class="type">TokenPair</span>&gt; registerComplete(
+    <span class="type">String</span> email, <span class="type">String</span> credentialId,
+    <span class="type">String</span> attestationObjectB64, <span class="type">String</span> clientDataJSONB64) {
+  <span class="comment">// 1. find user by email
+  // 2. decode + verify clientDataJSON:
+  //    type == "webauthn.create", origin == expectedOrigin, challenge in map + not expired
+  // 3. decode attestationObject (CBOR via CBORFactory):
+  //    extract authData bytes from map key "authData"
+  // 4. parse authData:
+  //    bytes 0-31: rpIdHash == SHA-256(rpId)
+  //    byte 32: flags — UP (bit 0) must be set
+  //    bytes 37-52: AAGUID (16 bytes, ignored)
+  //    bytes 53-54: credIdLen (big-endian uint16)
+  //    bytes 55..55+credIdLen: credentialId bytes → base64url → must match credentialId param
+  //    bytes 55+credIdLen..: COSE key (CBOR map)
+  // 5. parse COSE key (CBORFactory): kty(1)==2(EC), alg(3)==-7(ES256), crv(-1)==1(P-256),
+  //    x(-2) 32 bytes, y(-3) 32 bytes
+  // 6. convert x,y to X.509 SubjectPublicKeyInfo DER (uncompressed point 0x04 prefix,
+  //    wrap with EC OID 1.2.840.10045.2.1 + P-256 OID 1.2.840.10045.3.1.7)
+  //    → base64url-encode → store as cred.publicKey
+  // 7. check no existing credential for this credentialId
+  // 8. persist WebAuthnCredential{ownerId, credentialId, publicKey, signCount=0}
+  // 9. return generateTokens(user)</span>
+}</code></pre>
+
+    <div class="warn-box">
+      <strong>COSE → X.509 DER tip:</strong> the EC public key SubjectPublicKeyInfo DER header bytes for P-256 are the fixed prefix
+      <code>30 59 30 13 06 07 2a 86 48 ce 3d 02 01 06 08 2a 86 48 ce 3d 03 01 07 03 42 00 04</code>
+      followed by the 32-byte X and 32-byte Y coordinates (total = 91 bytes). No extra library needed.
+    </div>
+
+    <h3>5 — AuthResourceTest (JUnit)</h3>
+    <pre><code><span class="comment">// Write these tests FIRST (TDD), then implement:
+// a) POST /register without password returns 201 {orgId, userId, role}, no token field
+// b) POST /register with duplicate slug returns 409
+// c) POST /register/begin for existing user returns 200 with challenge, rpId, pubKeyCredParams
+// d) POST /register/begin for unknown email returns 401 (don't leak user existence)
+// e) POST /login/begin + /login/complete happy path (already passes — ensure still green)
+// f) POST /login (password) endpoint MUST return 404/405 — it no longer exists</span></code></pre>
+  </div>
+
+  <!-- ── FRONTEND CHANGES ── -->
+  <div class="card card-blue">
+    <h2>Frontend Changes (booking-ui)</h2>
+
+    <h3>1 — authApi.ts (full rewrite of auth section)</h3>
+    <pre><code><span class="comment">// REMOVE: adminPassword from RegisterPayload, password from LoginPayload
+// REMOVE: login() password function
+// UPDATE: RegisterResponse → { orgId, userId, role }  (no token)
+
+// ADD these types and functions:</span>
+
+<span class="kw">export interface</span> <span class="type">PasskeyRegisterBeginResponse</span> {
+  challenge: <span class="type">string</span>           <span class="comment">// base64url</span>
+  rp: { id: <span class="type">string</span>; name: <span class="type">string</span> }
+  user: { id: <span class="type">string</span>; name: <span class="type">string</span>; displayName: <span class="type">string</span> }
+  pubKeyCredParams: Array&lt;{ type: <span class="type">string</span>; alg: <span class="type">number</span> }&gt;
+  timeout: <span class="type">number</span>
+}
+<span class="kw">export interface</span> <span class="type">PasskeyAuthResponse</span> {
+  accessToken: <span class="type">string</span>
+  refreshToken: <span class="type">string</span>
+}
+
+<span class="comment">// Converts base64url string to Uint8Array (needed for WebAuthn API)</span>
+<span class="kw">function</span> b64urlToBytes(b64: <span class="type">string</span>): <span class="type">Uint8Array</span>
+
+<span class="comment">// Converts ArrayBuffer to base64url string (for sending to server)</span>
+<span class="kw">function</span> bufToB64url(buf: <span class="type">ArrayBuffer</span>): <span class="type">string</span>
+
+<span class="comment">// GET challenge + options for passkey REGISTRATION, call from OrgSetupPage after register()</span>
+<span class="kw">export async function</span> beginPasskeyRegistration(email: <span class="type">string</span>):
+  Promise&lt;<span class="type">PasskeyRegisterBeginResponse</span>&gt;
+
+<span class="comment">// Call navigator.credentials.create(), send result to /register/complete → JWT pair</span>
+<span class="kw">export async function</span> completePasskeyRegistration(
+  email: <span class="type">string</span>,
+  credential: <span class="type">PublicKeyCredential</span>
+): Promise&lt;<span class="type">PasskeyAuthResponse</span>&gt;
+
+<span class="comment">// GET challenge + options for passkey LOGIN, call from LoginPage</span>
+<span class="kw">export async function</span> beginPasskeyLogin(email: <span class="type">string</span>):
+  Promise&lt;PublicKeyCredentialRequestOptions &amp; { rawChallenge: <span class="type">string</span> }&gt;
+
+<span class="comment">// Send assertion to /login/complete → JWT pair</span>
+<span class="kw">export async function</span> completePasskeyLogin(
+  email: <span class="type">string</span>,
+  assertion: <span class="type">PublicKeyCredential</span>
+): Promise&lt;<span class="type">PasskeyAuthResponse</span>&gt;</code></pre>
+
+    <h3>2 — OrgSetupPage.tsx</h3>
+    <pre><code><span class="comment">// REMOVE: password, confirmPassword state + fields + validation
+// NEW submit flow (replace handleSubmit body):</span>
+
+<span class="kw">async function</span> handleSubmit(e) {
+  e.preventDefault()
+  <span class="comment">// 1. validate: orgName, slug, displayName, email only (no password checks)</span>
+
+  <span class="comment">// 2. call register() → { orgId, userId, role }  — no token yet</span>
+  <span class="kw">const</span> regResult = <span class="kw">await</span> register({ orgName, orgSlug, adminEmail, adminDisplayName })
+  <span class="kw">if</span> (!regResult.data) { setErrors([regResult.error]); <span class="kw">return</span> }
+
+  <span class="comment">// 3. get WebAuthn creation options from server</span>
+  <span class="kw">const</span> options = <span class="kw">await</span> beginPasskeyRegistration(email)
+
+  <span class="comment">// 4. browser prompts user to create passkey (Touch ID / Face ID / Windows Hello)</span>
+  <span class="kw">const</span> credential = <span class="kw">await</span> navigator.credentials.create({
+    publicKey: {
+      ...options,
+      challenge: b64urlToBytes(options.challenge),
+      user: { ...options.user, id: b64urlToBytes(options.user.id) },
+    }
+  }) <span class="kw">as</span> PublicKeyCredential
+
+  <span class="comment">// 5. send attestation to server → get JWT pair</span>
+  <span class="kw">const</span> auth = <span class="kw">await</span> completePasskeyRegistration(email, credential)
+
+  <span class="comment">// 6. store token + navigate</span>
+  login(auth.accessToken)        <span class="comment">// AuthContext.login takes the access token string</span>
+  navigate(<span class="str">'/analytics'</span>, { replace: <span class="kw">true</span> })
+}</code></pre>
+    <div class="info-box">Show a friendly status message between steps 2 and 3: <em>"Organization created! Now set up your passkey…"</em> — so the user knows why the browser is prompting them.</div>
+
+    <h3>3 — LoginPage.tsx</h3>
+    <pre><code><span class="comment">// REMOVE: password state + field
+// The form now has only: email input + "Sign in with passkey" button
+// NEW handleSubmit:</span>
+
+<span class="kw">async function</span> handleSubmit(e) {
+  e.preventDefault()
+  <span class="kw">if</span> (!email.trim()) <span class="kw">return</span>
+  setError(<span class="kw">null</span>); setSubmitting(<span class="kw">true</span>)
+  <span class="kw">try</span> {
+    <span class="comment">// 1. get assertion options from server</span>
+    <span class="kw">const</span> options = <span class="kw">await</span> beginPasskeyLogin(email)
+
+    <span class="comment">// 2. browser prompts user to authenticate with passkey</span>
+    <span class="kw">const</span> assertion = <span class="kw">await</span> navigator.credentials.get({
+      publicKey: {
+        ...options,
+        challenge: b64urlToBytes(options.rawChallenge),
+        allowCredentials: options.allowCredentials?.map(c =&gt; ({
+          ...c, id: b64urlToBytes(c.id <span class="kw">as unknown as</span> <span class="type">string</span>)
+        }))
+      }
+    }) <span class="kw">as</span> PublicKeyCredential
+
+    <span class="comment">// 3. verify assertion → get JWT pair</span>
+    <span class="kw">const</span> auth = <span class="kw">await</span> completePasskeyLogin(email, assertion)
+    login(auth.accessToken)
+    navigate(<span class="str">'/analytics'</span>, { replace: <span class="kw">true</span> })
+  } <span class="kw">catch</span> (err: <span class="kw">any</span>) {
+    <span class="comment">// NotAllowedError = user cancelled; otherwise generic error</span>
+    setError(err?.name === <span class="str">'NotAllowedError'</span>
+      ? <span class="str">'Passkey sign-in was cancelled.'</span>
+      : <span class="str">'Sign-in failed. Make sure you have a passkey registered for this account.'</span>)
+  } <span class="kw">finally</span> { setSubmitting(<span class="kw">false</span>) }
+}</code></pre>
+
+    <h3>4 — Frontend unit tests (Vitest)</h3>
+    <pre><code><span class="comment">// LoginPage.test.tsx:
+//   - does NOT render a password input
+//   - renders "Sign in with passkey" button
+//   - shows error when navigator.credentials.get is mocked to reject NotAllowedError
+
+// OrgSetupPage.test.tsx:
+//   - does NOT render password or confirm-password inputs
+//   - calls navigator.credentials.create after successful register() mock</span></code></pre>
+  </div>
+
+  <!-- ── SEED TEST USER ── -->
+  <div class="card card-green">
+    <h2>Seed Test User for Dev / Manual UI Testing</h2>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:1rem;">
+      Because passkeys are device-bound, a fully automated seed is not meaningful for manual UI testing — the developer must create their own passkey on their own device. Provide a <strong>thin seed script</strong> that creates the org+user records, then the developer registers their passkey once through the browser.
+    </p>
+
+    <h3>scripts/seed-dev-user.sh</h3>
+    <pre><code><span class="comment">#!/usr/bin/env bash
+# Usage: ./scripts/seed-dev-user.sh
+# Requires: curl, jq, running backend on :8080</span>
+
+API=<span class="str">"http://localhost:8080/api/v1"</span>
+
+echo <span class="str">"→ Creating org + admin user…"</span>
+RESULT=$(curl -s -X POST <span class="str">"$API/auth/register"</span> \
+  -H <span class="str">'Content-Type: application/json'</span> \
+  -d <span class="str">'{"orgName":"Dev Org","orgSlug":"dev-org",
+       "adminEmail":"dev@example.com","adminDisplayName":"Dev Admin"}'</span>)
+
+echo <span class="str">"$RESULT"</span> | jq .
+
+echo <span class="str">""</span>
+echo <span class="str">"✓ User created. Now open http://localhost:5173/login"</span>
+echo <span class="str">"  Enter: dev@example.com"</span>
+echo <span class="str">"  You will be prompted to register a passkey — do this once."</span>
+echo <span class="str">"  After that you can log in with your passkey anytime."</span></code></pre>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:.5rem;">Make it executable: <code>chmod +x scripts/seed-dev-user.sh</code></p>
+
+    <div class="warn-box">
+      <strong>Problem:</strong> <code>/login/begin</code> requires the user to already have a registered credential. On first run, <code>dev@example.com</code> has no passkey yet. <br><br>
+      <strong>Solution:</strong> after <code>seed-dev-user.sh</code> creates the user, redirect to <code>/setup</code>
+      pre-filled so the developer completes passkey registration there — <em>or</em> add a special <code>/register-passkey</code>
+      page that lets an existing user (identified by email) register their first passkey. The <code>POST /register/begin</code> endpoint
+      you're adding already supports this: it works for any existing user regardless of whether they have credentials.
+      Route: any logged-in user can also visit this page to add a passkey.
+    </div>
+
+    <h3>Optional: Playwright WebAuthn emulation for E2E (automated)</h3>
+    <pre><code><span class="comment">// In playwright.config.ts or a global setup fixture:</span>
+<span class="kw">const</span> cdpSession = <span class="kw">await</span> context.newCDPSession(page)
+<span class="kw">await</span> cdpSession.send(<span class="str">'WebAuthn.enable'</span>)
+<span class="kw">const</span> { authenticatorId } = <span class="kw">await</span> cdpSession.send(
+  <span class="str">'WebAuthn.addVirtualAuthenticator'</span>,
+  { options: { protocol: <span class="str">'ctap2'</span>, transport: <span class="str">'internal'</span>,
+               hasResidentKey: <span class="kw">true</span>, hasUserVerification: <span class="kw">true</span>,
+               isUserVerified: <span class="kw">true</span> } }
+)
+<span class="comment">// Then run through /setup — browser passkey prompt is auto-satisfied by virtual authenticator</span></code></pre>
+  </div>
+
+  <!-- ── VERIFICATION CHECKLIST ── -->
+  <div class="card card-gold">
+    <h2>Final Verification — Run Everything</h2>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:1rem;">Do not return until all of the following pass.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <strong>Backend tests</strong><br>
+        <code>cd booking-api &amp;&amp; ./mvnw test</code><br>
+        <span style="color:var(--muted);font-size:.82rem;">All existing tests green. New AuthResource tests for register/begin, register/complete green. Password login endpoint 404/405 test green.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <strong>Frontend unit tests</strong><br>
+        <code>cd booking-ui &amp;&amp; npm test -- --run</code><br>
+        <span style="color:var(--muted);font-size:.82rem;">No password input in LoginPage or OrgSetupPage. Passkey mock flows work.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <strong>Manual UI smoke — Setup flow</strong><br>
+        Navigate to <code>http://localhost:5173/setup</code>. Confirm: no Password / Confirm Password fields visible.
+        Fill org name, your name, email → "Create Organization" → browser passkey prompt appears →
+        confirm → lands on <code>/analytics</code>. ✓
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <strong>Manual UI smoke — Login flow</strong><br>
+        Log out. Navigate to <code>/login</code>. Confirm: no Password field. Enter email →
+        "Sign in with passkey" → browser passkey prompt → confirm → lands on <code>/analytics</code>. ✓
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <strong>Manual UI smoke — All other pages</strong><br>
+        Inventory, Sales, Analytics, Users pages all load and function normally with the JWT issued by passkey login.
+        Confirm the token carries <code>orgId</code>, <code>role</code>, <code>sub</code> claims (check browser devtools → Application → Local Storage).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div>
+        <strong>Regression: no <code>passwordHash</code> in DB</strong><br>
+        Open Mongo Express (<code>http://localhost:8081</code>) → <code>users</code> collection → confirm no
+        <code>passwordHash</code> field on any document.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div>
+        <strong>Seed script test</strong><br>
+        <code>./scripts/seed-dev-user.sh</code> → returns 201 JSON with <code>orgId</code>, <code>userId</code>, <code>role</code>. No 4xx/5xx.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONSTRAINTS REMINDER ── -->
+  <div class="card" style="border-left:3px solid var(--muted);">
+    <h2>Hard Constraints (Never Violate)</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem;">
+      <span class="pill pill-gold">orgId always from JWT</span>
+      <span class="pill pill-gold">CSS custom props only — no hardcoded hex</span>
+      <span class="pill pill-gold">Decimal128 for money</span>
+      <span class="pill pill-red">No float/double for money</span>
+      <span class="pill pill-red">No new npm packages</span>
+      <span class="pill">Soft-delete only</span>
+      <span class="pill">BCrypt import can be removed entirely — nothing uses it now</span>
+    </div>
+    <p style="font-size:.82rem;color:var(--muted);">
+      The only new Maven dependency permitted is <code>jackson-dataformat-cbor</code>.
+      The browser WebAuthn API is native — no polyfills, no webauthn-json library.
+    </p>
+  </div>
+
+</div>
+<footer class="wrap">
+  TAV Inventory Ledger · Passkey Migration One-Shot Prompt · 2026-03-17
+</footer>
+</body>
+</html>

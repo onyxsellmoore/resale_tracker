@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>README Test Walkthrough — One-Shot Prompt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#080f08;--surface:#0f1a0f;--surface-2:#162116;--border:#1e3a1e;
+      --brand:#2d6a2d;--gold:#c9a84c;--gold-dim:#8a6f2e;--gold-glow:rgba(201,168,76,0.2);
+      --text:#e8f0e8;--muted:#6b8f6b;--profit:#4ade80;--loss:#f87171;
+      --info:#60a5fa;--warn:#fbbf24;
+      --font-d:'Playfair Display',Georgia,serif;--font-b:'Inter',system-ui,sans-serif;
+      --radius:10px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-b);line-height:1.65;}
+    .wrap{max-width:960px;margin:0 auto;padding:3rem 2rem;}
+
+    .hero{background:linear-gradient(135deg,#0f2a0f 0%,#162116 100%);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;margin-bottom:2.5rem;text-align:center;position:relative;overflow:hidden;}
+    .hero::before{content:"";position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:radial-gradient(circle,var(--gold-glow) 0%,transparent 70%);}
+    .hero .badge{display:inline-block;background:rgba(201,168,76,.12);border:1px solid var(--gold-dim);color:var(--gold);font-size:.7rem;padding:.25rem .85rem;border-radius:20px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;}
+    .hero h1{font-family:var(--font-d);font-size:2rem;color:var(--gold);margin-bottom:.5rem;}
+    .hero p{color:var(--muted);font-size:.95rem;max-width:620px;margin:0 auto;}
+
+    h2{font-family:var(--font-d);color:var(--gold);font-size:1.15rem;margin-bottom:1rem;}
+    h3{color:var(--info);font-size:.85rem;font-weight:600;margin-bottom:.55rem;text-transform:uppercase;letter-spacing:.07em;}
+
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.75rem;}
+    .card-red{border-left:4px solid var(--loss);}
+    .card-gold{border-left:4px solid var(--gold-dim);}
+    .card-blue{border-left:4px solid var(--info);}
+    .card-green{border-left:4px solid var(--profit);}
+
+    .step{display:flex;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:.875rem;}
+    .step:last-child{border-bottom:none;}
+    .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold-dim);color:var(--gold);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+    .verify-step{display:flex;gap:1rem;padding:.65rem 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:.85rem;}
+    .verify-step:last-child{border-bottom:none;}
+    .v-num{flex-shrink:0;width:22px;height:22px;border-radius:4px;background:rgba(74,222,128,.1);border:1px solid #1a4a2a;color:var(--profit);font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+    pre{background:#0a0f0a;border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;font-size:.77rem;overflow-x:auto;margin:.5rem 0 .9rem;line-height:1.6;color:#b0d4b0;}
+    code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.85em;background:#0d170d;padding:.1em .35em;border-radius:3px;color:#a8d5a8;}
+    pre code{background:none;padding:0;font-size:1em;}
+    .comment{color:#4a7a4a;}
+    .kw{color:#c9a84c;}
+    .str{color:#a8d5a8;}
+
+    .row{display:flex;gap:.75rem;padding:.55rem 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:.875rem;}
+    .row:last-child{border-bottom:none;}
+    .tag{flex-shrink:0;padding:.1rem .5rem;border-radius:4px;font-size:.72rem;font-weight:600;margin-top:.15rem;}
+    .tag-red{background:rgba(248,113,113,.15);color:var(--loss);border:1px solid #5a2020;}
+    .tag-green{background:rgba(74,222,128,.1);color:var(--profit);border:1px solid #1a4a2a;}
+    .tag-blue{background:rgba(96,165,250,.12);color:var(--info);border:1px solid #1e3a5a;}
+
+    .warn-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;color:var(--warn);margin:.75rem 0;}
+    .info-box{background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;color:#93c5fd;margin:.75rem 0;}
+    .success-box{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.25);border-radius:8px;padding:.9rem 1.1rem;font-size:.84rem;color:var(--profit);margin:.75rem 0;}
+
+    footer{text-align:center;padding:2rem 0;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="badge">Documentation</div>
+    <h1>README — Test User Setup &amp; UI Walkthrough</h1>
+    <p>Write a clear, verified developer walkthrough in <code>README.md</code> covering every step from zero to a logged-in session. Run through every step yourself before committing.</p>
+  </div>
+
+  <!-- PREAMBLE -->
+  <div class="card card-gold">
+    <h2>Before You Start</h2>
+    <div class="step"><div class="step-num">1</div><div>Read <code>CONTEXT.md</code> for the tech stack, run commands, environment variables, and endpoint list. Read the existing <code>README.md</code> to understand its current structure before editing it.</div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>Agent self-verification is mandatory.</strong> After writing each section, you must personally execute every command you've written, observe the actual output, and confirm it matches what the README claims. Do not return until you have done this end-to-end.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Simplicity.</strong> The README is for a developer who has never seen this project. No jargon. Each step has exactly one command or one browser action. If a step can fail in a predictable way, include a "Troubleshooting" note directly below it.</div></div>
+  </div>
+
+  <!-- SEED SCRIPT -->
+  <div class="card card-blue">
+    <h2>Step 1 — Create the Seed Script</h2>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:.9rem;">
+      Create <code>scripts/seed-dev-user.sh</code>. This script calls the register API to create a test org and admin user. Because passkeys are device-bound, passkey registration happens in the browser — the script only provisions the user record.
+    </p>
+    <pre><code><span class="comment">#!/usr/bin/env bash
+# seed-dev-user.sh — creates a dev org + admin user via the register API.
+# Run this once after starting the stack. Then go to /setup to register your passkey.
+# Usage: ./scripts/seed-dev-user.sh [api_url]
+# Default api_url: http://localhost:8080</span>
+
+set -euo pipefail
+API=<span class="str">"${1:-http://localhost:8080}"</span>
+
+<span class="comment"># Verify backend is reachable</span>
+<span class="kw">if</span> ! curl -sf <span class="str">"$API/q/health"</span> &gt; /dev/null 2&gt;&amp;1; <span class="kw">then</span>
+  echo <span class="str">"✗  Backend not reachable at $API — is it running?"</span>
+  exit 1
+<span class="kw">fi</span>
+
+echo <span class="str">"→ Creating dev org and admin user…"</span>
+RESULT=$(curl -sf -X POST <span class="str">"$API/api/v1/auth/register"</span> \
+  -H <span class="str">'Content-Type: application/json'</span> \
+  -d <span class="str">'{
+    "orgName":        "Dev Org",
+    "orgSlug":        "dev-org",
+    "adminEmail":     "dev@example.com",
+    "adminDisplayName": "Dev Admin"
+  }'</span> || true)
+
+<span class="comment"># 201 = created, 409 = already exists (both are fine)</span>
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST <span class="str">"$API/api/v1/auth/register"</span> \
+  -H <span class="str">'Content-Type: application/json'</span> \
+  -d <span class="str">'{"orgName":"Dev Org","orgSlug":"dev-org","adminEmail":"dev@example.com","adminDisplayName":"Dev Admin"}'</span>)
+
+<span class="kw">if</span> [ <span class="str">"$HTTP_CODE"</span> = <span class="str">"201"</span> ] || [ <span class="str">"$HTTP_CODE"</span> = <span class="str">"409"</span> ]; <span class="kw">then</span>
+  echo <span class="str">""</span>
+  echo <span class="str">"✓  User ready: dev@example.com"</span>
+  echo <span class="str">"✓  Org slug:   dev-org"</span>
+  echo <span class="str">""</span>
+  echo <span class="str">"→  Next step: open http://localhost:5173/setup"</span>
+  echo <span class="str">"   Enter the same email and org slug shown above."</span>
+  echo <span class="str">"   Your browser will prompt you to register a passkey (Touch ID / Face ID / Windows Hello)."</span>
+  echo <span class="str">"   Do this once — then you can log in at http://localhost:5173/login"</span>
+<span class="kw">else</span>
+  echo <span class="str">"✗  Unexpected HTTP $HTTP_CODE"</span>
+  echo <span class="str">"$RESULT"</span>
+  exit 1
+<span class="kw">fi</span></code></pre>
+
+    <div class="warn-box">
+      <strong>Agent action required:</strong> after writing this file, run <code>chmod +x scripts/seed-dev-user.sh</code> then execute it against the running stack and confirm you see <code>✓ User ready</code> in the output. If it fails, fix the script before continuing.
+    </div>
+  </div>
+
+  <!-- README CONTENT -->
+  <div class="card card-blue">
+    <h2>Step 2 — Write the README Section</h2>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:.9rem;">
+      Add the following section to <code>README.md</code> immediately after the "Run tests" section and before "Environment variables". Match the existing Markdown heading style. Write in plain present tense — no markdown tables in the steps, just numbered lists.
+    </p>
+
+    <h3>Section title and structure</h3>
+    <pre><code><span class="kw">## Set up a test user and try the UI
+
+### Prerequisites</span>
+The full stack must be running (see "Run locally" above).
+
+<span class="kw">### 1 — Create the dev user</span>
+
+Run the seed script from the project root:
+
+```bash
+./scripts/seed-dev-user.sh
+```
+
+Expected output:
+```
+✓  User ready: dev@example.com
+✓  Org slug:   dev-org
+→  Next step: open http://localhost:5173/setup
+```
+
+<span class="comment">If you see "409" the user already exists — that's fine, skip to step 2.</span>
+<span class="comment">If you see "Backend not reachable", start the backend first (see above).</span>
+
+<span class="kw">### 2 — Register your passkey</span>
+
+Passkeys are stored on your device, not in the database, so you register once
+per device.
+
+1. Open **http://localhost:5173/setup** in your browser.
+2. Fill in:
+   - **Organisation name**: Dev Org
+   - **Organisation slug**: dev-org
+   - **Display name**: Dev Admin
+   - **Email**: dev@example.com
+3. Click **Create Organization**.
+4. Your browser will prompt you to create a passkey — confirm with Touch ID,
+   Face ID, or Windows Hello. On Linux, you may see a PIN prompt instead.
+5. You are automatically signed in and redirected to the Analytics page.
+
+> **Troubleshooting**: if step 3 shows "slug already taken", the org was
+> already created by the seed script. Navigate directly to
+> **http://localhost:5173/login** and enter `dev@example.com` to log in
+> using your existing passkey.
+
+<span class="kw">### 3 — Explore the app</span>
+
+Once signed in you can:
+
+| Page | URL | What to try |
+|---|---|---|
+| Analytics | `/analytics` | Default landing page after login |
+| Inventory | `/inventory` | Add a new item with a purchase price |
+| Sales | `/sales` | Record a sale against an inventory item |
+| Users | `/users` | Invite a team member with a different role |
+
+<span class="kw">### 4 — Sign out and sign back in</span>
+
+1. Click **Sign out** in the navigation bar.
+2. Open **http://localhost:5173/login**.
+3. Enter `dev@example.com` and click **Sign in with passkey**.
+4. Confirm with your device authenticator — you are redirected to Analytics.
+
+<span class="kw">### 5 — Reset test data (optional)</span>
+
+To start fresh, delete all data from the running MongoDB container:
+
+```bash
+docker exec -it booking-mongodb-1 mongosh \
+  --eval 'use inventorydb; db.dropDatabase()'
+```
+
+Then re-run `./scripts/seed-dev-user.sh` and repeat from step 2.
+</code></pre>
+
+    <div class="info-box">
+      Keep exact phrasing for button and page labels — verify each one matches what the UI actually shows. If a label differs from what you wrote, update the README to match the UI (not the other way around).
+    </div>
+  </div>
+
+  <!-- SELF-VERIFICATION -->
+  <div class="card card-green">
+    <h2>Step 3 — Self-Verification (Mandatory)</h2>
+    <p style="font-size:.875rem;color:var(--muted);margin-bottom:.9rem;">
+      You must run through every step in the README yourself before returning. Use the browser and curl to verify. Check each box below:
+    </p>
+
+    <div class="verify-step"><div class="v-num">1</div><div><strong>Stack is up</strong>: run <code>docker compose ps</code> and confirm <code>mongodb</code> is healthy. Run <code>curl -sf http://localhost:8080/q/health | jq .status</code> and confirm <code>"UP"</code>. Run <code>curl -sf http://localhost:5173 | grep -c "html"</code> and confirm &gt; 0.</div></div>
+    <div class="verify-step"><div class="v-num">2</div><div><strong>Seed script runs clean</strong>: execute <code>./scripts/seed-dev-user.sh</code>. Confirm exit code 0 and the <code>✓  User ready</code> line. Run again — confirm 409 is handled gracefully (no exit 1).</div></div>
+    <div class="verify-step"><div class="v-num">3</div><div><strong>API register/begin responds correctly</strong>: <code>curl -s -X POST http://localhost:8080/api/v1/auth/register/begin -H 'Content-Type: application/json' -d '{"email":"dev@example.com"}' | jq .challenge</code> — must return a non-null base64url string.</div></div>
+    <div class="verify-step"><div class="v-num">4</div><div><strong>Browser setup flow</strong>: open <code>http://localhost:5173/setup</code> in Chrome/Safari/Edge. Confirm <strong>no Password field</strong> is visible. Fill the form and create a passkey. Confirm redirect to <code>/analytics</code>.</div></div>
+    <div class="verify-step"><div class="v-num">5</div><div><strong>Login flow</strong>: sign out, go to <code>/login</code>. Confirm <strong>no Password field</strong>. Enter the email, sign in with passkey, land on <code>/analytics</code>.</div></div>
+    <div class="verify-step"><div class="v-num">6</div><div><strong>Inventory page</strong>: navigate to <code>/inventory</code>. Add an item with a name, condition, and purchase price. Confirm it appears in the list.</div></div>
+    <div class="verify-step"><div class="v-num">7</div><div><strong>Sales page</strong>: navigate to <code>/sales</code>. Record a sale for the item you just created. Confirm it appears in the sales list and the item status changes to SOLD.</div></div>
+    <div class="verify-step"><div class="v-num">8</div><div><strong>Analytics page</strong>: navigate to <code>/analytics</code>. Confirm the sale you recorded appears in the totals.</div></div>
+    <div class="verify-step"><div class="v-num">9</div><div><strong>Reset flow</strong>: run the <code>mongosh dropDatabase</code> command from the README. Re-run the seed script. Confirm <code>201</code> is returned (not 409). Confirm you can go through setup again.</div></div>
+    <div class="verify-step"><div class="v-num">10</div><div><strong>README renders correctly</strong>: open <code>README.md</code> in a Markdown previewer (VS Code, GitHub, or <code>npx @readme/markdown-preview README.md</code>). Confirm all code blocks, the table, and the blockquote troubleshooting tips render without errors.</div></div>
+
+    <div class="success-box" style="margin-top:1rem;">
+      If every check above passes, commit <code>README.md</code> and <code>scripts/seed-dev-user.sh</code> together with the message: <em>"docs: add test user setup and UI walkthrough to README"</em>. Then return.
+    </div>
+
+    <div class="warn-box">
+      If any check fails, fix the issue (README wording, script bug, or app bug) and re-run all checks from step 1. Do not return with a partial pass.
+    </div>
+  </div>
+
+  <!-- EDGE CASES TO DOCUMENT -->
+  <div class="card card-red">
+    <h2>Known Edge Cases — Document These in the README</h2>
+    <div class="row"><span class="tag tag-red">PASSKEY</span><span><strong>Passkeys do not roam automatically.</strong> If the developer switches to a different browser or machine, they must go to <code>/setup</code> again with the same email. Mention this in a callout above the "Register your passkey" step.</span></div>
+    <div class="row"><span class="tag tag-red">PASSKEY</span><span><strong>Incognito / private mode</strong> may not support passkeys on all platforms. Add a note recommending a standard browser window.</span></div>
+    <div class="row"><span class="tag tag-red">BROWSER</span><span><strong>Firefox on Linux</strong> has limited passkey support. Recommend Chrome, Edge, or Safari.</span></div>
+    <div class="row"><span class="tag tag-red">ORG</span><span><strong>Duplicate org slug</strong> if the seed is run after data already exists. The script handles this (409 = ok), but note it in the README troubleshooting block.</span></div>
+  </div>
+
+</div>
+<footer class="wrap">TAV Inventory Ledger · README Walkthrough Prompt · 2026-03-17</footer>
+</body>
+</html>

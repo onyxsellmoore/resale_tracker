@@ -1,0 +1,115 @@
+.inventory-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+}
+
+.inventory-filter {
+  margin-bottom: 12px;
+}
+
+.inventory-filter label {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.inventory-filter select {
+  margin-left: 8px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  padding: 0.4rem 0.6rem;
+}
+
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.inventory-table thead tr {
+  background: var(--color-surface-2);
+}
+
+.inventory-table th {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-th:hover {
+  color: var(--color-text);
+}
+
+.sort-indicator {
+  font-size: 0.65rem;
+}
+
+.inventory-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.inventory-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.inventory-table tbody tr:hover {
+  background: var(--color-surface-2);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge-available {
+  background: rgba(45, 106, 45, 0.2);
+  color: var(--color-profit);
+  border: 1px solid var(--color-brand);
+}
+
+.status-badge-sold {
+  background: rgba(107, 143, 107, 0.1);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.inventory-table .record-sale-link {
+  color: var(--color-gold);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.inventory-table .record-sale-link:hover {
+  color: var(--color-gold-hover);
+}
+
+@media (max-width: 599px) {
+  .hide-mobile {
+    display: none;
+  }
+}
