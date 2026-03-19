@@ -1,4 +1,4 @@
-export type ItemCondition = 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR'
+export type ItemCondition = 'NEW' | 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR'
 export type ItemStatus = 'AVAILABLE' | 'SOLD' | 'DELETED'
 
 export interface ItemDTO {
@@ -36,6 +36,7 @@ export interface CreateSalePayload {
   salePrice: number
   platformFees: number
   soldAt: string
+  platformOrderId?: string
   notes?: string
 }
 
@@ -51,8 +52,23 @@ export interface SaleDTO {
   netProceeds: number
   profit: number
   soldAt: string
+  platformOrderId: string | null
   notes: string | null
   createdAt: string
+}
+
+export interface ParsedSaleRow {
+  title: string
+  platform: 'Mercari' | 'Poshmark'
+  salePrice: number
+  platformFees: number
+  soldAt: string
+  platformOrderId: string
+  prefill: {
+    brand?: string
+    category?: string
+    purchasePrice?: number
+  }
 }
 
 export interface AnalyticsSummary {

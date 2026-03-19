@@ -1,3 +1,4 @@
+import { apiFetch } from './apiClient'
 import type { AnalyticsResult } from '../types'
 
 const API_BASE = '/api/v1'
@@ -15,7 +16,7 @@ export async function getAnalytics(
   token?: string,
 ): Promise<AnalyticsResult> {
   const params = new URLSearchParams({ businessId, from, to })
-  const res = await fetch(`${API_BASE}/analytics?${params}`, {
+  const res = await apiFetch(`${API_BASE}/analytics?${params}`, {
     headers: authHeaders(token),
   })
   if (!res.ok) {

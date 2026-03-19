@@ -42,6 +42,29 @@ Frontend:
 cd booking-ui && npm test -- --run
 ```
 
+## Testing the import feature
+
+The full stack must be running — see [Run locally](#run-locally) above. You must be logged in with at least one item in inventory (use **Inventory → Add Item** to add one first).
+
+**Uploading a Mercari export**
+1. Navigate to **Sales** and click **Import Sales**.
+2. Upload `sample_exports/mercari.csv`. The app validates the file structure before parsing. If the file is invalid, a descriptive error message is shown and no rows are loaded.
+3. Completed rows are shown in the match table. Rows with an `Order Status` other than `Completed` are automatically excluded during parsing.
+4. For each row, type part of an item name in the search box to find a matching inventory item, or click **＋ Create new item** and fill in purchase date and condition (Mercari exports do not include cost, brand, or category data).
+
+**Uploading a Poshmark export**
+1. Upload `sample_exports/posh-report.csv`. The parser skips the multi-line metadata block at the top of the file automatically.
+2. Brand, category, and cost price (when present in the `Cost Price` column) are pre-filled in the new-item form — you only need to provide purchase date and condition.
+
+**Overlapping exports**
+If you upload an export that contains rows already imported in a previous session, those rows are shown with an "Already imported" badge and are automatically excluded from the import. You do not need to manually skip them.
+
+**Completing the import**
+After matching or creating items for all unresolved rows, proceed to Step 3. Review the summary, then click **Confirm Import**. Imported sales will appear on the Sales page with correct platform fees and computed profit.
+
+**Recording a sale manually**
+The item picker on the **Record a Sale** form uses the same search-as-you-type input as the import flow. Type any part of an item name or brand to find it — no scrolling through a dropdown required.
+
 ## Set up a test user and try the UI
 
 The full stack must be running first — see [Run locally](#run-locally) above.

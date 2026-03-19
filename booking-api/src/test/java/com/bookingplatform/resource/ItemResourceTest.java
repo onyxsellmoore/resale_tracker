@@ -125,6 +125,26 @@ class ItemResourceTest {
                 .statusCode(400);
         }
 
+        @Test @DisplayName("condition NEW → 201")
+        void conditionNew() {
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "name": "Brand New Bag",
+                        "condition": "NEW",
+                        "purchasePrice": 300.00,
+                        "purchaseDate": "2025-01-15T00:00:00Z"
+                    }
+                    """)
+            .when()
+                .post("/api/v1/items")
+            .then()
+                .statusCode(201)
+                .body("condition", equalTo("NEW"));
+        }
+
         @Test @DisplayName("negative purchasePrice → 400")
         void negativePurchasePrice() {
             given()

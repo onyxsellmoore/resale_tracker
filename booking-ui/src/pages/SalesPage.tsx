@@ -1,10 +1,11 @@
 import { Routes, Route, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
-import { getSales } from '../api/salesApi'
+import { getSales, deleteSale } from '../api/salesApi'
 import { getItems } from '../api/inventoryApi'
 import { SalesTable } from '../components/SalesTable'
 import { RecordSaleForm } from '../components/RecordSaleForm'
+import { ImportSalesPage } from './ImportSalesPage'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { EmptyState } from '../components/EmptyState'
@@ -18,13 +19,28 @@ function SalesListView() {
     queryFn: () => getSales(businessId, undefined, token ?? undefined),
   })
 
+  async function handleDeleteSale(saleId: string) {
+    try {
+      await deleteSale(saleId, token ?? undefined)
+      queryClient.invalidateQueries({ queryKey: ['sales', businessId] })
+      queryClient.invalidateQueries({ queryKey: ['items', businessId] })
+    } catch {
+      // silently fail for now
+    }
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h1>Sales</h1>
-        <Link to="/sales/new">
-          <button type="button" className="btn-primary">Record a Sale</button>
-        </Link>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link to="/sales/import">
+            <button type="button" className="btn-secondary">Import Sales</button>
+          </Link>
+          <Link to="/sales/new">
+            <button type="button" className="btn-primary">Record a Sale</button>
+          </Link>
+        </div>
       </div>
       {isLoading && <LoadingSkeleton rows={6} />}
       {error && (
@@ -40,7 +56,7 @@ function SalesListView() {
           action={<Link to="/inventory">Go to Inventory</Link>}
         />
       )}
-      {!isLoading && !error && sales.length > 0 && <SalesTable sales={sales} />}
+      {!isLoading && !error && sales.length > 0 && <SalesTable sales={sales} onDelete={handleDeleteSale} />}
     </div>
   )
 }
@@ -76,7 +92,12 @@ function RecordSaleView() {
 
   return (
     <div style={{ maxWidth: 600 }}>
-      <Link to="/sales">&larr; Back to Sales</Link>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 8 }}>
+        <Link to="/sales">&larr; Back to Sales</Link>
+        <Link to="/sales/import">
+          <button type="button" className="btn-secondary">Import Sales</button>
+        </Link>
+      </div>
       <RecordSaleForm
         businessId={businessId}
         items={items}
@@ -93,6 +114,7 @@ export function SalesPage() {
       <Routes>
         <Route index element={<SalesListView />} />
         <Route path="new" element={<RecordSaleView />} />
+        <Route path="import" element={<ImportSalesPage />} />
       </Routes>
     </div>
   )

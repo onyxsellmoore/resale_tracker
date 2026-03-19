@@ -86,6 +86,18 @@ public class SaleResource {
         String orgId = getOrgId();
         String businessId = orgId != null ? orgId : request.businessId;
 
+        // Duplicate detection: if platformOrderId is provided, check for existing sale
+        if (request.platformOrderId != null && !request.platformOrderId.isBlank()) {
+            long existing = saleRepository.count(
+                    "businessId = ?1 and platform = ?2 and platformOrderId = ?3",
+                    businessId, request.platform, request.platformOrderId);
+            if (existing > 0) {
+                return Response.status(409)
+                        .entity(new ErrorResponse("Sale already imported", List.of()))
+                        .build();
+            }
+        }
+
         // Look up item
         Item item;
         try {
@@ -123,6 +135,7 @@ public class SaleResource {
         sale.netProceeds = new Decimal128(netProceeds);
         sale.profit = new Decimal128(profit);
         sale.soldAt = request.soldAt;
+        sale.platformOrderId = request.platformOrderId;
         sale.notes = request.notes;
         sale.createdAt = Instant.now();
 
@@ -204,6 +217,38 @@ public class SaleResource {
         String itemName = item != null ? item.name : null;
         String itemBrand = item != null ? item.brand : null;
         return Response.ok(SaleDTO.from(sale, itemName, itemBrand)).build();
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public Response deleteSale(@PathParam("id") String id) {
+        if (!hasRole("ADMIN", "SELLER")) {
+            return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
+        }
+
+        String orgId = getOrgId();
+
+        com.bookingplatform.model.Sale sale;
+        try {
+            sale = saleRepository.findById(new ObjectId(id));
+        } catch (IllegalArgumentException e) {
+            return Response.status(404).build();
+        }
+
+        if (sale == null || !sale.businessId.equals(orgId)) {
+            return Response.status(404).build();
+        }
+
+        // Restore item to AVAILABLE
+        Item item = lookupItem(sale.itemId);
+        if (item != null && item.status == ItemStatus.SOLD) {
+            item.status = ItemStatus.AVAILABLE;
+            item.updatedAt = Instant.now();
+            itemRepository.update(item);
+        }
+
+        saleRepository.delete(sale);
+        return Response.noContent().build();
     }
 
     private Item lookupItem(String itemId) {

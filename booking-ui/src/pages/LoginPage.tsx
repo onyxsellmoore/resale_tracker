@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { beginPasskeyLogin, completePasskeyLogin, b64urlToBytes } from '../api/authApi'
 import '../components/Form.css'
@@ -7,6 +7,8 @@ import '../components/Form.css'
 export function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
+  const [searchParams] = useSearchParams()
+  const sessionExpired = searchParams.get('expired') === '1'
 
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -52,6 +54,11 @@ export function LoginPage() {
   return (
     <div className="page-enter" style={{ maxWidth: 400, margin: '40px auto', padding: 20 }}>
       <h1>Login</h1>
+      {sessionExpired && (
+        <div className="form-error" style={{ marginBottom: 12 }}>
+          Your session has expired. Please sign in again.
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="form-card">
         {error && <div className="form-error">{error}</div>}
 

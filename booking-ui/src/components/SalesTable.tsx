@@ -5,6 +5,7 @@ import './SalesTable.css'
 
 interface SalesTableProps {
   sales: SaleDTO[]
+  onDelete?: (saleId: string) => void
 }
 
 type SortKey = 'platform' | 'salePrice' | 'profit' | 'soldAt' | null
@@ -19,6 +20,7 @@ const columns: { key: SortKey; label: string }[] = [
   { key: null, label: 'Net Proceeds' },
   { key: 'profit', label: 'Profit' },
   { key: 'soldAt', label: 'Date Sold' },
+  { key: null, label: 'Actions' },
 ]
 
 function compareSales(a: SaleDTO, b: SaleDTO, key: SortKey, dir: SortDir): number {
@@ -31,7 +33,7 @@ function compareSales(a: SaleDTO, b: SaleDTO, key: SortKey, dir: SortDir): numbe
   return dir === 'desc' ? -cmp : cmp
 }
 
-export function SalesTable({ sales }: SalesTableProps) {
+export function SalesTable({ sales, onDelete }: SalesTableProps) {
   const [platformFilter, setPlatformFilter] = useState('ALL')
   const [sortKey, setSortKey] = useState<SortKey>(null)
   const [sortDir, setSortDir] = useState<SortDir>('asc')
@@ -112,6 +114,17 @@ export function SalesTable({ sales }: SalesTableProps) {
                   {formatCurrency(sale.profit)}
                 </td>
                 <td>{new Date(sale.soldAt).toLocaleDateString()}</td>
+                <td>
+                  {onDelete && (
+                    <button
+                      type="button"
+                      className="btn-danger"
+                      onClick={() => onDelete(sale.id)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

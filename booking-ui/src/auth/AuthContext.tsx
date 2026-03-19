@@ -17,7 +17,7 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-function parseJwtPayload(token: string): { sub?: string; orgId?: string; role?: string } {
+function parseJwtPayload(token: string): { sub?: string; orgId?: string; role?: string; exp?: number } {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) return {}
@@ -31,9 +31,19 @@ function parseJwtPayload(token: string): { sub?: string; orgId?: string; role?: 
   }
 }
 
+export function isTokenExpired(token: string): boolean {
+  const payload = parseJwtPayload(token)
+  if (!payload.exp) return false
+  return payload.exp * 1000 < Date.now()
+}
+
 function loadFromStorage(): AuthState {
   const token = localStorage.getItem('auth_token')
   if (!token) return { token: null, userId: null, orgId: null, role: null }
+  if (isTokenExpired(token)) {
+    localStorage.removeItem('auth_token')
+    return { token: null, userId: null, orgId: null, role: null }
+  }
   const payload = parseJwtPayload(token)
   return {
     token,

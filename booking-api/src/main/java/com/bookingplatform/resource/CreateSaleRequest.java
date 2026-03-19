@@ -29,5 +29,7 @@ public class CreateSaleRequest {
     @NotNull(message = "soldAt is required")
     public Instant soldAt;
 
+    public String platformOrderId;
+
     public String notes;
 }

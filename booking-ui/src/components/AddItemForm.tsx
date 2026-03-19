@@ -14,7 +14,7 @@ export function AddItemForm({ businessId, onItemAdded }: AddItemFormProps) {
   const [name, setName] = useState('')
   const [brand, setBrand] = useState('')
   const [category, setCategory] = useState('')
-  const [condition, setCondition] = useState<ItemCondition>('GOOD')
+  const [condition, setCondition] = useState<ItemCondition>('NEW')
   const [purchasePrice, setPurchasePrice] = useState('')
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0])
   const [description, setDescription] = useState('')
@@ -55,7 +55,7 @@ export function AddItemForm({ businessId, onItemAdded }: AddItemFormProps) {
       setName('')
       setBrand('')
       setCategory('')
-      setCondition('GOOD')
+      setCondition('NEW')
       setPurchasePrice('')
       setPurchaseDate(new Date().toISOString().split('T')[0])
       setDescription('')
@@ -95,6 +95,7 @@ export function AddItemForm({ businessId, onItemAdded }: AddItemFormProps) {
       <div className="form-group">
         <label htmlFor="item-condition">Condition</label>
         <select id="item-condition" aria-label="Condition" value={condition} onChange={(e) => setCondition(e.target.value as ItemCondition)} className="form-input">
+          <option value="NEW">New</option>
           <option value="EXCELLENT">Excellent</option>
           <option value="GOOD">Good</option>
           <option value="FAIR">Fair</option>

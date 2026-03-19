@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
-import { getItems } from '../api/inventoryApi'
+import { getItems, deleteItem } from '../api/inventoryApi'
 import { InventoryTable } from '../components/InventoryTable'
 import { AddItemForm } from '../components/AddItemForm'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
@@ -13,7 +13,7 @@ export function InventoryPage() {
   const { orgId, token } = useAuth()
   const businessId = orgId ?? 'default'
   const queryClient = useQueryClient()
-  const [showAddForm, setShowAddForm] = useState(true)
+  const [showAddForm, setShowAddForm] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
   const { data: items = [], isLoading, error } = useQuery({
@@ -26,6 +26,16 @@ export function InventoryPage() {
   function handleItemAdded() {
     queryClient.invalidateQueries({ queryKey: ['items', businessId] })
     setToast('Item added to inventory.')
+  }
+
+  async function handleDeleteItem(itemId: string) {
+    try {
+      await deleteItem(itemId, token ?? undefined)
+      queryClient.invalidateQueries({ queryKey: ['items', businessId] })
+      setToast('Item deleted.')
+    } catch {
+      setToast('Failed to delete item.')
+    }
   }
 
   function renderContent() {
@@ -51,16 +61,25 @@ export function InventoryPage() {
         />
       )
     }
-    return <InventoryTable items={items} />
+    return <InventoryTable items={items} onDelete={handleDeleteItem} />
   }
 
   return (
     <div className="page-enter">
-      <h1>Inventory</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h1>Inventory</h1>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => setShowAddForm((prev) => !prev)}
+        >
+          {showAddForm ? 'Hide Form' : 'Add Item'}
+        </button>
+      </div>
       <div style={{ display: 'flex', gap: 40 }}>
         <div style={{ flex: 2 }}>{renderContent()}</div>
         {showAddForm && (
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, maxWidth: 380 }}>
             <AddItemForm businessId={businessId} onItemAdded={handleItemAdded} />
           </div>
         )}

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -35,6 +35,20 @@ describe('AddItemForm', () => {
       length: 0,
       key: vi.fn(),
     })
+  })
+
+  it('condition defaults to NEW', () => {
+    renderForm()
+    const conditionSelect = screen.getByLabelText(/condition/i) as HTMLSelectElement
+    expect(conditionSelect.value).toBe('NEW')
+  })
+
+  it('condition select includes New option', () => {
+    renderForm()
+    const conditionSelect = screen.getByLabelText(/condition/i)
+    const options = within(conditionSelect).getAllByRole('option')
+    const labels = options.map((o) => o.textContent)
+    expect(labels).toContain('New')
   })
 
   it('purchaseDate input has type="date"', () => {

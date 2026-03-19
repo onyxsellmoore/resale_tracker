@@ -74,7 +74,8 @@ class EntityTest {
 
     @Test
     void itemCondition_allValuesExist() {
-        assertEquals(4, ItemCondition.values().length);
+        assertEquals(5, ItemCondition.values().length);
+        assertNotNull(ItemCondition.valueOf("NEW"));
         assertNotNull(ItemCondition.valueOf("EXCELLENT"));
         assertNotNull(ItemCondition.valueOf("GOOD"));
         assertNotNull(ItemCondition.valueOf("FAIR"));

@@ -80,6 +80,22 @@ describe('LoginPage', () => {
     })
   })
 
+  it('shows session-expired banner when ?expired=1 is in URL', () => {
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={['/login?expired=1']}>
+          <LoginPage />
+        </MemoryRouter>
+      </AuthProvider>
+    )
+    expect(screen.getByText(/session has expired/i)).toBeInTheDocument()
+  })
+
+  it('does not show session-expired banner without query param', () => {
+    renderPage()
+    expect(screen.queryByText(/session has expired/i)).not.toBeInTheDocument()
+  })
+
   it('shows generic error when passkey login fails', async () => {
     mockBeginPasskeyLogin.mockRejectedValue(new Error('Server error'))
 

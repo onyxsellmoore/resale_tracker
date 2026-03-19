@@ -1,3 +1,5 @@
+import { apiFetch } from './apiClient'
+
 const API_BASE = '/api/v1'
 
 export interface UserDTO {
@@ -17,7 +19,7 @@ export interface CreateUserPayload {
 }
 
 export async function getUsers(token: string): Promise<UserDTO[]> {
-  const res = await fetch(`${API_BASE}/users`, {
+  const res = await apiFetch(`${API_BASE}/users`, {
     headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) throw new Error('Failed to fetch users')
@@ -34,7 +36,7 @@ export async function createUser(
   payload: CreateUserPayload,
   token: string
 ): Promise<CreateUserResult> {
-  const res = await fetch(`${API_BASE}/users`, {
+  const res = await apiFetch(`${API_BASE}/users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -17,6 +17,7 @@ public class Sale extends PanacheMongoEntity {
     public Decimal128 netProceeds;
     public Decimal128 profit;
     public Instant soldAt;
+    public String platformOrderId;
     public String notes;
     public Instant createdAt;
 }

@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { createSale } from '../api/salesApi'
 import { formatCurrency } from '../utils/format'
 import { EmptyState } from './EmptyState'
+import { ItemSearchInput } from './ItemSearchInput'
 import type { ItemDTO } from '../types'
 import './Form.css'
 
@@ -104,12 +105,14 @@ export function RecordSaleForm({ businessId, items, onSuccess, preselectedItemId
 
       <div className="form-group">
         <label htmlFor="sale-item">Item</label>
-        <select id="sale-item" aria-label="Item" value={selectedItemId} onChange={(e) => setSelectedItemId(e.target.value)} className="form-input">
-          <option value="">Select an item...</option>
-          {availableItems.map((item) => (
-            <option key={item.id} value={item.id}>{item.name}</option>
-          ))}
-        </select>
+        <ItemSearchInput
+          id="sale-item"
+          items={availableItems}
+          value={selectedItemId || null}
+          onChange={(item) => setSelectedItemId(item?.id ?? '')}
+          aria-label="Item"
+          placeholder="Search items..."
+        />
       </div>
 
       <div className="form-group">

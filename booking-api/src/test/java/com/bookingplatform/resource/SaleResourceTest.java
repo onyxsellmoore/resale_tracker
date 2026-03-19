@@ -169,6 +169,113 @@ class SaleResourceTest {
                 .statusCode(404);
         }
 
+        @Test @DisplayName("sale with platformOrderId saves and returns it")
+        void platformOrderIdSaved() {
+            Item item = createTestItem(orgId, "Import Item", new BigDecimal("50.00"));
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "itemId": "%s",
+                        "platform": "Mercari",
+                        "salePrice": 100.00,
+                        "platformFees": 10.00,
+                        "soldAt": "2025-06-01T12:00:00Z",
+                        "platformOrderId": "m12345"
+                    }
+                    """.formatted(item.id.toHexString()))
+            .when()
+                .post("/api/v1/sales")
+            .then()
+                .statusCode(201)
+                .body("platformOrderId", equalTo("m12345"));
+        }
+
+        @Test @DisplayName("duplicate platformOrderId + platform + businessId → 409")
+        void duplicatePlatformOrderId() {
+            Item item1 = createTestItem(orgId, "Item A", new BigDecimal("50.00"));
+            Item item2 = createTestItem(orgId, "Item B", new BigDecimal("60.00"));
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "itemId": "%s",
+                        "platform": "Mercari",
+                        "salePrice": 100.00,
+                        "platformFees": 10.00,
+                        "soldAt": "2025-06-01T12:00:00Z",
+                        "platformOrderId": "m12345"
+                    }
+                    """.formatted(item1.id.toHexString()))
+            .when()
+                .post("/api/v1/sales")
+            .then()
+                .statusCode(201);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "itemId": "%s",
+                        "platform": "Mercari",
+                        "salePrice": 200.00,
+                        "platformFees": 20.00,
+                        "soldAt": "2025-06-02T12:00:00Z",
+                        "platformOrderId": "m12345"
+                    }
+                    """.formatted(item2.id.toHexString()))
+            .when()
+                .post("/api/v1/sales")
+            .then()
+                .statusCode(409)
+                .body("message", equalTo("Sale already imported"));
+        }
+
+        @Test @DisplayName("no platformOrderId always succeeds (manual entry)")
+        void noPlatformOrderIdAlwaysSucceeds() {
+            Item item1 = createTestItem(orgId, "Manual 1", new BigDecimal("50.00"));
+            Item item2 = createTestItem(orgId, "Manual 2", new BigDecimal("60.00"));
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "itemId": "%s",
+                        "platform": "Poshmark",
+                        "salePrice": 100.00,
+                        "platformFees": 10.00,
+                        "soldAt": "2025-06-01T12:00:00Z"
+                    }
+                    """.formatted(item1.id.toHexString()))
+            .when()
+                .post("/api/v1/sales")
+            .then()
+                .statusCode(201);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "itemId": "%s",
+                        "platform": "Poshmark",
+                        "salePrice": 200.00,
+                        "platformFees": 20.00,
+                        "soldAt": "2025-06-02T12:00:00Z"
+                    }
+                    """.formatted(item2.id.toHexString()))
+            .when()
+                .post("/api/v1/sales")
+            .then()
+                .statusCode(201);
+        }
+
         @Test @DisplayName("salePrice = 0 → 400")
         void salePriceZero() {
             Item item = createTestItem(orgId, "Item", new BigDecimal("50.00"));
@@ -346,6 +453,55 @@ class SaleResourceTest {
         }
     }
 
+    @Nested @DisplayName("DELETE /sales/:id")
+    class Delete {
+
+        @Test @DisplayName("valid delete → 204, item restored to AVAILABLE")
+        void validDelete() {
+            Item item = createTestItem(orgId, "To Delete", new BigDecimal("100.00"));
+            var sale = createTestSaleInDb(orgId, item, new BigDecimal("200.00"), new BigDecimal("40.00"),
+                    Instant.parse("2025-06-01T12:00:00Z"), "Poshmark");
+
+            assertEquals(ItemStatus.SOLD, itemRepository.findById(item.id).status);
+
+            given()
+                .header("Authorization", "Bearer " + adminToken)
+            .when()
+                .delete("/api/v1/sales/{id}", sale.id.toHexString())
+            .then()
+                .statusCode(204);
+
+            // Item should be restored to AVAILABLE
+            assertEquals(ItemStatus.AVAILABLE, itemRepository.findById(item.id).status);
+            // Sale should be gone
+            assertEquals(0, saleRepository.count("businessId", orgId));
+        }
+
+        @Test @DisplayName("sale from other org → 404")
+        void otherOrg() {
+            Item item = createTestItem("other-biz", "Other Item", new BigDecimal("100.00"));
+            var sale = createTestSaleInDb("other-biz", item, new BigDecimal("200.00"), new BigDecimal("40.00"),
+                    Instant.parse("2025-06-01T12:00:00Z"), "Poshmark");
+
+            given()
+                .header("Authorization", "Bearer " + adminToken)
+            .when()
+                .delete("/api/v1/sales/{id}", sale.id.toHexString())
+            .then()
+                .statusCode(404);
+        }
+
+        @Test @DisplayName("non-existent sale → 404")
+        void notFound() {
+            given()
+                .header("Authorization", "Bearer " + adminToken)
+            .when()
+                .delete("/api/v1/sales/aaaaaaaaaaaaaaaaaaaaaaaa")
+            .then()
+                .statusCode(404);
+        }
+    }
+
     @Nested @DisplayName("no token → 401")
     class Unauthenticated {
 
@@ -376,6 +532,15 @@ class SaleResourceTest {
             given()
             .when()
                 .get("/api/v1/sales/aaaaaaaaaaaaaaaaaaaaaaaa")
+            .then()
+                .statusCode(401);
+        }
+
+        @Test @DisplayName("DELETE /sales/:id → 401")
+        void deleteNoToken() {
+            given()
+            .when()
+                .delete("/api/v1/sales/aaaaaaaaaaaaaaaaaaaaaaaa")
             .then()
                 .statusCode(401);
         }

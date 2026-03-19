@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { InventoryTable } from './InventoryTable'
 import type { ItemDTO } from '../types'
@@ -71,13 +71,13 @@ describe('InventoryTable', () => {
   it('"Record a Sale" button present for AVAILABLE item', () => {
     renderTable()
     const row = screen.getByTestId('item-row-1')
-    expect(within(row).getByText('Record a Sale')).toBeInTheDocument()
+    expect(within(row).getByText('Mark Sold')).toBeInTheDocument()
   })
 
   it('"Record a Sale" button absent for SOLD item', () => {
     renderTable()
     const row = screen.getByTestId('item-row-2')
-    expect(within(row).queryByText('Record a Sale')).not.toBeInTheDocument()
+    expect(within(row).queryByText('Mark Sold')).not.toBeInTheDocument()
   })
 
   it('status filter "Available" hides SOLD rows', async () => {
@@ -89,5 +89,40 @@ describe('InventoryTable', () => {
 
     expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
     expect(screen.queryByText('Prada Shoes')).not.toBeInTheDocument()
+  })
+
+  it('Delete button shown for AVAILABLE item when onDelete is provided', () => {
+    const onDelete = vi.fn()
+    render(
+      <MemoryRouter>
+        <InventoryTable items={mockItems} onDelete={onDelete} />
+      </MemoryRouter>
+    )
+    const row = screen.getByTestId('item-row-1')
+    expect(within(row).getByRole('button', { name: /delete/i })).toBeInTheDocument()
+  })
+
+  it('Delete button NOT shown for SOLD item', () => {
+    const onDelete = vi.fn()
+    render(
+      <MemoryRouter>
+        <InventoryTable items={mockItems} onDelete={onDelete} />
+      </MemoryRouter>
+    )
+    const row = screen.getByTestId('item-row-2')
+    expect(within(row).queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
+  })
+
+  it('clicking Delete calls onDelete with item id', async () => {
+    const onDelete = vi.fn()
+    render(
+      <MemoryRouter>
+        <InventoryTable items={mockItems} onDelete={onDelete} />
+      </MemoryRouter>
+    )
+    const user = userEvent.setup()
+    const row = screen.getByTestId('item-row-1')
+    await user.click(within(row).getByRole('button', { name: /delete/i }))
+    expect(onDelete).toHaveBeenCalledWith('1')
   })
 })

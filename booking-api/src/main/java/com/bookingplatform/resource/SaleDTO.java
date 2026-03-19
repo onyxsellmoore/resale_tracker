@@ -17,6 +17,7 @@ public record SaleDTO(
         BigDecimal netProceeds,
         BigDecimal profit,
         Instant soldAt,
+        String platformOrderId,
         String notes,
         Instant createdAt
 ) {
@@ -33,6 +34,7 @@ public record SaleDTO(
                 sale.netProceeds != null ? sale.netProceeds.bigDecimalValue() : null,
                 sale.profit != null ? sale.profit.bigDecimalValue() : null,
                 sale.soldAt,
+                sale.platformOrderId,
                 sale.notes,
                 sale.createdAt
         );

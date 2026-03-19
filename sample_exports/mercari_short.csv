@@ -1,0 +1,5 @@
+﻿"Item Id","Sold Date","Canceled Date","Completed Date","Item Title","Order Status","Shipped to State","Shipped from State","Item Price","Buyer Shipping Fee","Seller Shipping Fee","Mercari Selling Fee","Payment Processing Fee","Shipping Adjustment Fee","Net Seller Proceeds","Sales Tax Charged to Buyer","Merchant Fees Charged to Buyer"
+"m45378192291","2023-06-21","","2023-06-25","Christian Dior Eau de Toilette Spray","Completed","New York","Georgia","79.00","7.40","0.00","7.90","3.01","0.00","68.09","7.45","0.00"
+"m85219606120","2023-06-21","","2023-06-25","Maison Margiela Replica perfume","Completed","California","Georgia","25.00","4.30","0.00","2.50","1.35","0.00","21.15","1.81","0.00"
+"m18189124595","2023-06-28","","2023-07-07","Michael Kors ankle boots","Completed","California","Georgia","30.00","9.50","0.00","3.00","1.65","0.00","25.35","2.51","0.00"
+"m93430502741","2023-07-04","","2023-07-09","Prada dust bag","Completed","Florida","Georgia","7.00","4.30","0.00","0.70","0.83","0.00","5.47","0.79","0.00"

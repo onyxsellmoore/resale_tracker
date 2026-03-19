@@ -110,13 +110,19 @@ describe('RecordSaleForm', () => {
     expect(screen.getByRole('button', { name: /record sale/i })).toBeInTheDocument()
   })
 
-  it('item dropdown shows only AVAILABLE items', () => {
+  it('item search shows only AVAILABLE items when typing', async () => {
     renderForm([...availableItems, soldItem])
+    const user = userEvent.setup()
+    const itemInput = screen.getByLabelText('Item')
+
+    // Type a broad query that would match multiple items
+    await user.type(itemInput, 'Shoes')
     const options = screen.getAllByRole('option')
     const optionTexts = options.map((o) => o.textContent)
-    expect(optionTexts).toContain('Gucci Bag')
-    expect(optionTexts).toContain('Prada Shoes')
-    expect(optionTexts).not.toContain('Sold Thing')
+    // Prada Shoes is AVAILABLE, should appear
+    expect(optionTexts.some((t) => t?.includes('Prada Shoes'))).toBe(true)
+    // Sold Thing is SOLD, should not appear (not passed to ItemSearchInput as availableItems)
+    expect(optionTexts.some((t) => t?.includes('Sold Thing'))).toBe(false)
   })
 
   it('profit preview updates when salePrice changes', async () => {

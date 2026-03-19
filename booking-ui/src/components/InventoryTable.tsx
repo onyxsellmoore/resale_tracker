@@ -5,6 +5,7 @@ import './InventoryTable.css'
 
 interface InventoryTableProps {
   items: ItemDTO[]
+  onDelete?: (itemId: string) => void
 }
 
 const badgeClass: Record<string, string> = {
@@ -37,7 +38,7 @@ function compareItems(a: ItemDTO, b: ItemDTO, key: SortKey, dir: SortDir): numbe
   return dir === 'desc' ? -cmp : cmp
 }
 
-export function InventoryTable({ items }: InventoryTableProps) {
+export function InventoryTable({ items, onDelete }: InventoryTableProps) {
   const [statusFilter, setStatusFilter] = useState<FilterValue>('ALL')
   const [sortKey, setSortKey] = useState<SortKey>(null)
   const [sortDir, setSortDir] = useState<SortDir>('asc')
@@ -115,7 +116,19 @@ export function InventoryTable({ items }: InventoryTableProps) {
                 </td>
                 <td>
                   {item.status === 'AVAILABLE' && (
-                    <Link to={`/sales/new?itemId=${item.id}`} className="record-sale-link">Record a Sale</Link>
+                    <>
+                      <Link to={`/sales/new?itemId=${item.id}`} className="record-sale-link">Mark Sold</Link>
+                      {onDelete && (
+                        <button
+                          type="button"
+                          className="btn-danger"
+                          style={{ marginLeft: 8 }}
+                          onClick={() => onDelete(item.id)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </>
                   )}
                 </td>
               </tr>

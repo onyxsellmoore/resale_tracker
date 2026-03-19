@@ -1,5 +1,5 @@
 package com.bookingplatform.model;
 
 public enum ItemCondition {
-    EXCELLENT, GOOD, FAIR, POOR
+    NEW, EXCELLENT, GOOD, FAIR, POOR
 }

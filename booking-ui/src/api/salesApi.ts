@@ -1,3 +1,4 @@
+import { apiFetch } from './apiClient'
 import type { SaleDTO, CreateSalePayload } from '../types'
 
 const API_BASE = '/api/v1'
@@ -11,7 +12,7 @@ function authHeaders(token?: string): Record<string, string> {
 export async function getSales(businessId: string, platform?: string, token?: string): Promise<SaleDTO[]> {
   const params = new URLSearchParams({ businessId })
   if (platform) params.append('platform', platform)
-  const res = await fetch(`${API_BASE}/sales?${params}`, {
+  const res = await apiFetch(`${API_BASE}/sales?${params}`, {
     headers: authHeaders(token),
   })
   if (!res.ok) throw new Error('Failed to fetch sales')
@@ -25,7 +26,7 @@ export interface CreateSaleResult {
 }
 
 export async function createSale(payload: CreateSalePayload, token?: string): Promise<CreateSaleResult> {
-  const res = await fetch(`${API_BASE}/sales`, {
+  const res = await apiFetch(`${API_BASE}/sales`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
     body: JSON.stringify(payload),
@@ -38,4 +39,12 @@ export async function createSale(payload: CreateSalePayload, token?: string): Pr
     return { error: body.message || 'Failed to create sale', status: res.status }
   }
   return { sale: body, status: 201 }
+}
+
+export async function deleteSale(id: string, token?: string): Promise<void> {
+  const res = await apiFetch(`${API_BASE}/sales/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  })
+  if (!res.ok) throw new Error('Failed to delete sale')
 }
