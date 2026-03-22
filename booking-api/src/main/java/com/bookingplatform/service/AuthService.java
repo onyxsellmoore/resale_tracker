@@ -70,6 +70,9 @@ public class AuthService {
     public record ChallengeData(String challenge, String userId, Instant expiresAt) {}
     public record RegisterResult(String orgId, String userId, String role) {}
 
+    public enum LoginBeginStatus { SUCCESS, USER_NOT_FOUND, NO_PASSKEY }
+    public record LoginBeginResult(LoginBeginStatus status, Map<String, Object> options) {}
+
     // --- Register (org + first admin user, no password) ---
     public Optional<RegisterResult> register(String orgName, String orgSlug,
                                               String adminEmail, String adminDisplayName) {
@@ -310,21 +313,21 @@ public class AuthService {
     }
 
     // --- Login Begin (WebAuthn) ---
-    public Optional<Map<String, Object>> loginBegin(String email) {
+    public LoginBeginResult loginBeginWithStatus(String email) {
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
-            return Optional.empty();
+            return new LoginBeginResult(LoginBeginStatus.USER_NOT_FOUND, null);
         }
 
         User user = userOpt.get();
         List<WebAuthnCredential> credentials = credentialRepository.findByOwnerId(user.id.toHexString());
         if (credentials.isEmpty()) {
-            return Optional.empty();
+            return new LoginBeginResult(LoginBeginStatus.NO_PASSKEY, null);
         }
 
         evictExpiredChallenges();
         if (challenges.size() >= MAX_CHALLENGES) {
-            return Optional.empty();
+            return new LoginBeginResult(LoginBeginStatus.USER_NOT_FOUND, null);
         }
 
         byte[] challengeBytes = new byte[32];
@@ -338,12 +341,43 @@ public class AuthService {
                 .map(c -> Map.of("id", c.credentialId, "type", "public-key"))
                 .toList();
 
-        return Optional.of(Map.of(
+        return new LoginBeginResult(LoginBeginStatus.SUCCESS, Map.of(
                 "challenge", challenge,
                 "rpId", rpId,
                 "allowCredentials", allowCredentials,
                 "timeout", 60000
         ));
+    }
+
+    public Optional<Map<String, Object>> loginBegin(String email) {
+        LoginBeginResult result = loginBeginWithStatus(email);
+        if (result.status() == LoginBeginStatus.SUCCESS) {
+            return Optional.of(result.options());
+        }
+        return Optional.empty();
+    }
+
+    // --- Login with Password ---
+    public Optional<TokenPair> loginWithPassword(String email, String password) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) return Optional.empty();
+        User user = userOpt.get();
+        if (user.temporaryPasswordHash == null || user.temporaryPasswordSalt == null) return Optional.empty();
+        String candidate = sha256Hex(user.temporaryPasswordSalt + password);
+        if (!candidate.equals(user.temporaryPasswordHash)) return Optional.empty();
+        return Optional.of(generateTokens(user));
+    }
+
+    private String sha256Hex(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // --- Login Complete (WebAuthn) ---

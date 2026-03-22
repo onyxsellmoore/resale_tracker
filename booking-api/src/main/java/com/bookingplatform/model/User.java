@@ -14,4 +14,6 @@ public class User extends PanacheMongoEntity {
     public String displayName;
     public Role role;
     public Instant createdAt;
+    public String temporaryPasswordHash;
+    public String temporaryPasswordSalt;
 }

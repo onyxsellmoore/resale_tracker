@@ -1,5 +1,5 @@
 import { apiFetch } from './apiClient'
-import type { SaleDTO, CreateSalePayload } from '../types'
+import type { SaleDTO, CreateSalePayload, UpdateSalePayload } from '../types'
 
 const API_BASE = '/api/v1'
 
@@ -39,6 +39,27 @@ export async function createSale(payload: CreateSalePayload, token?: string): Pr
     return { error: body.message || 'Failed to create sale', status: res.status }
   }
   return { sale: body, status: 201 }
+}
+
+export async function getSale(id: string, token?: string): Promise<SaleDTO> {
+  const res = await apiFetch(`${API_BASE}/sales/${id}`, {
+    headers: authHeaders(token),
+  })
+  if (!res.ok) throw new Error('Failed to fetch sale')
+  return res.json()
+}
+
+export async function updateSale(id: string, payload: UpdateSalePayload, token?: string): Promise<SaleDTO> {
+  const res = await apiFetch(`${API_BASE}/sales/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.message ?? 'Failed to update sale')
+  }
+  return res.json()
 }
 
 export async function deleteSale(id: string, token?: string): Promise<void> {

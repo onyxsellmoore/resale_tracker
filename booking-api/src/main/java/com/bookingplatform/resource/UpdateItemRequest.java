@@ -1,7 +1,9 @@
 package com.bookingplatform.resource;
 
 import com.bookingplatform.model.ItemCondition;
-import jakarta.validation.constraints.NotBlank;
+
+import java.math.BigDecimal;
+import java.time.Instant;
 
 public class UpdateItemRequest {
 
@@ -12,6 +14,8 @@ public class UpdateItemRequest {
     public String brand;
     public String category;
     public ItemCondition condition;
+    public BigDecimal purchasePrice;
+    public Instant purchaseDate;
     public String description;
     public String notes;
 }

@@ -42,6 +42,7 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
   const [statusFilter, setStatusFilter] = useState<FilterValue>('ALL')
   const [sortKey, setSortKey] = useState<SortKey>(null)
   const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
 
   function handleSort(key: SortKey) {
     if (!key) return
@@ -115,15 +116,37 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                   </span>
                 </td>
                 <td>
+                  <Link to={`/inventory/edit/${item.id}`} className="btn-secondary" style={{ textDecoration: 'none' }}>Edit</Link>
                   {item.status === 'AVAILABLE' && (
                     <>
-                      <Link to={`/sales/new?itemId=${item.id}`} className="record-sale-link">Mark Sold</Link>
-                      {onDelete && (
+                      <Link to={`/sales/new?itemId=${item.id}`} className="btn-secondary" style={{ textDecoration: 'none', marginLeft: 8 }}>Mark Sold</Link>
+                      {onDelete && confirmingDeleteId === item.id ? (
+                        <div style={{ marginTop: 4 }}>
+                          <div style={{ fontSize: '0.8rem', marginBottom: 4 }}>
+                            Permanently delete {item.name}? This cannot be undone.
+                          </div>
+                          <button
+                            type="button"
+                            className="btn-danger"
+                            onClick={() => { onDelete(item.id); setConfirmingDeleteId(null) }}
+                          >
+                            Yes, delete
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            style={{ marginLeft: 8 }}
+                            onClick={() => setConfirmingDeleteId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : onDelete && (
                         <button
                           type="button"
                           className="btn-danger"
                           style={{ marginLeft: 8 }}
-                          onClick={() => onDelete(item.id)}
+                          onClick={() => setConfirmingDeleteId(item.id)}
                         >
                           Delete
                         </button>

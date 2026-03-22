@@ -170,11 +170,13 @@ public class ItemResource {
             return Response.status(404).build();
         }
 
-        // Only update allowed fields — purchasePrice and purchaseDate are immutable
+        // Update all fields when non-null
         if (request.name != null) item.name = request.name;
         if (request.brand != null) item.brand = request.brand;
         if (request.category != null) item.category = request.category;
         if (request.condition != null) item.condition = request.condition;
+        if (request.purchasePrice != null) item.purchasePrice = new Decimal128(request.purchasePrice);
+        if (request.purchaseDate != null) item.purchaseDate = request.purchaseDate;
         if (request.description != null) item.description = request.description;
         if (request.notes != null) item.notes = request.notes;
         item.updatedAt = Instant.now();
@@ -211,9 +213,7 @@ public class ItemResource {
                     .build();
         }
 
-        item.status = ItemStatus.DELETED;
-        item.updatedAt = Instant.now();
-        itemRepository.update(item);
+        itemRepository.delete(item);
 
         return Response.noContent().build();
     }

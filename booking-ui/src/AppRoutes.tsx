@@ -13,7 +13,7 @@ export function AppRoutes() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route
-          path="/inventory"
+          path="/inventory/*"
           element={
             <ProtectedRoute requiredRoles={['ADMIN', 'BUYER', 'SELLER', 'ACCOUNTANT']}>
               <InventoryPage />

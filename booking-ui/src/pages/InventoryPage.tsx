@@ -1,15 +1,17 @@
 import { useState, useCallback } from 'react'
+import { Routes, Route, Link, useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
-import { getItems, deleteItem } from '../api/inventoryApi'
+import { getItems, getItem, deleteItem } from '../api/inventoryApi'
 import { InventoryTable } from '../components/InventoryTable'
 import { AddItemForm } from '../components/AddItemForm'
+import { EditItemForm } from '../components/EditItemForm'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { EmptyState } from '../components/EmptyState'
 import { Toast } from '../components/Toast'
 
-export function InventoryPage() {
+function InventoryListView() {
   const { orgId, token } = useAuth()
   const businessId = orgId ?? 'default'
   const queryClient = useQueryClient()
@@ -65,7 +67,7 @@ export function InventoryPage() {
   }
 
   return (
-    <div className="page-enter">
+    <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h1>Inventory</h1>
         <button
@@ -85,6 +87,53 @@ export function InventoryPage() {
         )}
       </div>
       {toast && <Toast message={toast} onDismiss={handleDismissToast} />}
+    </>
+  )
+}
+
+function EditItemView() {
+  const { id } = useParams<{ id: string }>()
+  const { orgId, token } = useAuth()
+  const businessId = orgId ?? 'default'
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const { data: item, isLoading, error } = useQuery({
+    queryKey: ['items', businessId, id],
+    queryFn: () => getItem(id!, token ?? undefined),
+    enabled: !!id,
+  })
+
+  function handleItemUpdated() {
+    queryClient.invalidateQueries({ queryKey: ['items', businessId] })
+    navigate('/inventory')
+  }
+
+  if (isLoading) return <LoadingSkeleton rows={4} />
+  if (error || !item) {
+    return (
+      <ErrorMessage
+        message="Failed to load item."
+        onRetry={() => queryClient.refetchQueries({ queryKey: ['items', businessId, id] })}
+      />
+    )
+  }
+
+  return (
+    <div style={{ maxWidth: 600 }}>
+      <Link to="/inventory" style={{ marginBottom: 8, display: 'inline-block' }}>&larr; Back to Inventory</Link>
+      <EditItemForm item={item} onItemUpdated={handleItemUpdated} />
+    </div>
+  )
+}
+
+export function InventoryPage() {
+  return (
+    <div className="page-enter">
+      <Routes>
+        <Route index element={<InventoryListView />} />
+        <Route path="edit/:id" element={<EditItemView />} />
+      </Routes>
     </div>
   )
 }

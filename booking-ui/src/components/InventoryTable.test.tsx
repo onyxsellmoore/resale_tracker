@@ -68,10 +68,25 @@ describe('InventoryTable', () => {
     expect(badge.className).toContain('status-badge-sold')
   })
 
-  it('"Record a Sale" button present for AVAILABLE item', () => {
+  it('Mark Sold link present for AVAILABLE item with btn-secondary class', () => {
     renderTable()
     const row = screen.getByTestId('item-row-1')
-    expect(within(row).getByText('Mark Sold')).toBeInTheDocument()
+    const link = within(row).getByText('Mark Sold')
+    expect(link).toBeInTheDocument()
+    expect(link.className).toContain('btn-secondary')
+  })
+
+  it('Edit button rendered for every item and links to /inventory/edit/[id]', () => {
+    renderTable()
+    const row1 = screen.getByTestId('item-row-1')
+    const editLink1 = within(row1).getByText('Edit')
+    expect(editLink1).toBeInTheDocument()
+    expect(editLink1).toHaveAttribute('href', '/inventory/edit/1')
+
+    const row2 = screen.getByTestId('item-row-2')
+    const editLink2 = within(row2).getByText('Edit')
+    expect(editLink2).toBeInTheDocument()
+    expect(editLink2).toHaveAttribute('href', '/inventory/edit/2')
   })
 
   it('"Record a Sale" button absent for SOLD item', () => {
@@ -113,7 +128,7 @@ describe('InventoryTable', () => {
     expect(within(row).queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
   })
 
-  it('clicking Delete calls onDelete with item id', async () => {
+  it('clicking Delete shows confirmation, does NOT call onDelete immediately', async () => {
     const onDelete = vi.fn()
     render(
       <MemoryRouter>
@@ -123,6 +138,36 @@ describe('InventoryTable', () => {
     const user = userEvent.setup()
     const row = screen.getByTestId('item-row-1')
     await user.click(within(row).getByRole('button', { name: /delete/i }))
+    expect(onDelete).not.toHaveBeenCalled()
+    expect(screen.getByText(/permanently delete gucci bag/i)).toBeInTheDocument()
+  })
+
+  it('clicking Cancel hides the confirmation and does not call onDelete', async () => {
+    const onDelete = vi.fn()
+    render(
+      <MemoryRouter>
+        <InventoryTable items={mockItems} onDelete={onDelete} />
+      </MemoryRouter>
+    )
+    const user = userEvent.setup()
+    const row = screen.getByTestId('item-row-1')
+    await user.click(within(row).getByRole('button', { name: /delete/i }))
+    await user.click(screen.getByRole('button', { name: /cancel/i }))
+    expect(onDelete).not.toHaveBeenCalled()
+    expect(screen.queryByText(/permanently delete/i)).not.toBeInTheDocument()
+  })
+
+  it('clicking "Yes, delete" calls onDelete with the correct item id', async () => {
+    const onDelete = vi.fn()
+    render(
+      <MemoryRouter>
+        <InventoryTable items={mockItems} onDelete={onDelete} />
+      </MemoryRouter>
+    )
+    const user = userEvent.setup()
+    const row = screen.getByTestId('item-row-1')
+    await user.click(within(row).getByRole('button', { name: /delete/i }))
+    await user.click(screen.getByRole('button', { name: /yes, delete/i }))
     expect(onDelete).toHaveBeenCalledWith('1')
   })
 })

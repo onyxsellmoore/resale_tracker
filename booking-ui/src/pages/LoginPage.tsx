@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { beginPasskeyLogin, completePasskeyLogin, b64urlToBytes } from '../api/authApi'
+import { beginPasskeyLogin, completePasskeyLogin, loginWithPassword, b64urlToBytes } from '../api/authApi'
 import '../components/Form.css'
 
 export function LoginPage() {
@@ -11,8 +11,15 @@ export function LoginPage() {
   const sessionExpired = searchParams.get('expired') === '1'
 
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [showPasswordFallback, setShowPasswordFallback] = useState(false)
+
+  function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setEmail(e.target.value)
+    setShowPasswordFallback(false)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -22,7 +29,26 @@ export function LoginPage() {
     setSubmitting(true)
 
     try {
-      const options = await beginPasskeyLogin(email.trim())
+      if (showPasswordFallback) {
+        const auth = await loginWithPassword(email.trim(), password)
+        login(auth.accessToken)
+        navigate('/analytics', { replace: true })
+        return
+      }
+
+      const result = await beginPasskeyLogin(email.trim())
+
+      if (result.outcome === 'no_passkey') {
+        setShowPasswordFallback(true)
+        return
+      }
+
+      if (result.outcome === 'error') {
+        setError(result.message)
+        return
+      }
+
+      const options = result.options
 
       const assertion = await navigator.credentials.get({
         publicKey: {
@@ -44,7 +70,7 @@ export function LoginPage() {
       setError(
         error?.name === 'NotAllowedError'
           ? 'Passkey sign-in was cancelled.'
-          : 'Sign-in failed. Make sure you have a passkey registered for this account.',
+          : error?.message || 'Sign-in failed. Make sure you have a passkey registered for this account.',
       )
     } finally {
       setSubmitting(false)
@@ -69,13 +95,32 @@ export function LoginPage() {
             aria-label="Email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             className="form-input"
           />
         </div>
 
+        {showPasswordFallback && (
+          <>
+            <div className="form-error" style={{ marginBottom: 8 }}>
+              No passkey found for this account. Enter your temporary password to sign in.
+            </div>
+            <div className="form-group">
+              <label htmlFor="login-password">Temporary Password</label>
+              <input
+                id="login-password"
+                aria-label="Temporary Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="form-input"
+              />
+            </div>
+          </>
+        )}
+
         <button type="submit" disabled={submitting} className="btn-primary">
-          {submitting ? 'Signing in...' : 'Sign in with passkey'}
+          {submitting ? 'Signing in...' : showPasswordFallback ? 'Sign in with password' : 'Sign in with passkey'}
         </button>
 
         <p style={{ marginTop: 16, color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>

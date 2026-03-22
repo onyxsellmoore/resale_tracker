@@ -24,6 +24,9 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
@@ -40,6 +43,18 @@ class AuthResourceTest {
     @Inject WebAuthnTestHelper webAuthnTestHelper;
 
     private User testUser;
+
+    private static String sha256Hex(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @BeforeEach
     void setUp() {
@@ -263,6 +278,144 @@ class AuthResourceTest {
                     .post("/api/v1/auth/login")
                     .then()
                     .statusCode(404);
+        }
+    }
+
+    @Nested @DisplayName("no-passkey login begin")
+    class NoPasskeyLoginBegin {
+
+        @Test @DisplayName("login/begin for email with no passkey → 409 no_passkey")
+        void noPasskeyReturns409() {
+            User noPasskeyUser = new User();
+            noPasskeyUser.orgId = new ObjectId();
+            noPasskeyUser.email = "nopasskey@test.com";
+            noPasskeyUser.displayName = "No Passkey";
+            noPasskeyUser.role = Role.ADMIN;
+            noPasskeyUser.createdAt = Instant.now();
+            userRepository.persist(noPasskeyUser);
+
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"email": "nopasskey@test.com"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/login/begin")
+                    .then()
+                    .statusCode(409)
+                    .body("message", equalTo("no_passkey"));
+        }
+
+        @Test @DisplayName("login/begin for unknown email → 401")
+        void unknownEmailStill401() {
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"email": "unknown@test.com"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/login/begin")
+                    .then()
+                    .statusCode(401)
+                    .body("message", equalTo("Authentication failed"));
+        }
+    }
+
+    @Nested @DisplayName("password login")
+    class PasswordLogin {
+
+        @Test @DisplayName("correct password → 200 with accessToken")
+        void correctPassword() {
+            User pwUser = new User();
+            pwUser.orgId = new ObjectId();
+            pwUser.email = "pwuser@test.com";
+            pwUser.displayName = "PW User";
+            pwUser.role = Role.ADMIN;
+            pwUser.createdAt = Instant.now();
+            pwUser.temporaryPasswordSalt = "abcd1234";
+            pwUser.temporaryPasswordHash = sha256Hex("abcd1234" + "secret123");
+            userRepository.persist(pwUser);
+
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"email": "pwuser@test.com", "password": "secret123"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/login/password")
+                    .then()
+                    .statusCode(200)
+                    .body("accessToken", notNullValue())
+                    .body("refreshToken", notNullValue());
+        }
+
+        @Test @DisplayName("wrong password → 401")
+        void wrongPassword() {
+            User pwUser = new User();
+            pwUser.orgId = new ObjectId();
+            pwUser.email = "pwwrong@test.com";
+            pwUser.displayName = "PW Wrong";
+            pwUser.role = Role.ADMIN;
+            pwUser.createdAt = Instant.now();
+            pwUser.temporaryPasswordSalt = "abcd1234";
+            pwUser.temporaryPasswordHash = sha256Hex("abcd1234" + "secret123");
+            userRepository.persist(pwUser);
+
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"email": "pwwrong@test.com", "password": "wrongpassword"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/login/password")
+                    .then()
+                    .statusCode(401)
+                    .body("message", equalTo("Invalid email or password"));
+        }
+
+        @Test @DisplayName("user with no temporaryPasswordHash → 401")
+        void noPasswordHash() {
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"email": "owner@test.com", "password": "anything"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/login/password")
+                    .then()
+                    .statusCode(401)
+                    .body("message", equalTo("Invalid email or password"));
+        }
+
+        @Test @DisplayName("user created with password can login via password endpoint")
+        void createUserWithPasswordThenLogin() {
+            String jwt = authService.generateUserJwt(testUser);
+
+            given()
+                    .contentType(ContentType.JSON)
+                    .header("Authorization", "Bearer " + jwt)
+                    .body("""
+                        {"email": "newpw@test.com", "displayName": "New PW User", "role": "BUYER", "password": "temppass"}
+                        """)
+                    .when()
+                    .post("/api/v1/users")
+                    .then()
+                    .statusCode(201);
+
+            User created = userRepository.findByEmail("newpw@test.com").orElseThrow();
+            org.junit.jupiter.api.Assertions.assertNotNull(created.temporaryPasswordHash);
+            org.junit.jupiter.api.Assertions.assertNotNull(created.temporaryPasswordSalt);
+
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"email": "newpw@test.com", "password": "temppass"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/login/password")
+                    .then()
+                    .statusCode(200)
+                    .body("accessToken", notNullValue());
         }
     }
 

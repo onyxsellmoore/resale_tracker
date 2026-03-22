@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { SalesTable } from './SalesTable'
 import type { SaleDTO } from '../types'
 
@@ -39,30 +40,38 @@ const mockSales: SaleDTO[] = [
   },
 ]
 
+function renderTable(onDelete?: (saleId: string) => void) {
+  return render(
+    <MemoryRouter>
+      <SalesTable sales={mockSales} onDelete={onDelete} />
+    </MemoryRouter>
+  )
+}
+
 describe('SalesTable', () => {
   it('renders correct number of rows from mock data', () => {
-    render(<SalesTable sales={mockSales} />)
+    renderTable()
     const rows = screen.getAllByRole('row')
     // header + 2 data rows
     expect(rows.length).toBe(3)
   })
 
   it('positive profit displays in green', () => {
-    render(<SalesTable sales={mockSales} />)
+    renderTable()
     const profitCell = screen.getByTestId('profit-1')
     expect(profitCell.className).toContain('profit-positive')
     expect(profitCell).toHaveTextContent('$950.00')
   })
 
   it('negative profit displays in red', () => {
-    render(<SalesTable sales={mockSales} />)
+    renderTable()
     const profitCell = screen.getByTestId('profit-2')
     expect(profitCell.className).toContain('profit-negative')
     expect(profitCell).toHaveTextContent('-$40.00')
   })
 
   it('all money values formatted as "$X,XXX.00"', () => {
-    render(<SalesTable sales={mockSales} />)
+    renderTable()
     // Sale price of 1500 should be formatted as $1,500.00
     expect(screen.getByTestId('salePrice-1')).toHaveTextContent('$1,500.00')
     expect(screen.getByTestId('fees-1')).toHaveTextContent('$300.00')
@@ -70,7 +79,7 @@ describe('SalesTable', () => {
   })
 
   it('platform filter hides non-matching rows', async () => {
-    render(<SalesTable sales={mockSales} />)
+    renderTable()
     const user = userEvent.setup()
 
     const filter = screen.getByLabelText('Platform filter')
@@ -80,16 +89,24 @@ describe('SalesTable', () => {
     expect(screen.getByText('Prada Shoes')).toBeInTheDocument()
   })
 
+  it('Edit button rendered for every sale and links to /sales/edit/[id]', () => {
+    renderTable()
+    const editLinks = screen.getAllByText('Edit')
+    expect(editLinks).toHaveLength(2)
+    expect(editLinks[0]).toHaveAttribute('href', '/sales/edit/1')
+    expect(editLinks[1]).toHaveAttribute('href', '/sales/edit/2')
+  })
+
   it('Delete button shown for each sale when onDelete is provided', () => {
     const onDelete = vi.fn()
-    render(<SalesTable sales={mockSales} onDelete={onDelete} />)
+    renderTable(onDelete)
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
     expect(deleteButtons).toHaveLength(2)
   })
 
   it('clicking Delete calls onDelete with sale id', async () => {
     const onDelete = vi.fn()
-    render(<SalesTable sales={mockSales} onDelete={onDelete} />)
+    renderTable(onDelete)
     const user = userEvent.setup()
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
     await user.click(deleteButtons[0])
@@ -97,7 +114,7 @@ describe('SalesTable', () => {
   })
 
   it('no Delete buttons when onDelete is not provided', () => {
-    render(<SalesTable sales={mockSales} />)
+    renderTable()
     expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
   })
 })

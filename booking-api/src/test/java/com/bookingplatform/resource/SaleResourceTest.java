@@ -276,6 +276,30 @@ class SaleResourceTest {
                 .statusCode(201);
         }
 
+        @Test @DisplayName("soldAt before item purchaseDate → 400")
+        void soldAtBeforePurchaseDate() {
+            // Item purchased on 2025-01-15, sale on 2024-12-01
+            Item item = createTestItem(orgId, "Future Item", new BigDecimal("100.00"));
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "itemId": "%s",
+                        "platform": "Poshmark",
+                        "salePrice": 200.00,
+                        "platformFees": 40.00,
+                        "soldAt": "2024-12-01T12:00:00Z"
+                    }
+                    """.formatted(item.id.toHexString()))
+            .when()
+                .post("/api/v1/sales")
+            .then()
+                .statusCode(400)
+                .body("message", containsString("purchase date"));
+        }
+
         @Test @DisplayName("salePrice = 0 → 400")
         void salePriceZero() {
             Item item = createTestItem(orgId, "Item", new BigDecimal("50.00"));
@@ -453,6 +477,87 @@ class SaleResourceTest {
         }
     }
 
+    @Nested @DisplayName("PATCH /sales/:id")
+    class Update {
+
+        @Test @DisplayName("update platform → 200 with new platform")
+        void updatePlatform() {
+            Item item = createTestItem(orgId, "Patch Item", new BigDecimal("100.00"));
+            var sale = createTestSaleInDb(orgId, item, new BigDecimal("200.00"), new BigDecimal("40.00"),
+                    Instant.parse("2025-06-01T12:00:00Z"), "Poshmark");
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    { "platform": "Mercari" }
+                    """)
+            .when()
+                .patch("/api/v1/sales/{id}", sale.id.toHexString())
+            .then()
+                .statusCode(200)
+                .body("platform", equalTo("Mercari"));
+        }
+
+        @Test @DisplayName("update salePrice → recomputes netProceeds and profit")
+        void updateSalePriceRecomputes() {
+            Item item = createTestItem(orgId, "Recompute Item", new BigDecimal("100.00"));
+            var sale = createTestSaleInDb(orgId, item, new BigDecimal("200.00"), new BigDecimal("40.00"),
+                    Instant.parse("2025-06-01T12:00:00Z"), "Poshmark");
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    { "salePrice": 300.00 }
+                    """)
+            .when()
+                .patch("/api/v1/sales/{id}", sale.id.toHexString())
+            .then()
+                .statusCode(200)
+                .body("salePrice", equalTo(300.00f))
+                .body("netProceeds", equalTo(260.00f))
+                .body("profit", equalTo(160.00f));
+        }
+
+        @Test @DisplayName("update soldAt before purchaseDate → 400")
+        void updateSoldAtBeforePurchaseDate() {
+            Item item = createTestItem(orgId, "Date Item", new BigDecimal("100.00"));
+            var sale = createTestSaleInDb(orgId, item, new BigDecimal("200.00"), new BigDecimal("40.00"),
+                    Instant.parse("2025-06-01T12:00:00Z"), "Poshmark");
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    { "soldAt": "2024-01-01T00:00:00Z" }
+                    """)
+            .when()
+                .patch("/api/v1/sales/{id}", sale.id.toHexString())
+            .then()
+                .statusCode(400)
+                .body("message", containsString("purchase date"));
+        }
+
+        @Test @DisplayName("sale from other org → 404")
+        void otherOrg() {
+            Item item = createTestItem("other-biz", "Other", new BigDecimal("100.00"));
+            var sale = createTestSaleInDb("other-biz", item, new BigDecimal("200.00"), new BigDecimal("40.00"),
+                    Instant.parse("2025-06-01T12:00:00Z"), "Poshmark");
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    { "platform": "eBay" }
+                    """)
+            .when()
+                .patch("/api/v1/sales/{id}", sale.id.toHexString())
+            .then()
+                .statusCode(404);
+        }
+    }
+
     @Nested @DisplayName("DELETE /sales/:id")
     class Delete {
 
@@ -532,6 +637,17 @@ class SaleResourceTest {
             given()
             .when()
                 .get("/api/v1/sales/aaaaaaaaaaaaaaaaaaaaaaaa")
+            .then()
+                .statusCode(401);
+        }
+
+        @Test @DisplayName("PATCH /sales/:id → 401")
+        void patchNoToken() {
+            given()
+                .contentType(ContentType.JSON)
+                .body("{\"platform\":\"X\"}")
+            .when()
+                .patch("/api/v1/sales/aaaaaaaaaaaaaaaaaaaaaaaa")
             .then()
                 .statusCode(401);
         }

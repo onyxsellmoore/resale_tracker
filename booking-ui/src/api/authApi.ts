@@ -108,13 +108,29 @@ export interface PasskeyLoginBeginResponse {
   timeout: number
 }
 
-export async function beginPasskeyLogin(email: string): Promise<PasskeyLoginBeginResponse> {
+export type LoginBeginResult =
+  | { outcome: 'success'; options: PasskeyLoginBeginResponse }
+  | { outcome: 'no_passkey' }
+  | { outcome: 'error'; message: string }
+
+export async function beginPasskeyLogin(email: string): Promise<LoginBeginResult> {
   const res = await fetch(`${API_BASE}/auth/login/begin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   })
-  if (!res.ok) throw new Error('Sign-in failed. Make sure you have a passkey registered for this account.')
+  if (res.status === 409) return { outcome: 'no_passkey' }
+  if (!res.ok) return { outcome: 'error', message: 'Sign-in failed. Make sure you have a passkey registered for this account.' }
+  return { outcome: 'success', options: await res.json() }
+}
+
+export async function loginWithPassword(email: string, password: string): Promise<PasskeyAuthResponse> {
+  const res = await fetch(`${API_BASE}/auth/login/password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  if (!res.ok) throw new Error('Invalid email or password')
   return res.json()
 }
 

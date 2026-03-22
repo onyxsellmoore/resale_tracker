@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { formatCurrency } from '../utils/format'
 import type { SaleDTO } from '../types'
 import './SalesTable.css'
@@ -115,10 +116,12 @@ export function SalesTable({ sales, onDelete }: SalesTableProps) {
                 </td>
                 <td>{new Date(sale.soldAt).toLocaleDateString()}</td>
                 <td>
+                  <Link to={`/sales/edit/${sale.id}`} className="btn-secondary" style={{ textDecoration: 'none' }}>Edit</Link>
                   {onDelete && (
                     <button
                       type="button"
                       className="btn-danger"
+                      style={{ marginLeft: 8 }}
                       onClick={() => onDelete(sale.id)}
                     >
                       Delete

@@ -84,7 +84,7 @@ describe('InventoryPage', () => {
     expect(screen.queryByText('Add Item', { selector: 'h2' })).not.toBeInTheDocument()
   })
 
-  it('delete button calls deleteItem and refreshes', async () => {
+  it('delete button shows confirmation then calls deleteItem', async () => {
     mockDeleteItem.mockResolvedValue(undefined)
     renderPage()
     const user = userEvent.setup()
@@ -93,6 +93,13 @@ describe('InventoryPage', () => {
     })
     const deleteBtn = screen.getByRole('button', { name: /delete/i })
     await user.click(deleteBtn)
+
+    // Should show confirmation, not call deleteItem yet
+    expect(mockDeleteItem).not.toHaveBeenCalled()
+    expect(screen.getByText(/permanently delete/i)).toBeInTheDocument()
+
+    // Confirm the deletion
+    await user.click(screen.getByRole('button', { name: /yes, delete/i }))
 
     await waitFor(() => {
       expect(mockDeleteItem).toHaveBeenCalledWith('1', undefined)

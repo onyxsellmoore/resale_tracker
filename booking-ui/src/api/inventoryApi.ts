@@ -1,5 +1,5 @@
 import { apiFetch } from './apiClient'
-import type { ItemDTO, CreateItemPayload } from '../types'
+import type { ItemDTO, CreateItemPayload, UpdateItemPayload } from '../types'
 
 const API_BASE = '/api/v1'
 
@@ -26,6 +26,24 @@ export async function createItem(payload: CreateItemPayload, token?: string): Pr
     body: JSON.stringify(payload),
   })
   if (!res.ok) throw new Error('Failed to create item')
+  return res.json()
+}
+
+export async function getItem(id: string, token?: string): Promise<ItemDTO> {
+  const res = await apiFetch(`${API_BASE}/items/${id}`, {
+    headers: authHeaders(token),
+  })
+  if (!res.ok) throw new Error('Failed to fetch item')
+  return res.json()
+}
+
+export async function updateItem(id: string, payload: UpdateItemPayload, token?: string): Promise<ItemDTO> {
+  const res = await apiFetch(`${API_BASE}/items/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error('Failed to update item')
   return res.json()
 }
 

@@ -12,6 +12,10 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.bson.types.ObjectId;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.List;
 
@@ -26,7 +30,7 @@ public class UserResource {
     @Context
     ContainerRequestContext requestContext;
 
-    public record CreateUserRequest(String email, String displayName, String role) {}
+    public record CreateUserRequest(String email, String displayName, String role, String password) {}
     public record UserResponse(String id, String email, String displayName, String role, String orgId, String createdAt) {}
 
     @POST
@@ -56,6 +60,16 @@ public class UserResource {
         user.displayName = request.displayName();
         user.role = role;
         user.createdAt = Instant.now();
+
+        if (request.password() != null && !request.password().isBlank()) {
+            byte[] saltBytes = new byte[16];
+            new SecureRandom().nextBytes(saltBytes);
+            StringBuilder saltHex = new StringBuilder();
+            for (byte b : saltBytes) saltHex.append(String.format("%02x", b));
+            user.temporaryPasswordSalt = saltHex.toString();
+            user.temporaryPasswordHash = sha256Hex(user.temporaryPasswordSalt + request.password());
+        }
+
         try {
             userRepository.persist(user);
         } catch (MongoWriteException e) {
@@ -80,6 +94,18 @@ public class UserResource {
 
         List<UserResponse> responses = users.stream().map(this::toResponse).toList();
         return Response.ok(responses).build();
+    }
+
+    private String sha256Hex(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private UserResponse toResponse(User user) {

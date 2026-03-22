@@ -1,10 +1,11 @@
-import { Routes, Route, Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Routes, Route, Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
-import { getSales, deleteSale } from '../api/salesApi'
+import { getSales, getSale, deleteSale } from '../api/salesApi'
 import { getItems } from '../api/inventoryApi'
 import { SalesTable } from '../components/SalesTable'
 import { RecordSaleForm } from '../components/RecordSaleForm'
+import { EditSaleForm } from '../components/EditSaleForm'
 import { ImportSalesPage } from './ImportSalesPage'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorMessage } from '../components/ErrorMessage'
@@ -108,12 +109,49 @@ function RecordSaleView() {
   )
 }
 
+function EditSaleView() {
+  const { id } = useParams<{ id: string }>()
+  const { token, orgId } = useAuth()
+  const businessId = orgId ?? 'default'
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const { data: sale, isLoading, error } = useQuery({
+    queryKey: ['sale', id],
+    queryFn: () => getSale(id!, token ?? undefined),
+    enabled: !!id,
+  })
+
+  function handleSuccess() {
+    queryClient.invalidateQueries({ queryKey: ['sales', businessId] })
+    navigate('/sales')
+  }
+
+  if (isLoading) return <LoadingSkeleton rows={4} />
+  if (error || !sale) {
+    return (
+      <ErrorMessage
+        message="Failed to load sale."
+        onRetry={() => queryClient.refetchQueries({ queryKey: ['sale', id] })}
+      />
+    )
+  }
+
+  return (
+    <div style={{ maxWidth: 600 }}>
+      <Link to="/sales">&larr; Back to Sales</Link>
+      <EditSaleForm sale={sale} onSuccess={handleSuccess} />
+    </div>
+  )
+}
+
 export function SalesPage() {
   return (
     <div className="page-enter">
       <Routes>
         <Route index element={<SalesListView />} />
         <Route path="new" element={<RecordSaleView />} />
+        <Route path="edit/:id" element={<EditSaleView />} />
         <Route path="import" element={<ImportSalesPage />} />
       </Routes>
     </div>

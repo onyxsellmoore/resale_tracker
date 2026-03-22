@@ -274,11 +274,11 @@ class ItemResourceTest {
         }
     }
 
-    @Nested @DisplayName("immutable fields")
-    class ImmutableFields {
+    @Nested @DisplayName("editable purchasePrice and purchaseDate")
+    class EditableFields {
 
-        @Test @DisplayName("PATCH with purchasePrice → value unchanged in response")
-        void purchasePriceIgnored() {
+        @Test @DisplayName("PATCH with purchasePrice → value updated")
+        void purchasePriceUpdated() {
             Item item = createTestItem(orgId, "Test Item", ItemStatus.AVAILABLE);
 
             given()
@@ -286,8 +286,34 @@ class ItemResourceTest {
                 .header("Authorization", "Bearer " + adminToken)
                 .body("""
                     {
-                        "name": "Test Item",
-                        "purchasePrice": 9999.99,
+                        "purchasePrice": 9999.99
+                    }
+                    """)
+            .when()
+                .patch("/api/v1/items/{id}", item.id.toHexString())
+            .then()
+                .statusCode(200)
+                .body("purchasePrice", equalTo(9999.99f));
+
+            // Verify via GET
+            given()
+                .header("Authorization", "Bearer " + adminToken)
+            .when()
+                .get("/api/v1/items/{id}", item.id.toHexString())
+            .then()
+                .statusCode(200)
+                .body("purchasePrice", equalTo(9999.99f));
+        }
+
+        @Test @DisplayName("PATCH with purchaseDate → value updated")
+        void purchaseDateUpdated() {
+            Item item = createTestItem(orgId, "Test Item", ItemStatus.AVAILABLE);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
                         "purchaseDate": "2099-12-31T00:00:00Z"
                     }
                     """)
@@ -295,23 +321,14 @@ class ItemResourceTest {
                 .patch("/api/v1/items/{id}", item.id.toHexString())
             .then()
                 .statusCode(200)
-                .body("purchasePrice", equalTo(250.00f));
-
-            // Also verify via GET to confirm DB was not modified
-            given()
-                .header("Authorization", "Bearer " + adminToken)
-            .when()
-                .get("/api/v1/items/{id}", item.id.toHexString())
-            .then()
-                .statusCode(200)
-                .body("purchasePrice", equalTo(250.00f));
+                .body("purchaseDate", equalTo("2099-12-31T00:00:00Z"));
         }
     }
 
     @Nested @DisplayName("DELETE /items/:id")
     class Delete {
 
-        @Test @DisplayName("AVAILABLE item → 204, no longer in list")
+        @Test @DisplayName("AVAILABLE item → 204, hard deleted from DB")
         void availableItem() {
             Item item = createTestItem(orgId, "To Delete", ItemStatus.AVAILABLE);
 
@@ -322,9 +339,16 @@ class ItemResourceTest {
             .then()
                 .statusCode(204);
 
+            // Item should be completely gone (hard delete), not just soft-deleted
             given()
                 .header("Authorization", "Bearer " + adminToken)
-                .queryParam("status", "AVAILABLE")
+            .when()
+                .get("/api/v1/items/{id}", item.id.toHexString())
+            .then()
+                .statusCode(404);
+
+            given()
+                .header("Authorization", "Bearer " + adminToken)
             .when()
                 .get("/api/v1/items")
             .then()

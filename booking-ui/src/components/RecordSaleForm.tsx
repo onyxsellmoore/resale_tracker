@@ -58,6 +58,12 @@ export function RecordSaleForm({ businessId, items, onSuccess, preselectedItemId
     if (feesNum < 0) validationErrors.push('Platform fees must be >= 0')
     if (!soldAt) validationErrors.push('Date sold is required')
 
+    if (selectedItem && soldAt && soldAt < selectedItem.purchaseDate.split('T')[0]) {
+      validationErrors.push(
+        `Sale date cannot be before this item's purchase date (purchased ${new Date(selectedItem.purchaseDate).toLocaleDateString()}).`
+      )
+    }
+
     if (validationErrors.length > 0) {
       setErrors(validationErrors)
       return
@@ -102,6 +108,11 @@ export function RecordSaleForm({ businessId, items, onSuccess, preselectedItemId
       {errors.map((err, i) => (
         <div key={i} className="form-error">{err}</div>
       ))}
+      {errors.some((e) => e.includes('purchase date')) && selectedItemId && (
+        <Link to={`/inventory/edit/${selectedItemId}`} style={{ fontSize: '0.85rem' }}>
+          Edit this item to correct the purchase date →
+        </Link>
+      )}
 
       <div className="form-group">
         <label htmlFor="sale-item">Item</label>

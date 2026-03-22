@@ -16,6 +16,7 @@ interface RowState {
   matchedItemId: string | null
   newItem: NewItemState | null
   showNewItemForm: boolean
+  dateError: boolean
 }
 
 interface NewItemState {
@@ -92,6 +93,7 @@ export function ImportSalesPage() {
         matchedItemId: null,
         newItem: null,
         showNewItemForm: false,
+        dateError: false,
       }
     })
     setRowStates(states)
@@ -103,6 +105,7 @@ export function ImportSalesPage() {
   }
 
   function isRowResolved(rs: RowState): boolean {
+    if (rs.dateError) return false
     if (rs.isDuplicate) return true
     if (rs.skipped) return true
     if (rs.matchedItemId) return true
@@ -274,10 +277,22 @@ export function ImportSalesPage() {
                       <ItemSearchInput
                         items={availableItems}
                         value={rs.matchedItemId}
-                        onChange={(item) => updateRowState(idx, { matchedItemId: item?.id ?? null, newItem: null })}
+                        onChange={(item) => {
+                          const hasDateError = item != null && new Date(rs.row.soldAt) < new Date(item.purchaseDate)
+                          updateRowState(idx, { matchedItemId: item?.id ?? null, newItem: null, dateError: hasDateError })
+                        }}
                         aria-label={`Match ${rs.row.title}`}
                         placeholder="Search items..."
                       />
+                      {rs.dateError && rs.matchedItemId && (
+                        <div style={{ color: 'var(--color-loss)', fontSize: '0.8rem', marginTop: 4 }}>
+                          ⚠ Sale date ({rs.row.soldAt.split('T')[0]}) is before this item's purchase date. Fix this before importing.
+                          {' '}
+                          <a href={`/inventory/edit/${rs.matchedItemId}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem' }}>
+                            Edit item →
+                          </a>
+                        </div>
+                      )}
                       <button
                         type="button"
                         style={{ marginTop: 4, background: 'none', border: 'none', color: 'var(--color-brand-hover)', cursor: 'pointer', fontSize: '0.85rem', padding: 0 }}

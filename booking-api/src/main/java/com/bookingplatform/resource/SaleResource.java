@@ -120,6 +120,12 @@ public class SaleResource {
                     .build();
         }
 
+        if (request.soldAt.isBefore(item.purchaseDate)) {
+            return Response.status(400)
+                    .entity(new ErrorResponse("Sale date cannot be before the item's purchase date", List.of()))
+                    .build();
+        }
+
         // Compute fields
         BigDecimal netProceeds = request.salePrice.subtract(request.platformFees);
         BigDecimal purchasePrice = item.purchasePrice.bigDecimalValue();
@@ -214,6 +220,74 @@ public class SaleResource {
         }
 
         Item item = lookupItem(sale.itemId);
+        String itemName = item != null ? item.name : null;
+        String itemBrand = item != null ? item.brand : null;
+        return Response.ok(SaleDTO.from(sale, itemName, itemBrand)).build();
+    }
+
+    public record UpdateSaleRequest(
+        String platform,
+        BigDecimal salePrice,
+        BigDecimal platformFees,
+        Instant soldAt,
+        String notes
+    ) {}
+
+    @PATCH
+    @Path("/{id}")
+    public Response updateSale(@PathParam("id") String id, UpdateSaleRequest request) {
+        if (!hasRole("ADMIN", "SELLER")) {
+            return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
+        }
+
+        String orgId = getOrgId();
+
+        Sale sale;
+        try {
+            sale = saleRepository.findById(new ObjectId(id));
+        } catch (IllegalArgumentException e) {
+            return Response.status(404).build();
+        }
+
+        if (sale == null || !sale.businessId.equals(orgId)) {
+            return Response.status(404).build();
+        }
+
+        Item item = lookupItem(sale.itemId);
+
+        if (request.platform() != null) sale.platform = request.platform();
+        if (request.notes() != null) sale.notes = request.notes();
+        if (request.soldAt() != null) {
+            if (item != null && request.soldAt().isBefore(item.purchaseDate)) {
+                return Response.status(400)
+                        .entity(new ErrorResponse("Sale date cannot be before the item's purchase date", List.of()))
+                        .build();
+            }
+            sale.soldAt = request.soldAt();
+        }
+
+        boolean recompute = false;
+        if (request.salePrice() != null) {
+            sale.salePrice = new Decimal128(request.salePrice());
+            recompute = true;
+        }
+        if (request.platformFees() != null) {
+            sale.platformFees = new Decimal128(request.platformFees());
+            recompute = true;
+        }
+
+        if (recompute) {
+            BigDecimal sp = sale.salePrice.bigDecimalValue();
+            BigDecimal fees = sale.platformFees.bigDecimalValue();
+            BigDecimal netProceeds = sp.subtract(fees);
+            BigDecimal purchasePrice = item != null ? item.purchasePrice.bigDecimalValue() : BigDecimal.ZERO;
+            BigDecimal profit = netProceeds.subtract(purchasePrice);
+            sale.netProceeds = new Decimal128(netProceeds);
+            sale.profit = new Decimal128(profit);
+        }
+
+        saleRepository.update(sale);
+
         String itemName = item != null ? item.name : null;
         String itemBrand = item != null ? item.brand : null;
         return Response.ok(SaleDTO.from(sale, itemName, itemBrand)).build();

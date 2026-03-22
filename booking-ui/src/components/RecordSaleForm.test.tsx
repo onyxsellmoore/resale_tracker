@@ -215,6 +215,48 @@ describe('RecordSaleForm', () => {
     expect(mockOnSuccess).toHaveBeenCalled()
   })
 
+  it('shows validation error when soldAt is before item purchaseDate', async () => {
+    renderForm(availableItems, 'item1')
+    const user = userEvent.setup()
+
+    // item1 purchaseDate is 2025-01-15
+    const dateInput = screen.getByLabelText(/date sold/i)
+    await user.clear(dateInput)
+    await user.type(dateInput, '2024-12-01')
+
+    await user.type(screen.getByLabelText('Platform'), 'Poshmark')
+    const salePriceInput = screen.getByLabelText(/sale price/i)
+    await user.clear(salePriceInput)
+    await user.type(salePriceInput, '400')
+
+    await user.click(screen.getByRole('button', { name: /record sale/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/sale date cannot be before/i)).toBeInTheDocument()
+    })
+    expect(mockCreateSale).not.toHaveBeenCalled()
+  })
+
+  it('shows "Edit this item" link when date error is present', async () => {
+    renderForm(availableItems, 'item1')
+    const user = userEvent.setup()
+
+    const dateInput = screen.getByLabelText(/date sold/i)
+    await user.clear(dateInput)
+    await user.type(dateInput, '2024-12-01')
+
+    await user.type(screen.getByLabelText('Platform'), 'Poshmark')
+    const salePriceInput = screen.getByLabelText(/sale price/i)
+    await user.clear(salePriceInput)
+    await user.type(salePriceInput, '400')
+
+    await user.click(screen.getByRole('button', { name: /record sale/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/edit this item/i)).toBeInTheDocument()
+    })
+  })
+
   it('409 response shows "Item is already sold" inline error', async () => {
     mockCreateSale.mockResolvedValueOnce({
       error: 'Item is already sold',

@@ -261,6 +261,43 @@ describe('ImportSalesPage', () => {
       expect(screen.getByLabelText(/purchase price/i)).toBeInTheDocument()
     })
 
+    it('shows date error when matched item purchaseDate is after row soldAt', async () => {
+      // testItems[0] has purchaseDate 2025-01-01, testParsedRows[0] has soldAt 2023-06-25 (before purchase)
+      const user = await goToStep2()
+
+      // Match Dior Spray to Gucci Bag (purchase 2025-01-01, sale 2023-06-25)
+      const comboboxes = screen.getAllByRole('combobox')
+      await user.type(comboboxes[0], 'Gucci')
+      await waitFor(() => {
+        expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
+      })
+      await user.click(screen.getByText('Gucci Bag'))
+
+      await waitFor(() => {
+        expect(screen.getByText(/sale date.*before.*purchase date/i)).toBeInTheDocument()
+      })
+    })
+
+    it('Next button remains disabled when any row has a dateError', async () => {
+      const user = await goToStep2()
+
+      // Match Dior Spray to Gucci Bag (date conflict)
+      const comboboxes = screen.getAllByRole('combobox')
+      await user.type(comboboxes[0], 'Gucci')
+      await waitFor(() => {
+        expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
+      })
+      await user.click(screen.getByText('Gucci Bag'))
+
+      // Skip the other non-duplicate row
+      const skipCheckboxes = screen.getAllByLabelText(/skip/i)
+      await user.click(skipCheckboxes[skipCheckboxes.length - 1])
+
+      // Next should stay disabled due to date error
+      const nextBtn = screen.getByRole('button', { name: /next/i })
+      expect(nextBtn).toBeDisabled()
+    })
+
     it('Next button is disabled when a non-duplicate row is unresolved', async () => {
       await goToStep2()
       const nextBtn = screen.getByRole('button', { name: /next/i })
@@ -396,7 +433,7 @@ describe('ImportSalesPage', () => {
       const rows: ParsedSaleRow[] = [
         {
           title: 'Test Item', platform: 'Mercari', salePrice: 100, platformFees: 10,
-          soldAt: '2023-06-25T00:00:00.000Z', platformOrderId: 'm999', prefill: {},
+          soldAt: '2025-06-25T00:00:00.000Z', platformOrderId: 'm999', prefill: {},
         },
         {
           title: 'Dup Item', platform: 'Mercari', salePrice: 50, platformFees: 5,

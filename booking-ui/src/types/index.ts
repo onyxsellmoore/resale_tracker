@@ -29,6 +29,25 @@ export interface CreateItemPayload {
   notes?: string
 }
 
+export interface UpdateItemPayload {
+  name?: string
+  brand?: string
+  category?: string
+  condition?: ItemCondition
+  purchasePrice?: number
+  purchaseDate?: string
+  description?: string
+  notes?: string
+}
+
+export interface UpdateSalePayload {
+  platform?: string
+  salePrice?: number
+  platformFees?: number
+  soldAt?: string
+  notes?: string
+}
+
 export interface CreateSalePayload {
   businessId: string
   itemId: string

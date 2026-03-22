@@ -108,12 +108,30 @@ public class AuthResource {
             return Response.status(401).entity(new ErrorResponse("Authentication failed")).build();
         }
 
-        Optional<Map<String, Object>> options = authService.loginBegin(request.email());
-        if (options.isEmpty()) {
+        AuthService.LoginBeginResult result = authService.loginBeginWithStatus(request.email());
+        if (result.status() == AuthService.LoginBeginStatus.USER_NOT_FOUND) {
             return Response.status(401).entity(new ErrorResponse("Authentication failed")).build();
         }
+        if (result.status() == AuthService.LoginBeginStatus.NO_PASSKEY) {
+            return Response.status(409).entity(new ErrorResponse("no_passkey")).build();
+        }
+        return Response.ok(result.options()).build();
+    }
 
-        return Response.ok(options.get()).build();
+    public record PasswordLoginRequest(String email, String password) {}
+
+    @POST
+    @Path("/login/password")
+    public Response loginWithPassword(PasswordLoginRequest request) {
+        if (request == null || request.email() == null || request.password() == null) {
+            return Response.status(401).entity(new ErrorResponse("Authentication failed")).build();
+        }
+        Optional<AuthService.TokenPair> tokens = authService.loginWithPassword(request.email(), request.password());
+        if (tokens.isEmpty()) {
+            return Response.status(401).entity(new ErrorResponse("Invalid email or password")).build();
+        }
+        AuthService.TokenPair pair = tokens.get();
+        return Response.ok(new AuthResponse(pair.accessToken(), pair.refreshToken())).build();
     }
 
     @POST

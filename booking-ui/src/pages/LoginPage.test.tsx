@@ -8,12 +8,14 @@ import { LoginPage } from './LoginPage'
 vi.mock('../api/authApi', () => ({
   beginPasskeyLogin: vi.fn(),
   completePasskeyLogin: vi.fn(),
+  loginWithPassword: vi.fn(),
   b64urlToBytes: vi.fn((s: string) => new Uint8Array([1, 2, 3])),
 }))
 
-import { beginPasskeyLogin, completePasskeyLogin } from '../api/authApi'
+import { beginPasskeyLogin, completePasskeyLogin, loginWithPassword } from '../api/authApi'
 const mockBeginPasskeyLogin = vi.mocked(beginPasskeyLogin)
 const mockCompletePasskeyLogin = vi.mocked(completePasskeyLogin)
+const mockLoginWithPassword = vi.mocked(loginWithPassword)
 
 function renderPage() {
   return render(
@@ -37,9 +39,10 @@ describe('LoginPage', () => {
     })
     mockBeginPasskeyLogin.mockReset()
     mockCompletePasskeyLogin.mockReset()
+    mockLoginWithPassword.mockReset()
   })
 
-  it('does NOT render a password input', () => {
+  it('does NOT render a password input initially', () => {
     renderPage()
     expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
   })
@@ -56,10 +59,13 @@ describe('LoginPage', () => {
 
   it('shows error when passkey login is cancelled (NotAllowedError)', async () => {
     mockBeginPasskeyLogin.mockResolvedValue({
-      challenge: 'test-challenge',
-      rpId: 'localhost',
-      allowCredentials: [{ id: 'cred1', type: 'public-key' }],
-      timeout: 60000,
+      outcome: 'success',
+      options: {
+        challenge: 'test-challenge',
+        rpId: 'localhost',
+        allowCredentials: [{ id: 'cred1', type: 'public-key' }],
+        timeout: 60000,
+      },
     })
 
     const notAllowedError = new DOMException('User cancelled', 'NotAllowedError')
@@ -97,7 +103,10 @@ describe('LoginPage', () => {
   })
 
   it('shows generic error when passkey login fails', async () => {
-    mockBeginPasskeyLogin.mockRejectedValue(new Error('Server error'))
+    mockBeginPasskeyLogin.mockResolvedValue({
+      outcome: 'error',
+      message: 'Sign-in failed. Make sure you have a passkey registered for this account.',
+    })
 
     renderPage()
     const user = userEvent.setup()
@@ -107,5 +116,81 @@ describe('LoginPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/sign-in failed/i)).toBeInTheDocument()
     })
+  })
+
+  it('shows password fallback when beginPasskeyLogin returns no_passkey', async () => {
+    mockBeginPasskeyLogin.mockResolvedValue({ outcome: 'no_passkey' })
+
+    renderPage()
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText(/email/i), 'test@test.com')
+    await user.click(screen.getByRole('button', { name: /sign in with passkey/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/no passkey found/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/temporary password/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /sign in with password/i })).toBeInTheDocument()
+    })
+  })
+
+  it('submitting with password visible calls loginWithPassword', async () => {
+    mockBeginPasskeyLogin.mockResolvedValue({ outcome: 'no_passkey' })
+    mockLoginWithPassword.mockResolvedValue({ accessToken: 'tok', refreshToken: 'ref' })
+
+    renderPage()
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText(/email/i), 'test@test.com')
+    await user.click(screen.getByRole('button', { name: /sign in with passkey/i }))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/temporary password/i)).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByLabelText(/temporary password/i), 'secret123')
+    await user.click(screen.getByRole('button', { name: /sign in with password/i }))
+
+    await waitFor(() => {
+      expect(mockLoginWithPassword).toHaveBeenCalledWith('test@test.com', 'secret123')
+    })
+  })
+
+  it('shows error when loginWithPassword fails', async () => {
+    mockBeginPasskeyLogin.mockResolvedValue({ outcome: 'no_passkey' })
+    mockLoginWithPassword.mockRejectedValue(new Error('Invalid email or password'))
+
+    renderPage()
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText(/email/i), 'test@test.com')
+    await user.click(screen.getByRole('button', { name: /sign in with passkey/i }))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/temporary password/i)).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByLabelText(/temporary password/i), 'wrong')
+    await user.click(screen.getByRole('button', { name: /sign in with password/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument()
+    })
+  })
+
+  it('changing email hides password fallback', async () => {
+    mockBeginPasskeyLogin.mockResolvedValue({ outcome: 'no_passkey' })
+
+    renderPage()
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText(/email/i), 'test@test.com')
+    await user.click(screen.getByRole('button', { name: /sign in with passkey/i }))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/temporary password/i)).toBeInTheDocument()
+    })
+
+    await user.clear(screen.getByLabelText(/email/i))
+    await user.type(screen.getByLabelText(/email/i), 'other@test.com')
+
+    expect(screen.queryByLabelText(/temporary password/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sign in with passkey/i })).toBeInTheDocument()
   })
 })
