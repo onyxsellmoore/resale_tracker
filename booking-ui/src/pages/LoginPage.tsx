@@ -52,11 +52,11 @@ export function LoginPage() {
 
       const assertion = await navigator.credentials.get({
         publicKey: {
-          challenge: b64urlToBytes(options.challenge),
+          challenge: b64urlToBytes(options.challenge) as unknown as BufferSource,
           rpId: options.rpId,
           allowCredentials: options.allowCredentials?.map(c => ({
-            ...c,
-            id: b64urlToBytes(c.id),
+            id: b64urlToBytes(c.id) as unknown as BufferSource,
+            type: 'public-key' as const,
           })),
           timeout: options.timeout,
         },

@@ -14,7 +14,7 @@ export function ProfitByPlatformChart({ data }: ProfitByPlatformChartProps) {
         <XAxis dataKey="platform" stroke={CHART_COLORS.textMuted} />
         <YAxis stroke={CHART_COLORS.textMuted} />
         <Tooltip
-          formatter={(value: number) => [`$${value.toFixed(2)}`, 'Profit']}
+          formatter={((value: number) => [`$${value.toFixed(2)}`, 'Profit']) as any}
           contentStyle={{ background: CHART_COLORS.surface2, border: `1px solid ${CHART_COLORS.border}` }}
         />
         <Bar dataKey="totalProfit">

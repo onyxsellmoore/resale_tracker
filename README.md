@@ -1,10 +1,10 @@
 # Inventory Ledger
 
-Inventory and sales tracking platform for small businesses. Built with Quarkus 3 (Java 21) + React 19 + MongoDB.
+Inventory and sales tracking platform for small businesses. Built with Quarkus 3 (Java 25) + React 19 + MongoDB.
 
 ## Prerequisites
 
-- Java 21 (via SDKMAN: `sdk use java 21.0.9-jbr`)
+- Java 25
 - Node 20+
 - Docker Desktop
 
@@ -117,7 +117,43 @@ Sign out from the nav bar. Go to http://localhost:5173/login. Enter the email th
 
 If you want a fresh isolated session, run `./scripts/seed-dev-user.sh` again. It creates a new independent user. All previous users and their data remain intact.
 
-## Environment variables
+## Production architecture
 
-Copy `.env.example` to `.env` and fill in values before deploying.
-Local dev works without `.env` — defaults are set in `application.properties`.
+```
+[User's browser]
+      │  HTTPS
+      ▼
+[Firebase Hosting CDN]  ──HTTPS──►  [Cloud Run — us-central1]
+                                              │
+                                       MongoDB wire protocol (TLS)
+                                              │
+                                              ▼
+                                    [Atlas M0 — GCP us-central1]
+```
+
+**Prerequisites for deployment:** GCP CLI (`gcloud`), Firebase CLI (`firebase`), Docker
+
+### Deploy frontend
+
+```bash
+cd booking-ui
+cp .env.production.example .env.production   # set VITE_API_URL to Cloud Run URL
+npm run build
+firebase deploy --only hosting
+```
+
+### Deploy backend
+
+```bash
+cd booking-api && ./mvnw package -DskipTests
+docker buildx build --platform linux/amd64 -f src/main/docker/Dockerfile.jvm -t gcr.io/resales-tracker/booking-api:latest .
+docker push gcr.io/resales-tracker/booking-api:latest
+gcloud run deploy booking-api --image gcr.io/resales-tracker/booking-api:latest --region us-central1 --project resales-tracker
+```
+
+## Required environment files (gitignored)
+
+These files are not committed — recreate locally:
+
+- `booking-ui/.env.production` — set `VITE_API_URL` to the Cloud Run service URL
+- `booking-ui/.env.development` — set `VITE_API_URL=http://localhost:8080` (optional; Vite proxy handles this)

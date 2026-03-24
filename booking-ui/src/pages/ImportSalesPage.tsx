@@ -6,7 +6,7 @@ import { getSales, createSale } from '../api/salesApi'
 import { getItems, createItem } from '../api/inventoryApi'
 import { validateCsvStructure, parseImportFile } from '../utils/importParser'
 import { ItemSearchInput } from '../components/ItemSearchInput'
-import type { ParsedSaleRow, ItemDTO, SaleDTO, ItemCondition } from '../types'
+import type { ParsedSaleRow, SaleDTO, ItemCondition } from '../types'
 import '../components/Form.css'
 
 interface RowState {

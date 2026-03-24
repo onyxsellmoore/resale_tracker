@@ -5,14 +5,19 @@
 
 Inventory and sales ledger for vintage/luxury resellers trading on multiple platforms (eBay, Poshmark, etc.).
 "Booking" means bookkeeping — tracking cost-of-goods, sale prices, platform fees, and profit — not appointment scheduling.
-Deployed via Docker Compose (MongoDB + Quarkus API + Vite React SPA).
+Local dev via Docker Compose; production on GCP (Cloud Run + Firebase Hosting + Atlas).
 
 ## 2. Tech Stack
 
 | Layer         | Value                                              |
 |---------------|----------------------------------------------------|
-| Backend       | Quarkus 3.32, Java 21, JAX-RS, Panache MongoDB     |
+| Backend       | Quarkus 3.32, Java 25, JAX-RS, Panache MongoDB     |
 | Database      | MongoDB 7 (via docker-compose)                      |
+| Database (prod) | MongoDB Atlas M0 (GCP us-central1, permanent free tier) |
+| Backend (prod)  | Google Cloud Run (us-central1, 2M req/month free)     |
+| Frontend (prod) | Firebase Hosting (Spark free tier, global CDN)        |
+| Secrets         | Google Secret Manager (6 active versions free)        |
+| Container registry | GCP Artifact Registry (0.5 GB free)                |
 | Money type    | `Decimal128` (storage) / `BigDecimal` (compute)     |
 | Frontend      | React 19, TypeScript 5.9, Vite 8, React Router 7   |
 | State/Fetch   | TanStack React Query 5, Axios                       |
@@ -162,6 +167,7 @@ BACKEND API:
   booking-api/src/main/java/.../resource/UserResource.java   — create/list users (ADMIN only)
   booking-api/src/main/java/.../resource/AnalyticsResource.java — aggregated analytics
   booking-api/src/main/java/.../security/SecurityFilter.java — JWT validation, orgId/role extraction
+  booking-api/src/main/java/.../security/CorsFilter.java     — Custom CORS filter (PreMatching JAX-RS)
   booking-api/src/main/java/.../service/AuthService.java     — JWT sign/verify, WebAuthn passkey registration + login
   booking-api/src/main/java/.../service/AnalyticsService.java — BigDecimal aggregation logic
   booking-api/src/main/java/.../util/MoneyUtils.java         — Decimal128 ↔ BigDecimal conversion
@@ -185,6 +191,10 @@ INFRA:
   docker-compose.yml                        — mongo + mongo-express + mailhog + backend + frontend
   booking-api/src/main/resources/application.properties — DB, JWT, CORS, WebAuthn config
   booking-ui/src/theme.css                  — CSS custom properties (design tokens)
+  firebase.json                             — Firebase Hosting config (SPA rewrite rule, immutable asset cache headers)
+  .firebaserc                               — Firebase project alias binding (links this repo to the GCP/Firebase project)
+  booking-ui/.env.production                — VITE_API_URL for production build (gitignored; see .env.production.example)
+  booking-ui/.env.development               — VITE_API_URL for local dev (gitignored)
 ```
 
 ## 8. Engineering Rules
@@ -256,10 +266,10 @@ export function ThingPage() {
 ```ts
 // booking-ui/src/api/thingApi.ts
 import axios from 'axios'
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+import { API_BASE } from './config'
 
 export async function getThings(businessId: string, token: string) {
-  const res = await axios.get(`${API}/api/v1/things`, {
+  const res = await axios.get(`${API_BASE}/things`, {
     params: { businessId },
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -333,6 +343,18 @@ cd booking-api && ./mvnw clean install -DskipTests
 cd booking-ui  && rm -rf node_modules && npm install && npm run build
 ```
 
+### Deploy to production
+```bash
+# Deploy frontend to Firebase Hosting
+cd booking-ui && npm run build && firebase deploy --only hosting
+
+# Deploy backend to Cloud Run (after building and pushing Docker image)
+cd booking-api && ./mvnw package -DskipTests
+docker buildx build --platform linux/amd64 -f src/main/docker/Dockerfile.jvm -t gcr.io/resales-tracker/booking-api:latest .
+docker push gcr.io/resales-tracker/booking-api:latest
+gcloud run deploy booking-api --image gcr.io/resales-tracker/booking-api:latest --region us-central1 --project resales-tracker
+```
+
 ## 11. Environment Variables
 
 | Variable                              | Purpose                          | Set in                          |
@@ -348,3 +370,6 @@ cd booking-ui  && rm -rf node_modules && npm install && npm run build
 | `QUARKUS_MONGODB_CONNECTION_STRING`   | Override MongoDB URI             | docker-compose.yml              |
 | `QUARKUS_MONGODB_DATABASE`            | Override database name           | docker-compose.yml              |
 | `VITE_API_URL`                        | Backend URL for frontend         | booking-ui env (optional)       |
+| `WEBAUTHN_RP_ID`                      | Production WebAuthn relying party domain (bare domain) | Google Secret Manager |
+| `WEBAUTHN_ORIGIN`                     | Production WebAuthn full origin (`https://...`) | Google Secret Manager |
+| `CORS_ORIGINS`                        | Comma-separated allowed frontend origins | Google Secret Manager |

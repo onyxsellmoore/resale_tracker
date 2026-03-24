@@ -70,8 +70,9 @@ export function OrgSetupPage() {
       const credential = await navigator.credentials.create({
         publicKey: {
           ...options,
-          challenge: b64urlToBytes(options.challenge),
-          user: { ...options.user, id: b64urlToBytes(options.user.id) },
+          challenge: b64urlToBytes(options.challenge) as unknown as BufferSource,
+          user: { ...options.user, id: b64urlToBytes(options.user.id) as unknown as BufferSource },
+          pubKeyCredParams: options.pubKeyCredParams.map(p => ({ ...p, type: 'public-key' as const })),
         },
       }) as PublicKeyCredential
 

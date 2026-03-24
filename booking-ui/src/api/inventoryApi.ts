@@ -1,7 +1,6 @@
 import { apiFetch } from './apiClient'
+import { API_BASE } from './config'
 import type { ItemDTO, CreateItemPayload, UpdateItemPayload } from '../types'
-
-const API_BASE = '/api/v1'
 
 function authHeaders(token?: string): Record<string, string> {
   const headers: Record<string, string> = {}

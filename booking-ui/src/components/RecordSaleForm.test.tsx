@@ -181,6 +181,7 @@ describe('RecordSaleForm', () => {
         netProceeds: 320,
         profit: 70,
         soldAt: '2025-06-01T00:00:00Z',
+        platformOrderId: null,
         notes: null,
         createdAt: '2025-06-01T00:00:00Z',
       },

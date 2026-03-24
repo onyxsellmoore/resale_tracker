@@ -1,6 +1,5 @@
 import { apiFetch } from './apiClient'
-
-const API_BASE = '/api/v1'
+import { API_BASE } from './config'
 
 export interface UserDTO {
   id: string

@@ -9,7 +9,7 @@ vi.mock('../api/authApi', () => ({
   beginPasskeyLogin: vi.fn(),
   completePasskeyLogin: vi.fn(),
   loginWithPassword: vi.fn(),
-  b64urlToBytes: vi.fn((s: string) => new Uint8Array([1, 2, 3])),
+  b64urlToBytes: vi.fn((_s: string) => new Uint8Array([1, 2, 3])),
 }))
 
 import { beginPasskeyLogin, completePasskeyLogin, loginWithPassword } from '../api/authApi'

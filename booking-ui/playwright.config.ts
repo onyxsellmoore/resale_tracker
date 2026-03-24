@@ -5,7 +5,7 @@ export default defineConfig({
   retries: 1,
   workers: 1,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173',
     headless: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

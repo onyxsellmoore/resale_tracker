@@ -1,4 +1,4 @@
-const API_BASE = '/api/v1'
+import { API_BASE } from './config'
 
 // --- Base64url helpers (for WebAuthn API ↔ server communication) ---
 

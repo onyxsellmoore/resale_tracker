@@ -14,7 +14,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
         <XAxis dataKey="month" stroke={CHART_COLORS.textMuted} />
         <YAxis stroke={CHART_COLORS.textMuted} />
         <Tooltip
-          formatter={(value: number) => `$${value.toFixed(2)}`}
+          formatter={((value: number) => `$${value.toFixed(2)}`) as any}
           contentStyle={{ background: CHART_COLORS.surface2, border: `1px solid ${CHART_COLORS.border}` }}
         />
         <Legend />
