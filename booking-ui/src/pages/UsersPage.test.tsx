@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { AuthProvider } from '../auth/AuthContext'
+import { useEffect } from 'react'
+import { AuthProvider, useAuth } from '../auth/AuthContext'
 import { UsersPage } from './UsersPage'
 
 vi.mock('../api/usersApi', () => ({
@@ -20,25 +21,25 @@ function fakeJwt(payload: Record<string, unknown>): string {
   return `${header}.${body}.sig`
 }
 
+function LoginThenRender({ token, children }: { token: string; children: React.ReactNode }) {
+  const { login } = useAuth()
+  useEffect(() => { login(token) }, [token, login])
+  return <>{children}</>
+}
+
 function renderPage() {
   const token = fakeJwt({ sub: 'u1', orgId: 'org1', role: 'ADMIN' })
-  vi.stubGlobal('localStorage', {
-    getItem: vi.fn().mockImplementation((key: string) => key === 'auth_token' ? token : null),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-    length: 1,
-    key: vi.fn(),
-  })
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
   return render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <MemoryRouter>
-          <UsersPage />
-        </MemoryRouter>
+        <LoginThenRender token={token}>
+          <MemoryRouter>
+            <UsersPage />
+          </MemoryRouter>
+        </LoginThenRender>
       </AuthProvider>
     </QueryClientProvider>
   )

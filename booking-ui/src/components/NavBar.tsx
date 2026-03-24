@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { canAccess } from '../utils/rolePermissions'
 import './NavBar.css'
 
 function NavLinkItem({ to, label }: { to: string; label: string }) {
@@ -25,12 +26,12 @@ export function NavBar() {
   const navRef = useRef<HTMLElement>(null)
   const { role, token, logout } = useAuth()
 
-  const canSeeInventory = true // all roles
-  const canSeeSales = role === 'ADMIN' || role === 'SELLER' || role === 'ACCOUNTANT'
-  const canSeeAnalytics = role === 'ADMIN' || role === 'ACCOUNTANT'
-  const canSeeUsers = role === 'ADMIN'
-  const canRecordSale = role === 'ADMIN' || role === 'SELLER'
-  const canAddItem = role === 'ADMIN' || role === 'BUYER'
+  const canSeeInventory = canAccess(role, 'inventory')
+  const canSeeSales = canAccess(role, 'sales')
+  const canSeeAnalytics = canAccess(role, 'analytics')
+  const canSeeUsers = canAccess(role, 'users')
+  const canRecordSale = canAccess(role, 'recordSale')
+  const canAddItem = canAccess(role, 'addItem')
 
   // Close drawer on route change
   useEffect(() => {

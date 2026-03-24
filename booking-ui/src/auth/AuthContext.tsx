@@ -37,11 +37,21 @@ export function isTokenExpired(token: string): boolean {
   return payload.exp * 1000 < Date.now()
 }
 
-function loadFromStorage(): AuthState {
-  const token = localStorage.getItem('auth_token')
+// In-memory token storage (not localStorage) to mitigate XSS token theft.
+// Note: tokens do not survive page refresh. A refresh-token mechanism
+// (ideally via httpOnly cookie) should be used for session persistence.
+let inMemoryToken: string | null = null
+
+/** Reset in-memory token — for test isolation only */
+export function _resetTokenForTest() {
+  inMemoryToken = null
+}
+
+function loadFromMemory(): AuthState {
+  const token = inMemoryToken
   if (!token) return { token: null, userId: null, orgId: null, role: null }
   if (isTokenExpired(token)) {
-    localStorage.removeItem('auth_token')
+    inMemoryToken = null
     return { token: null, userId: null, orgId: null, role: null }
   }
   const payload = parseJwtPayload(token)
@@ -54,10 +64,10 @@ function loadFromStorage(): AuthState {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(loadFromStorage)
+  const [state, setState] = useState<AuthState>(loadFromMemory)
 
   const login = useCallback((token: string) => {
-    localStorage.setItem('auth_token', token)
+    inMemoryToken = token
     const payload = parseJwtPayload(token)
     setState({
       token,
@@ -68,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem('auth_token')
+    inMemoryToken = null
     setState({ token: null, userId: null, orgId: null, role: null })
   }, [])
 

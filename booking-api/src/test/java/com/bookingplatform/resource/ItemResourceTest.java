@@ -27,6 +27,8 @@ import java.time.Instant;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 @QuarkusTestResource(MongoTestResource.class)
@@ -274,11 +276,11 @@ class ItemResourceTest {
         }
     }
 
-    @Nested @DisplayName("editable purchasePrice and purchaseDate")
-    class EditableFields {
+    @Nested @DisplayName("immutable fields")
+    class ImmutableFields {
 
-        @Test @DisplayName("PATCH with purchasePrice → value updated")
-        void purchasePriceUpdated() {
+        @Test @DisplayName("PATCH with purchasePrice → 400 (immutable)")
+        void purchasePriceImmutable() {
             Item item = createTestItem(orgId, "Test Item", ItemStatus.AVAILABLE);
 
             given()
@@ -292,21 +294,11 @@ class ItemResourceTest {
             .when()
                 .patch("/api/v1/items/{id}", item.id.toHexString())
             .then()
-                .statusCode(200)
-                .body("purchasePrice", equalTo(9999.99f));
-
-            // Verify via GET
-            given()
-                .header("Authorization", "Bearer " + adminToken)
-            .when()
-                .get("/api/v1/items/{id}", item.id.toHexString())
-            .then()
-                .statusCode(200)
-                .body("purchasePrice", equalTo(9999.99f));
+                .statusCode(400);
         }
 
-        @Test @DisplayName("PATCH with purchaseDate → value updated")
-        void purchaseDateUpdated() {
+        @Test @DisplayName("PATCH with purchaseDate → 400 (immutable)")
+        void purchaseDateImmutable() {
             Item item = createTestItem(orgId, "Test Item", ItemStatus.AVAILABLE);
 
             given()
@@ -320,8 +312,26 @@ class ItemResourceTest {
             .when()
                 .patch("/api/v1/items/{id}", item.id.toHexString())
             .then()
-                .statusCode(200)
-                .body("purchaseDate", equalTo("2099-12-31T00:00:00Z"));
+                .statusCode(400);
+        }
+
+        @Test @DisplayName("PATCH with other fields + purchasePrice → 400")
+        void mixedWithImmutableField() {
+            Item item = createTestItem(orgId, "Test Item", ItemStatus.AVAILABLE);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "name": "Updated",
+                        "purchasePrice": 9999.99
+                    }
+                    """)
+            .when()
+                .patch("/api/v1/items/{id}", item.id.toHexString())
+            .then()
+                .statusCode(400);
         }
     }
 
@@ -366,6 +376,44 @@ class ItemResourceTest {
                 .delete("/api/v1/items/{id}", item.id.toHexString())
             .then()
                 .statusCode(409);
+        }
+    }
+
+    @Nested @DisplayName("businessId injection")
+    class BusinessIdInjection {
+
+        @Test @DisplayName("POST /items with attacker businessId in body → persisted item uses JWT orgId")
+        void createItemIgnoresBodyBusinessId() {
+            String attackerOrgId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+
+            String itemId = given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "name": "Injected Item",
+                        "condition": "GOOD",
+                        "purchasePrice": 100.00,
+                        "purchaseDate": "2025-01-15T00:00:00Z",
+                        "businessId": "%s"
+                    }
+                    """.formatted(attackerOrgId))
+            .when()
+                .post("/api/v1/items")
+            .then()
+                .statusCode(anyOf(is(201), is(403)))
+                .extract().jsonPath().getString("id");
+
+            if (itemId != null) {
+                // Verify item belongs to JWT org, not attacker org
+                given()
+                    .header("Authorization", "Bearer " + adminToken)
+                .when()
+                    .get("/api/v1/items/{id}", itemId)
+                .then()
+                    .statusCode(200)
+                    .body("businessId", equalTo(orgId));
+            }
         }
     }
 

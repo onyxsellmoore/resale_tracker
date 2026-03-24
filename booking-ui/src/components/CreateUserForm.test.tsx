@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { AuthProvider } from '../auth/AuthContext'
+import { useEffect } from 'react'
+import { AuthProvider, useAuth } from '../auth/AuthContext'
 import { CreateUserForm } from './CreateUserForm'
 
 vi.mock('../api/usersApi', () => ({
@@ -20,16 +21,14 @@ function fakeJwt(payload: Record<string, unknown>): string {
   return `${header}.${body}.sig`
 }
 
+function LoginThenRender({ token, children }: { token: string; children: React.ReactNode }) {
+  const { login } = useAuth()
+  useEffect(() => { login(token) }, [token, login])
+  return <>{children}</>
+}
+
 function renderForm(onClose = vi.fn()) {
   const token = fakeJwt({ sub: 'u1', orgId: 'org1', role: 'ADMIN' })
-  vi.stubGlobal('localStorage', {
-    getItem: vi.fn().mockImplementation((key: string) => key === 'auth_token' ? token : null),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-    length: 1,
-    key: vi.fn(),
-  })
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
@@ -38,9 +37,11 @@ function renderForm(onClose = vi.fn()) {
     ...render(
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <MemoryRouter>
-            <CreateUserForm onClose={onClose} />
-          </MemoryRouter>
+          <LoginThenRender token={token}>
+            <MemoryRouter>
+              <CreateUserForm onClose={onClose} />
+            </MemoryRouter>
+          </LoginThenRender>
         </AuthProvider>
       </QueryClientProvider>
     ),

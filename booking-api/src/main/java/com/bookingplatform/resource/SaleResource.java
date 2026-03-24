@@ -5,6 +5,7 @@ import com.bookingplatform.model.ItemStatus;
 import com.bookingplatform.model.Sale;
 import com.bookingplatform.repository.ItemRepository;
 import com.bookingplatform.repository.SaleRepository;
+import com.bookingplatform.security.RoleChecker;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -52,18 +53,13 @@ public class SaleResource {
         return orgId;
     }
 
-    private boolean hasRole(String... allowed) {
-        String role = (String) requestContext.getProperty("role");
-        if (role == null) return true;
-        for (String r : allowed) {
-            if (r.equals(role)) return true;
-        }
-        return false;
+    private String getRole() {
+        return (String) requestContext.getProperty("role");
     }
 
     @POST
     public Response createSale(CreateSaleRequest request) {
-        if (!hasRole("ADMIN", "SELLER")) {
+        if (!RoleChecker.can(getRole(), RoleChecker.CREATE_SALE)) {
             return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
         }
         Set<ConstraintViolation<CreateSaleRequest>> violations = validator.validate(request);
@@ -236,7 +232,7 @@ public class SaleResource {
     @PATCH
     @Path("/{id}")
     public Response updateSale(@PathParam("id") String id, UpdateSaleRequest request) {
-        if (!hasRole("ADMIN", "SELLER")) {
+        if (!RoleChecker.can(getRole(), RoleChecker.UPDATE_SALE)) {
             return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
         }
 
@@ -296,7 +292,7 @@ public class SaleResource {
     @DELETE
     @Path("/{id}")
     public Response deleteSale(@PathParam("id") String id) {
-        if (!hasRole("ADMIN", "SELLER")) {
+        if (!RoleChecker.can(getRole(), RoleChecker.DELETE_SALE)) {
             return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
         }
 

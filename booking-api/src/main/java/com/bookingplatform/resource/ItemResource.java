@@ -3,6 +3,7 @@ package com.bookingplatform.resource;
 import com.bookingplatform.model.Item;
 import com.bookingplatform.model.ItemStatus;
 import com.bookingplatform.repository.ItemRepository;
+import com.bookingplatform.security.RoleChecker;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -49,21 +50,9 @@ public class ItemResource {
         return (String) requestContext.getProperty("role");
     }
 
-    private boolean hasRole(String... allowed) {
-        String role = getRole();
-        if (role == null) return true; // No role enforcement when security is disabled
-        for (String r : allowed) {
-            if (r.equals(role)) return true;
-        }
-        return false;
-    }
-
-    private static final Response FORBIDDEN = Response.status(403)
-            .entity("{\"message\":\"Forbidden\"}").type("application/json").build();
-
     @POST
     public Response createItem(CreateItemRequest request) {
-        if (!hasRole("ADMIN", "BUYER")) {
+        if (!RoleChecker.can(getRole(), RoleChecker.CREATE_ITEM)) {
             return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
         }
         Set<ConstraintViolation<CreateItemRequest>> violations = validator.validate(request);
@@ -170,13 +159,18 @@ public class ItemResource {
             return Response.status(404).build();
         }
 
-        // Update all fields when non-null
+        // purchasePrice and purchaseDate are immutable after creation
+        if (request.purchasePrice != null || request.purchaseDate != null) {
+            return Response.status(400)
+                    .entity(new ErrorResponse("purchasePrice and purchaseDate are immutable after creation", List.of()))
+                    .build();
+        }
+
+        // Update mutable fields when non-null
         if (request.name != null) item.name = request.name;
         if (request.brand != null) item.brand = request.brand;
         if (request.category != null) item.category = request.category;
         if (request.condition != null) item.condition = request.condition;
-        if (request.purchasePrice != null) item.purchasePrice = new Decimal128(request.purchasePrice);
-        if (request.purchaseDate != null) item.purchaseDate = request.purchaseDate;
         if (request.description != null) item.description = request.description;
         if (request.notes != null) item.notes = request.notes;
         item.updatedAt = Instant.now();
@@ -190,7 +184,7 @@ public class ItemResource {
     @Path("/{id}")
     public Response deleteItem(@PathParam("id") String id,
                                @QueryParam("businessId") String queryBusinessId) {
-        if (!hasRole("ADMIN")) {
+        if (!RoleChecker.can(getRole(), RoleChecker.DELETE_ITEM)) {
             return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
         }
         String orgId = getOrgId();

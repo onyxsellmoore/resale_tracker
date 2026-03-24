@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 @QuarkusTestResource(MongoTestResource.class)
@@ -141,6 +143,66 @@ class CrossOrgIsolationTest {
             .then()
                 .statusCode(404);
         }
+
+        @Test @DisplayName("org B cannot fetch org A item by ID → 404")
+        void cannotGetOtherOrgItemById() {
+            OrgSetup orgA = registerOrg("org-g", "adminG@test.com");
+            OrgSetup orgB = registerOrg("org-h", "adminH@test.com");
+
+            String itemId = given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + orgA.token())
+                .body("""
+                    {
+                        "name": "Org A Secret Item",
+                        "condition": "EXCELLENT",
+                        "purchasePrice": 500.00,
+                        "purchaseDate": "2025-01-15T00:00:00Z"
+                    }
+                    """)
+            .when()
+                .post("/api/v1/items")
+            .then()
+                .statusCode(201)
+                .extract().jsonPath().getString("id");
+
+            given()
+                .header("Authorization", "Bearer " + orgB.token())
+            .when()
+                .get("/api/v1/items/{id}", itemId)
+            .then()
+                .statusCode(404);
+        }
+
+        @Test @DisplayName("org B cannot delete org A item → 404")
+        void cannotDeleteOtherOrgItem() {
+            OrgSetup orgA = registerOrg("org-i", "adminI@test.com");
+            OrgSetup orgB = registerOrg("org-j", "adminJ@test.com");
+
+            String itemId = given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + orgA.token())
+                .body("""
+                    {
+                        "name": "Org A Protected Item",
+                        "condition": "GOOD",
+                        "purchasePrice": 100.00,
+                        "purchaseDate": "2025-01-15T00:00:00Z"
+                    }
+                    """)
+            .when()
+                .post("/api/v1/items")
+            .then()
+                .statusCode(201)
+                .extract().jsonPath().getString("id");
+
+            given()
+                .header("Authorization", "Bearer " + orgB.token())
+            .when()
+                .delete("/api/v1/items/{id}", itemId)
+            .then()
+                .statusCode(anyOf(is(403), is(404)));
+        }
     }
 
     @Nested @DisplayName("sales are org-scoped")
@@ -193,6 +255,55 @@ class CrossOrgIsolationTest {
             .then()
                 .statusCode(200)
                 .body("size()", equalTo(0));
+        }
+
+        @Test @DisplayName("org B cannot fetch org A sale by ID → 404")
+        void cannotGetOtherOrgSaleById() {
+            OrgSetup orgA = registerOrg("org-k", "adminK@test.com");
+            OrgSetup orgB = registerOrg("org-l", "adminL@test.com");
+
+            String itemId = given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + orgA.token())
+                .body("""
+                    {
+                        "name": "Org A Sale Item",
+                        "brand": "BrandA",
+                        "condition": "GOOD",
+                        "purchasePrice": 50.00,
+                        "purchaseDate": "2025-01-15T00:00:00Z"
+                    }
+                    """)
+            .when()
+                .post("/api/v1/items")
+            .then()
+                .statusCode(201)
+                .extract().jsonPath().getString("id");
+
+            String saleId = given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + orgA.token())
+                .body("""
+                    {
+                        "itemId": "%s",
+                        "platform": "Poshmark",
+                        "salePrice": 200.00,
+                        "platformFees": 40.00,
+                        "soldAt": "2025-06-01T12:00:00Z"
+                    }
+                    """.formatted(itemId))
+            .when()
+                .post("/api/v1/sales")
+            .then()
+                .statusCode(201)
+                .extract().jsonPath().getString("id");
+
+            given()
+                .header("Authorization", "Bearer " + orgB.token())
+            .when()
+                .get("/api/v1/sales/{id}", saleId)
+            .then()
+                .statusCode(404);
         }
     }
 }

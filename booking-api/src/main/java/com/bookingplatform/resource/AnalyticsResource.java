@@ -1,5 +1,6 @@
 package com.bookingplatform.resource;
 
+import com.bookingplatform.security.RoleChecker;
 import com.bookingplatform.service.AnalyticsResult;
 import com.bookingplatform.service.AnalyticsService;
 import jakarta.inject.Inject;
@@ -31,7 +32,7 @@ public class AnalyticsResource {
             @QueryParam("to") String to) {
 
         String role = (String) requestContext.getProperty("role");
-        if (role != null && !"ADMIN".equals(role) && !"ACCOUNTANT".equals(role)) {
+        if (!RoleChecker.can(role, RoleChecker.VIEW_ANALYTICS)) {
             return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
         }
 

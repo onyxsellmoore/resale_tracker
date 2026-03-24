@@ -27,6 +27,8 @@ import java.time.Instant;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
@@ -604,6 +606,46 @@ class SaleResourceTest {
                 .delete("/api/v1/sales/aaaaaaaaaaaaaaaaaaaaaaaa")
             .then()
                 .statusCode(404);
+        }
+    }
+
+    @Nested @DisplayName("businessId injection")
+    class BusinessIdInjection {
+
+        @Test @DisplayName("POST /sales with attacker businessId in body → persisted sale uses JWT orgId")
+        void createSaleIgnoresBodyBusinessId() {
+            Item item = createTestItem(orgId, "Injection Item", new BigDecimal("100.00"));
+            String attackerOrgId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+
+            String saleId = given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body("""
+                    {
+                        "itemId": "%s",
+                        "platform": "Poshmark",
+                        "salePrice": 200.00,
+                        "platformFees": 40.00,
+                        "soldAt": "2025-06-01T12:00:00Z",
+                        "businessId": "%s"
+                    }
+                    """.formatted(item.id.toHexString(), attackerOrgId))
+            .when()
+                .post("/api/v1/sales")
+            .then()
+                .statusCode(anyOf(is(201), is(403)))
+                .extract().jsonPath().getString("id");
+
+            if (saleId != null) {
+                // Verify sale belongs to JWT org, not attacker org
+                given()
+                    .header("Authorization", "Bearer " + adminToken)
+                .when()
+                    .get("/api/v1/sales/{id}", saleId)
+                .then()
+                    .statusCode(200)
+                    .body("businessId", equalTo(orgId));
+            }
         }
     }
 

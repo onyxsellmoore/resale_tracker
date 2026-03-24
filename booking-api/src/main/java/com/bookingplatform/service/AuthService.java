@@ -477,7 +477,7 @@ public class AuthService {
         }
     }
 
-    // --- Refresh ---
+    // --- Refresh (single-use: revoke on use, issue new access token) ---
     public Optional<String> refresh(String rawRefreshToken) {
         String tokenHash = sha256Hash(rawRefreshToken);
         Optional<RefreshToken> rtOpt = refreshTokenRepository.findByTokenHash(tokenHash);
@@ -490,6 +490,10 @@ public class AuthService {
         if (rt.revoked || rt.expiresAt.isBefore(Instant.now())) {
             return Optional.empty();
         }
+
+        // Revoke immediately (single-use token rotation)
+        rt.revoked = true;
+        refreshTokenRepository.update(rt);
 
         User user = userRepository.findById(new org.bson.types.ObjectId(rt.ownerId));
         if (user == null) {

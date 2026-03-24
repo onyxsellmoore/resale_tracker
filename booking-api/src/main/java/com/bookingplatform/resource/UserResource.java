@@ -3,6 +3,7 @@ package com.bookingplatform.resource;
 import com.bookingplatform.model.Role;
 import com.bookingplatform.model.User;
 import com.bookingplatform.repository.UserRepository;
+import com.bookingplatform.security.RoleChecker;
 import com.mongodb.MongoWriteException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -36,7 +37,7 @@ public class UserResource {
     @POST
     public Response createUser(CreateUserRequest request) {
         String callerRole = (String) requestContext.getProperty("role");
-        if (!"ADMIN".equals(callerRole)) {
+        if (!RoleChecker.can(callerRole, RoleChecker.MANAGE_USERS)) {
             return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
         }
 
@@ -85,7 +86,7 @@ public class UserResource {
     @GET
     public Response listUsers() {
         String callerRole = (String) requestContext.getProperty("role");
-        if (!"ADMIN".equals(callerRole)) {
+        if (!RoleChecker.can(callerRole, RoleChecker.MANAGE_USERS)) {
             return Response.status(403).entity("{\"message\":\"Forbidden\"}").type("application/json").build();
         }
 

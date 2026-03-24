@@ -168,6 +168,8 @@ BACKEND API:
   booking-api/src/main/java/.../resource/AnalyticsResource.java — aggregated analytics
   booking-api/src/main/java/.../security/SecurityFilter.java — JWT validation, orgId/role extraction
   booking-api/src/main/java/.../security/CorsFilter.java     — Custom CORS filter (PreMatching JAX-RS)
+  booking-api/src/main/java/.../security/AuthRateLimiter.java — In-memory sliding-window rate limiter (10 req/IP/min)
+  booking-api/src/main/java/.../security/RoleChecker.java    — Centralized role→operation permission map (Set-based O(1) lookup)
   booking-api/src/main/java/.../service/AuthService.java     — JWT sign/verify, WebAuthn passkey registration + login
   booking-api/src/main/java/.../service/AnalyticsService.java — BigDecimal aggregation logic
   booking-api/src/main/java/.../util/MoneyUtils.java         — Decimal128 ↔ BigDecimal conversion
@@ -186,6 +188,7 @@ FRONTEND STATE:
   booking-ui/src/api/salesApi.ts            — sale API calls
   booking-ui/src/api/analyticsApi.ts        — analytics fetch
   booking-ui/src/AppRoutes.tsx              — route → component → role mapping
+  booking-ui/src/utils/rolePermissions.ts  — Role→Set<action> permission map for frontend UI visibility
 
 INFRA:
   docker-compose.yml                        — mongo + mongo-express + mailhog + backend + frontend
@@ -204,6 +207,11 @@ INFRA:
 - **Security — orgId source**: Always extract `orgId`/`businessId` from the JWT (via `requestContext.getProperty("orgId")`). Never trust client-supplied businessId when JWT is present.
 - **Security — role checks**: Every mutating endpoint must check caller role via `hasRole()` or explicit `requestContext.getProperty("role")` comparison. Return 403 for unauthorized roles.
 - **Security — cross-org isolation**: Items and sales are scoped by `businessId`. Every query filters by `businessId` from JWT. `CrossOrgIsolationTest` verifies this.
+- **Security — IDOR**: Single-resource endpoints (GET/PATCH/DELETE by ID) filter by both `id` AND `businessId` from JWT.
+- **Security — token rotation**: Refresh tokens are single-use; the token is revoked immediately on use and a new access token is issued.
+- **Security — rate limiting**: Auth endpoints (`/register`, `/login/begin`, `/login/password`) are guarded by `AuthRateLimiter` (10 req/IP/min sliding window).
+- **Security — immutable fields**: `purchasePrice` and `purchaseDate` are rejected with 400 on PATCH (enforced in `ItemResource.updateItem`).
+- **Security — JWT storage**: Frontend stores access tokens in-memory (module-level variable), not localStorage, to mitigate XSS token theft.
 - **CSS**: Use CSS custom properties from `theme.css` (`--color-*`, `--font-*`, `--radius-*`). No hardcoded hex values in component CSS.
 - **Frontend colors for charts**: Import from `booking-ui/src/utils/chartColors.ts`, which mirrors theme.css tokens.
 - **Test hygiene**: `@BeforeEach` deletes all documents. Tests with security enabled use `@TestProfile(SecurityEnabledProfile.class)`.
@@ -226,16 +234,11 @@ public class ThingResource {
         String orgId = (String) requestContext.getProperty("orgId");
         return orgId != null ? orgId : (String) requestContext.getProperty("businessId");
     }
-    private boolean hasRole(String... allowed) {
-        String role = (String) requestContext.getProperty("role");
-        if (role == null) return true;
-        for (String r : allowed) { if (r.equals(role)) return true; }
-        return false;
-    }
-
     @POST
     public Response create(CreateThingRequest req) {
-        if (!hasRole("ADMIN")) return Response.status(403).entity("{\"message\":\"Forbidden\"}").build();
+        String role = (String) requestContext.getProperty("role");
+        if (!RoleChecker.can(role, RoleChecker.SOME_OPERATION))
+            return Response.status(403).entity("{\"message\":\"Forbidden\"}").build();
         String businessId = getOrgId();
         // ... validate, build entity, persist, return 201
     }

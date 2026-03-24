@@ -3,6 +3,7 @@ package com.bookingplatform.resource;
 import com.bookingplatform.model.RefreshToken;
 import com.bookingplatform.model.Role;
 import com.bookingplatform.model.User;
+import com.bookingplatform.repository.OrganizationRepository;
 import com.bookingplatform.repository.RefreshTokenRepository;
 import com.bookingplatform.repository.UserRepository;
 import com.bookingplatform.repository.WebAuthnCredentialRepository;
@@ -36,6 +37,7 @@ import static org.hamcrest.Matchers.*;
 @DisplayName("Auth API")
 class AuthResourceTest {
 
+    @Inject OrganizationRepository organizationRepository;
     @Inject UserRepository userRepository;
     @Inject WebAuthnCredentialRepository credentialRepository;
     @Inject RefreshTokenRepository refreshTokenRepository;
@@ -61,6 +63,7 @@ class AuthResourceTest {
         refreshTokenRepository.deleteAll();
         credentialRepository.deleteAll();
         userRepository.deleteAll();
+        organizationRepository.deleteAll();
 
         testUser = new User();
         testUser.orgId = new ObjectId();
@@ -456,6 +459,47 @@ class AuthResourceTest {
                     .statusCode(401);
         }
 
+        @Test @DisplayName("refresh with malformed/tampered token → 401")
+        void refreshMalformed() {
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"refreshToken": "this-is-not-a-real-token-at-all"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/refresh")
+                    .then()
+                    .statusCode(401);
+        }
+
+        @Test @DisplayName("refresh token is single-use (rotation)")
+        void refreshTokenSingleUse() {
+            AuthService.TokenPair tokens = authService.generateTokens(testUser);
+
+            // First refresh succeeds
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"refreshToken": "%s"}
+                        """.formatted(tokens.refreshToken()))
+                    .when()
+                    .post("/api/v1/auth/refresh")
+                    .then()
+                    .statusCode(200)
+                    .body("accessToken", notNullValue());
+
+            // Second refresh with same token fails (single-use)
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"refreshToken": "%s"}
+                        """.formatted(tokens.refreshToken()))
+                    .when()
+                    .post("/api/v1/auth/refresh")
+                    .then()
+                    .statusCode(401);
+        }
+
         @Test @DisplayName("logout then refresh → 401")
         void logoutThenRefresh() {
             AuthService.TokenPair tokens = authService.generateTokens(testUser);
@@ -492,6 +536,33 @@ class AuthResourceTest {
                     .post("/api/v1/auth/logout")
                     .then()
                     .statusCode(204);
+        }
+    }
+
+    @Nested @DisplayName("duplicate registration")
+    class DuplicateRegistration {
+
+        @Test @DisplayName("duplicate org slug → 409")
+        void duplicateOrgSlug() {
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"orgName": "Org A", "orgSlug": "dup-test", "adminEmail": "a@dup.com", "adminDisplayName": "Admin A"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/register")
+                    .then()
+                    .statusCode(201);
+
+            given()
+                    .contentType(ContentType.JSON)
+                    .body("""
+                        {"orgName": "Org B", "orgSlug": "dup-test", "adminEmail": "b@dup.com", "adminDisplayName": "Admin B"}
+                        """)
+                    .when()
+                    .post("/api/v1/auth/register")
+                    .then()
+                    .statusCode(409);
         }
     }
 }

@@ -2,12 +2,15 @@ package com.bookingplatform.resource;
 
 import com.bookingplatform.model.User;
 import com.bookingplatform.repository.UserRepository;
+import com.bookingplatform.security.AuthRateLimiter;
 import com.bookingplatform.service.AuthService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -26,8 +29,28 @@ public class AuthResource {
     @Inject
     UserRepository userRepository;
 
+    @Inject
+    AuthRateLimiter rateLimiter;
+
+    @Context
+    ContainerRequestContext requestContext;
+
     @ConfigProperty(name = "booking.dev-token.enabled", defaultValue = "false")
     boolean devTokenEnabled;
+
+    private String getClientIp() {
+        String forwarded = requestContext.getHeaderString("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        // Fallback — remote address not directly available in JAX-RS, use header
+        return requestContext.getHeaderString("X-Real-IP");
+    }
+
+    private static final Response RATE_LIMITED = Response.status(429)
+            .entity("{\"message\":\"Too many requests\"}")
+            .type("application/json")
+            .build();
 
     public record LoginBeginRequest(String email) {}
     public record LoginCompleteRequest(String email, String credentialId,
@@ -49,6 +72,9 @@ public class AuthResource {
     @POST
     @Path("/register")
     public Response register(RegisterRequest request) {
+        if (!rateLimiter.isAllowed(getClientIp())) {
+            return Response.status(429).entity(new ErrorResponse("Too many requests")).build();
+        }
         if (request == null || request.orgName() == null || request.orgSlug() == null
             || request.adminEmail() == null || request.adminDisplayName() == null) {
             return Response.status(400).entity(new ErrorResponse("All fields are required")).build();
@@ -104,6 +130,9 @@ public class AuthResource {
     @POST
     @Path("/login/begin")
     public Response loginBegin(LoginBeginRequest request) {
+        if (!rateLimiter.isAllowed(getClientIp())) {
+            return Response.status(429).entity(new ErrorResponse("Too many requests")).build();
+        }
         if (request == null || request.email() == null || request.email().isBlank()) {
             return Response.status(401).entity(new ErrorResponse("Authentication failed")).build();
         }
@@ -123,6 +152,9 @@ public class AuthResource {
     @POST
     @Path("/login/password")
     public Response loginWithPassword(PasswordLoginRequest request) {
+        if (!rateLimiter.isAllowed(getClientIp())) {
+            return Response.status(429).entity(new ErrorResponse("Too many requests")).build();
+        }
         if (request == null || request.email() == null || request.password() == null) {
             return Response.status(401).entity(new ErrorResponse("Authentication failed")).build();
         }

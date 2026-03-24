@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { AuthProvider } from './auth/AuthContext'
+import { useEffect } from 'react'
+import { AuthProvider, useAuth } from './auth/AuthContext'
 import { AppRoutes } from './AppRoutes'
 
 function fakeJwt(payload: Record<string, unknown>): string {
@@ -11,16 +12,26 @@ function fakeJwt(payload: Record<string, unknown>): string {
   return `${header}.${body}.sig`
 }
 
-function renderWithRouter(initialRoute: string) {
+function LoginThenRender({ token, children }: { token: string; children: React.ReactNode }) {
+  const { login, token: currentToken } = useAuth()
+  useEffect(() => { login(token) }, [token, login])
+  if (!currentToken) return null
+  return <>{children}</>
+}
+
+function renderWithRouter(initialRoute: string, token?: string) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
+  const content = (
+    <MemoryRouter initialEntries={[initialRoute]}>
+      <AppRoutes />
+    </MemoryRouter>
+  )
   return render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <MemoryRouter initialEntries={[initialRoute]}>
-          <AppRoutes />
-        </MemoryRouter>
+        {token ? <LoginThenRender token={token}>{content}</LoginThenRender> : content}
       </AuthProvider>
     </QueryClientProvider>
   )
@@ -28,14 +39,7 @@ function renderWithRouter(initialRoute: string) {
 
 describe('Router', () => {
   beforeEach(() => {
-    vi.stubGlobal('localStorage', {
-      getItem: vi.fn().mockReturnValue(null),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-      length: 0,
-      key: vi.fn(),
-    })
+    vi.restoreAllMocks()
   })
 
   it('navigating to / redirects to /login', () => {
@@ -53,17 +57,11 @@ describe('Router', () => {
     expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
   })
 
-  it('after login, the user lands on /analytics', () => {
+  it('after login, the user lands on /analytics', async () => {
     const token = fakeJwt({ sub: 'u1', orgId: 'org1', role: 'ADMIN' })
-    vi.stubGlobal('localStorage', {
-      getItem: vi.fn().mockImplementation((key: string) => key === 'auth_token' ? token : null),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-      length: 1,
-      key: vi.fn(),
+    renderWithRouter('/analytics', token)
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /login/i })).not.toBeInTheDocument()
     })
-    renderWithRouter('/analytics')
-    expect(screen.queryByRole('heading', { name: /login/i })).not.toBeInTheDocument()
   })
 })

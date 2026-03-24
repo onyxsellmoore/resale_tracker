@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { AuthProvider, useAuth, isTokenExpired } from './AuthContext'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { AuthProvider, useAuth, isTokenExpired, _resetTokenForTest } from './AuthContext'
 
 // Helper to create a fake JWT with given payload
 function fakeJwt(payload: Record<string, unknown>): string {
@@ -49,23 +49,10 @@ describe('isTokenExpired', () => {
   })
 })
 
-describe('AuthContext loadFromStorage expiry', () => {
-  beforeEach(() => {
-    vi.stubGlobal('localStorage', {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-      length: 0,
-      key: vi.fn(),
-    })
-  })
+describe('AuthContext (in-memory token storage)', () => {
+  beforeEach(() => { _resetTokenForTest() })
 
-  it('clears expired token on mount', () => {
-    const pastExp = Math.floor(Date.now() / 1000) - 60
-    const expiredToken = fakeJwt({ sub: 'u1', orgId: 'org1', exp: pastExp })
-    ;(localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(expiredToken)
-
+  it('starts with no token on fresh mount', () => {
     render(
       <AuthProvider>
         <TestConsumer />
@@ -73,36 +60,30 @@ describe('AuthContext loadFromStorage expiry', () => {
     )
 
     expect(screen.getByTestId('token').textContent).toBe('none')
-    expect(localStorage.removeItem).toHaveBeenCalledWith('auth_token')
   })
 
-  it('loads valid non-expired token on mount', () => {
-    const futureExp = Math.floor(Date.now() / 1000) + 3600
-    const validToken = fakeJwt({ sub: 'u1', orgId: 'org1', exp: futureExp })
-    ;(localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(validToken)
+  it('does not use localStorage', async () => {
+    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem')
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
 
+    const user = userEvent.setup()
     render(
       <AuthProvider>
         <TestConsumer />
       </AuthProvider>
     )
+    await user.click(screen.getByText('Login'))
 
-    expect(screen.getByTestId('token').textContent).toBe(validToken)
-    expect(screen.getByTestId('orgId').textContent).toBe('org1')
+    expect(getItemSpy).not.toHaveBeenCalledWith('auth_token')
+    expect(setItemSpy).not.toHaveBeenCalledWith('auth_token', expect.anything())
+
+    getItemSpy.mockRestore()
+    setItemSpy.mockRestore()
   })
 })
 
 describe('AuthContext', () => {
-  beforeEach(() => {
-    vi.stubGlobal('localStorage', {
-      getItem: vi.fn().mockReturnValue(null),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-      length: 0,
-      key: vi.fn(),
-    })
-  })
+  beforeEach(() => { _resetTokenForTest() })
 
   it('storesRoleAfterSuccessfulLogin', async () => {
     const user = userEvent.setup()
