@@ -27,7 +27,7 @@ Local dev via Docker Compose; production on GCP (Cloud Run + Firebase Hosting + 
 | Build (FE)    | Vite + tsc                                          |
 | Unit tests    | JUnit 5 + REST-assured (BE), Vitest + Testing Lib (FE) |
 | E2E tests     | Playwright                                          |
-| Local dev     | docker-compose (mongo, mongo-express, mailhog)      |
+| Local dev     | docker-compose (mongo, mongo-express)                |
 
 ## 3. Domain Model
 
@@ -191,7 +191,7 @@ FRONTEND STATE:
   booking-ui/src/utils/rolePermissions.ts  — Role→Set<action> permission map for frontend UI visibility
 
 INFRA:
-  docker-compose.yml                        — mongo + mongo-express + mailhog + backend + frontend
+  docker-compose.yml                        — mongo + mongo-express + backend + frontend
   booking-api/src/main/resources/application.properties — DB, JWT, CORS, WebAuthn config
   booking-ui/src/theme.css                  — CSS custom properties (design tokens)
   firebase.json                             — Firebase Hosting config (SPA rewrite rule, immutable asset cache headers)
@@ -328,7 +328,7 @@ describe('ThingPage', () => {
 
 ### Start full stack locally
 ```bash
-docker compose up -d                          # MongoDB + Mongo Express + MailHog
+docker compose up -d                          # MongoDB + Mongo Express
 cd booking-api && ./mvnw quarkus:dev          # Backend on :8080
 cd booking-ui  && npm install && npm run dev  # Frontend on :5173
 ```
@@ -347,15 +347,21 @@ cd booking-ui  && rm -rf node_modules && npm install && npm run build
 ```
 
 ### Deploy to production
+
+Production deploys happen automatically via GitHub Actions on push to `main`.
+See `.github/workflows/deploy.yml` for the full pipeline.
+
+**Manual deploy (if needed):**
 ```bash
 # Deploy frontend to Firebase Hosting
 cd booking-ui && npm run build && firebase deploy --only hosting
 
-# Deploy backend to Cloud Run (after building and pushing Docker image)
+# Deploy backend to Cloud Run (via Artifact Registry)
 cd booking-api && ./mvnw package -DskipTests
-docker buildx build --platform linux/amd64 -f src/main/docker/Dockerfile.jvm -t gcr.io/resales-tracker/booking-api:latest .
-docker push gcr.io/resales-tracker/booking-api:latest
-gcloud run deploy booking-api --image gcr.io/resales-tracker/booking-api:latest --region us-central1 --project resales-tracker
+IMAGE=us-central1-docker.pkg.dev/resales-tracker/booking/booking-api:latest
+docker buildx build --platform linux/amd64 -f src/main/docker/Dockerfile.jvm -t $IMAGE .
+docker push $IMAGE
+gcloud run deploy booking-api --image $IMAGE --region us-central1 --project resales-tracker
 ```
 
 ## 11. Environment Variables
@@ -376,3 +382,18 @@ gcloud run deploy booking-api --image gcr.io/resales-tracker/booking-api:latest 
 | `WEBAUTHN_RP_ID`                      | Production WebAuthn relying party domain (bare domain) | Google Secret Manager |
 | `WEBAUTHN_ORIGIN`                     | Production WebAuthn full origin (`https://...`) | Google Secret Manager |
 | `CORS_ORIGINS`                        | Comma-separated allowed frontend origins | Google Secret Manager |
+
+## 12. CI/CD Pipeline
+
+All workflow files live in `.github/workflows/`.
+
+| Workflow | Trigger | Jobs |
+|----------|---------|------|
+| `ci.yml` | Pull request → `main` | test-backend, test-frontend, security-scan |
+| `deploy.yml` | Push → `main` | test-backend, test-frontend, security-scan → deploy-backend (Cloud Run), deploy-frontend (Firebase) |
+| `backup.yml` | Weekly (Sun 04:00 UTC) + manual | mongodump Atlas → GCS bucket |
+
+**Auth:** GitHub ↔ GCP via Workload Identity Federation (WIF). No long-lived JSON keys.
+**Secrets at runtime:** Cloud Run pulls from Google Secret Manager (`mongo-uri`, `jwt-secret`, `webauthn-rp-id`, `webauthn-origin`, `cors-origins`).
+**Security scanning:** OWASP Dependency Check (backend), npm audit (frontend), Trivy (filesystem).
+**GCP bootstrap:** Run `scripts/gcp-setup.sh` once per project to create Artifact Registry, service account, WIF pool, secrets, and GCS backup bucket (idempotent — safe to re-run).

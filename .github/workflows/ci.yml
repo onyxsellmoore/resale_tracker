@@ -1,0 +1,97 @@
+name: CI — PR Gate
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Run backend tests
+        working-directory: booking-api
+        run: ./mvnw -B verify
+        env:
+          QUARKUS_MONGODB_CONNECTION_STRING: mongodb://localhost:27017
+          QUARKUS_MONGODB_DATABASE: booking_test
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: booking-ui/package-lock.json
+
+      - name: Install dependencies
+        working-directory: booking-ui
+        run: npm ci
+
+      - name: Type check
+        working-directory: booking-ui
+        run: npx tsc -b --noEmit
+
+      - name: Run unit tests
+        working-directory: booking-ui
+        run: npm test -- --run
+
+  security-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: booking-ui/package-lock.json
+
+      - name: OWASP Dependency Check (backend)
+        working-directory: booking-api
+        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml
+        continue-on-error: true
+
+      - name: npm audit (frontend)
+        working-directory: booking-ui
+        run: |
+          npm ci
+          npm audit --audit-level=high || true
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: "0"

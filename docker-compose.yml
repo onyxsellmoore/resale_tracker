@@ -15,11 +15,7 @@ services:
     depends_on:
       - mongodb
 
-  mailhog:
-    image: mailhog/mailhog:latest
-    ports:
-      - "1025:1025"
-      - "8025:8025"
+  # Email: MailHog removed. Future: Resend/SendGrid API or FCM for push when notifications are built.
 
   backend:
     build:

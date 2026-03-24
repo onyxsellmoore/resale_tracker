@@ -1,0 +1,51 @@
+name: Backup — Weekly Atlas Dump
+
+on:
+  schedule:
+    - cron: "0 4 * * 0"  # Every Sunday at 04:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_PROJECT: resales-tracker
+  GCS_BUCKET: gs://resales-tracker-backups
+  WIF_PROVIDER: projects/resales-tracker/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+  WIF_SA: github-deploy@resales-tracker.iam.gserviceaccount.com
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install mongodump
+        run: |
+          wget -qO- https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz \
+            | tar xz --strip-components=2 -C /usr/local/bin/ mongodb-database-tools-ubuntu2204-x86_64-100.9.4/bin/mongodump
+
+      - name: Fetch MongoDB URI from Secret Manager
+        id: secret
+        run: |
+          URI=$(gcloud secrets versions access latest --secret=mongo-uri --project=${{ env.GCP_PROJECT }})
+          echo "::add-mask::$URI"
+          echo "MONGO_URI=$URI" >> "$GITHUB_OUTPUT"
+
+      - name: Dump Atlas database
+        run: |
+          STAMP=$(date +%Y%m%d-%H%M%S)
+          mongodump --uri="${{ steps.secret.outputs.MONGO_URI }}" --gzip --archive="/tmp/booking-${STAMP}.gz"
+          echo "ARCHIVE=/tmp/booking-${STAMP}.gz" >> "$GITHUB_ENV"
+
+      - name: Upload to GCS
+        run: gcloud storage cp "$ARCHIVE" "${{ env.GCS_BUCKET }}/booking/$(basename "$ARCHIVE")"

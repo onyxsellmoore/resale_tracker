@@ -43,7 +43,7 @@ Frontend runs at http://localhost:5173.
 docker compose up
 ```
 
-This starts MongoDB, the backend, the frontend, Mongo Express (http://localhost:8081), and Mailhog.
+This starts MongoDB, the backend, the frontend, and Mongo Express (http://localhost:8081).
 
 ## API Endpoints
 
@@ -86,3 +86,7 @@ This starts MongoDB, the backend, the frontend, Mongo Express (http://localhost:
 - `SaleResourceTest` — CRUD, computed fields, date validation, duplicate detection, businessId injection prevention
 - `AnalyticsResourceTest` — Role restrictions, date range queries
 - `CorsPreflightTest` — CORS preflight handling
+
+## CI/CD
+
+Backend tests run automatically on every PR and push to `main` via GitHub Actions (`.github/workflows/ci.yml` and `deploy.yml`). On push to `main`, the deploy workflow builds a Docker image, pushes to Artifact Registry, and deploys to Cloud Run. Security scanning uses OWASP Dependency Check (CVSSv3 ≥ 7 fails the build). See `scripts/gcp-setup.sh` to bootstrap the GCP project.

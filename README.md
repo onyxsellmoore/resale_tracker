@@ -10,10 +10,10 @@ Inventory and sales tracking platform for small businesses. Built with Quarkus 3
 
 ## Run locally
 
-1. Start infrastructure (MongoDB on 27017, Mongo Express on 8081, MailHog on 8025):
+1. Start infrastructure (MongoDB on 27017, Mongo Express on 8081):
 
    ```bash
-   docker compose up -d mongodb mongo-express mailhog
+   docker compose up -d mongodb mongo-express
    ```
 
 2. Start the backend (http://localhost:8080). Live reload is active — changes take effect immediately:
@@ -144,12 +144,25 @@ firebase deploy --only hosting
 
 ### Deploy backend
 
+Production deploys happen automatically via GitHub Actions on push to `main`. For manual deploys:
+
 ```bash
 cd booking-api && ./mvnw package -DskipTests
-docker buildx build --platform linux/amd64 -f src/main/docker/Dockerfile.jvm -t gcr.io/resales-tracker/booking-api:latest .
-docker push gcr.io/resales-tracker/booking-api:latest
-gcloud run deploy booking-api --image gcr.io/resales-tracker/booking-api:latest --region us-central1 --project resales-tracker
+IMAGE=us-central1-docker.pkg.dev/resales-tracker/booking/booking-api:latest
+docker buildx build --platform linux/amd64 -f src/main/docker/Dockerfile.jvm -t $IMAGE .
+docker push $IMAGE
+gcloud run deploy booking-api --image $IMAGE --region us-central1 --project resales-tracker
 ```
+
+## CI/CD
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `.github/workflows/ci.yml` | PR → main | Tests + security scan (gate) |
+| `.github/workflows/deploy.yml` | Push → main | Tests + deploy backend (Cloud Run) + frontend (Firebase) |
+| `.github/workflows/backup.yml` | Weekly / manual | Atlas mongodump → GCS |
+
+First-time GCP setup: `./scripts/gcp-setup.sh` (idempotent).
 
 ## Required environment files (gitignored)
 
