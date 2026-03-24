@@ -392,8 +392,9 @@ All workflow files live in `.github/workflows/`.
 | `ci.yml` | Pull request → `main` | test-backend, test-frontend, security-scan |
 | `deploy.yml` | Push → `main` | test-backend, test-frontend, security-scan → deploy-backend (Cloud Run), deploy-frontend (Firebase) |
 | `backup.yml` | Weekly (Sun 04:00 UTC) + manual | mongodump Atlas → GCS bucket |
+| `dependabot-automerge.yml` | Dependabot PR (patch only) | auto-merge after CI gate passes |
 
 **Auth:** GitHub ↔ GCP via Workload Identity Federation (WIF). No long-lived JSON keys.
 **Secrets at runtime:** Cloud Run pulls from Google Secret Manager (`mongo-uri`, `jwt-secret`, `webauthn-rp-id`, `webauthn-origin`, `cors-origins`).
-**Security scanning:** OWASP Dependency Check (backend), npm audit (frontend), Trivy (filesystem).
+**Security scanning:** OWASP Dependency Check (backend), npm audit (frontend), Trivy (filesystem). Dependabot: weekly PRs for Maven, npm, and GitHub Actions dependencies; patch updates auto-merge after CI gate; minor/major require manual review.
 **GCP bootstrap:** Run `scripts/gcp-setup.sh` once per project to create Artifact Registry, service account, WIF pool, secrets, and GCS backup bucket (idempotent — safe to re-run).
