@@ -17,8 +17,8 @@ env:
   GCP_REGION: us-central1
   AR_REPO: us-central1-docker.pkg.dev/resales-tracker/booking
   SERVICE_NAME: booking-api
-  WIF_PROVIDER: projects/resales-tracker/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-  WIF_SA: github-deploy@resales-tracker.iam.gserviceaccount.com
+  WIF_PROVIDER: projects/742727911661/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
+  WIF_SA: gh-action-deployer@resale-tracker-pr.iam.gserviceaccount.com
 
 jobs:
   test-backend:
@@ -76,7 +76,7 @@ jobs:
 
       - name: OWASP Dependency Check
         working-directory: booking-api
-        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml
+        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml -DnvdApiKey=${{ secrets.NVD_API_KEY }}
         continue-on-error: true
 
       - name: npm audit
@@ -103,8 +103,8 @@ jobs:
       - uses: google-github-actions/auth@v2
         with:
           create_credentials_file: true
-          workload_identity_provider: 'projects/742727911661/locations/global/workloadIdentityPools/github-actions-pool/providers/PROVIDER_ID'
-          service_account: 'gh-action-deployer@resale-tracker-pr.iam.gserviceaccount.com'
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SA }}
 
       - uses: google-github-actions/setup-gcloud@v2
 
@@ -153,6 +153,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: google-github-actions/auth@v2
+        with:
+          create_credentials_file: true
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SA }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -165,8 +171,6 @@ jobs:
           npm ci
           cp .env.production.example .env.production
           npm run build
-        env:
-          VITE_API_URL: https://booking-api-<hash>-uc.a.run.app
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0

@@ -72,7 +72,7 @@ jobs:
 
       - name: OWASP Dependency Check (backend)
         working-directory: booking-api
-        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml
+        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml -DnvdApiKey=${{ secrets.NVD_API_KEY }}
         continue-on-error: true
 
       - name: npm audit (frontend)

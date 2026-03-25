@@ -235,7 +235,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:api.github.com)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://api.github.com/repos/onyxsellmoore/resale_tracker/actions/runs/23515876949/jobs\")",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(gcloud iam:*)"
     ]
   }
 }
