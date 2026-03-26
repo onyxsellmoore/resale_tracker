@@ -54,33 +54,9 @@ jobs:
 
   security-scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
-
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "25"
-          cache: maven
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: booking-ui/package-lock.json
-
-      - name: OWASP Dependency Check (backend)
-        working-directory: booking-api
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml "-DnvdApiKey=${NVD_API_KEY}"
-
-      - name: npm audit (frontend)
-        working-directory: booking-ui
-        run: |
-          npm ci
-          npm audit --audit-level=high || true
 
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
@@ -88,4 +64,4 @@ jobs:
           scan-type: fs
           scan-ref: .
           severity: HIGH,CRITICAL
-          exit-code: "0"
+          exit-code: "1"
