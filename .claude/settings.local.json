@@ -238,7 +238,11 @@
       "Bash(gh auth:*)",
       "Bash(gcloud iam:*)",
       "Bash(git stash:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(npm --version)",
+      "Bash(npm view:*)",
+      "Bash(npx nvm:*)",
+      "Bash(./mvnw -B verify)"
     ]
   }
 }
