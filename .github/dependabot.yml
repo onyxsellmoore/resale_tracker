@@ -1,0 +1,66 @@
+version: 2
+
+updates:
+  - package-ecosystem: maven
+    directory: /booking-api
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - java
+    groups:
+      quarkus-framework:
+        patterns:
+          - "io.quarkus*"
+      maven-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "io.quarkus*"
+    ignore:
+      - dependency-name: "io.quarkus:quarkus-bom"
+        update-types:
+          - "version-update:semver-major"
+
+  - package-ecosystem: npm
+    directory: /booking-ui
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - javascript
+    groups:
+      npm-dev-dependencies:
+        dependency-type: development
+      npm-prod-dependencies:
+        dependency-type: production
+    ignore:
+      - dependency-name: "react"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "react-dom"
+        update-types:
+          - "version-update:semver-major"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      github-actions:
+        patterns:
+          - "*"

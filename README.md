@@ -148,10 +148,10 @@ Production deploys happen automatically via GitHub Actions on push to `main`. Fo
 
 ```bash
 cd booking-api && ./mvnw package -DskipTests
-IMAGE=us-central1-docker.pkg.dev/resales-tracker/booking/booking-api:latest
+IMAGE=us-central1-docker.pkg.dev/resale-tracker-pr/booking/booking-api:latest
 docker buildx build --platform linux/amd64 -f src/main/docker/Dockerfile.jvm -t $IMAGE .
 docker push $IMAGE
-gcloud run deploy booking-api --image $IMAGE --region us-central1 --project resales-tracker
+gcloud run deploy booking-api --image $IMAGE --region us-central1 --project resale-tracker-pr
 ```
 
 ## CI/CD

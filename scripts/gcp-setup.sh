@@ -6,14 +6,14 @@
 # ─────────────────────────────────────────────────────────────
 set -euo pipefail
 
-PROJECT="resales-tracker"
+PROJECT="resale-tracker-pr"
 REGION="us-central1"
 AR_REPO="booking"
-SA_NAME="github-deploy"
-WIF_POOL="github-pool"
+SA_NAME="gh-action-deployer"
+WIF_POOL="github-actions-pool"
 WIF_PROVIDER="github-provider"
-GITHUB_ORG="jaredmoore"          # ← update to your GitHub org/username
-GITHUB_REPO="tav-booking"        # ← update to your repo name
+GITHUB_ORG="onyxsellmoore"
+GITHUB_REPO="resale_tracker"
 GCS_BUCKET="gs://${PROJECT}-backups"
 
 echo "▸ Setting project to ${PROJECT}..."
@@ -129,4 +129,4 @@ echo "  2. Set secret values:  gcloud secrets versions add jwt-secret --data-fil
 echo "  3. Set secret values:  gcloud secrets versions add webauthn-rp-id --data-file=-"
 echo "  4. Set secret values:  gcloud secrets versions add webauthn-origin --data-file=-"
 echo "  5. Set secret values:  gcloud secrets versions add cors-origins --data-file=-"
-echo "  6. Add FIREBASE_SERVICE_ACCOUNT secret to GitHub repo settings"
+echo "  6. Ensure Firebase Hosting is enabled: firebase init hosting --project resale-tracker-pr"

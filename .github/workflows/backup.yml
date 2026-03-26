@@ -10,10 +10,10 @@ permissions:
   id-token: write
 
 env:
-  GCP_PROJECT: resales-tracker
-  GCS_BUCKET: gs://resales-tracker-backups
-  WIF_PROVIDER: projects/resales-tracker/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-  WIF_SA: github-deploy@resales-tracker.iam.gserviceaccount.com
+  GCP_PROJECT: resale-tracker-pr
+  GCS_BUCKET: gs://resale-tracker-pr-backups
+  WIF_PROVIDER: projects/742727911661/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
+  WIF_SA: gh-action-deployer@resale-tracker-pr.iam.gserviceaccount.com
 
 jobs:
   dump:
