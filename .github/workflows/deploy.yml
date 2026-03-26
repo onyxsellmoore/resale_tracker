@@ -45,7 +45,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: booking-ui/package-lock.json
 
@@ -70,14 +70,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: booking-ui/package-lock.json
 
       - name: OWASP Dependency Check
         working-directory: booking-api
-        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml -DnvdApiKey=${{ secrets.NVD_API_KEY }}
-        continue-on-error: true
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml "-DnvdApiKey=${NVD_API_KEY}"
 
       - name: npm audit
         working-directory: booking-ui
@@ -137,7 +138,7 @@ jobs:
             --image ${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region ${{ env.GCP_REGION }} \
             --project ${{ env.GCP_PROJECT }} \
-            --set-secrets=QUARKUS_MONGODB_CONNECTION_STRING=mongo-uri:latest,BOOKING_JWT_SECRET=jwt-secret:latest,BOOKING_WEBAUTHN_RP_ID=webauthn-rp-id:latest,BOOKING_WEBAUTHN_ORIGIN=webauthn-origin:latest,CORS_ORIGINS=cors-origins:latest \
+            --update-secrets=QUARKUS_MONGODB_CONNECTION_STRING=mongo-uri:latest,BOOKING_JWT_SECRET=jwt-secret:latest,BOOKING_WEBAUTHN_RP_ID=webauthn-rp-id:latest,BOOKING_WEBAUTHN_ORIGIN=webauthn-origin:latest,CORS_ORIGINS=cors-origins:latest \
             --allow-unauthenticated \
             --min-instances=0 \
             --max-instances=2 \
@@ -161,7 +162,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: booking-ui/package-lock.json
 

@@ -36,7 +36,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: booking-ui/package-lock.json
 
@@ -66,14 +66,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: booking-ui/package-lock.json
 
       - name: OWASP Dependency Check (backend)
         working-directory: booking-api
-        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml -DnvdApiKey=${{ secrets.NVD_API_KEY }}
-        continue-on-error: true
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7 -DsuppressionFiles=../.github/owasp-suppressions.xml "-DnvdApiKey=${NVD_API_KEY}"
 
       - name: npm audit (frontend)
         working-directory: booking-ui
