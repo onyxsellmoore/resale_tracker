@@ -80,7 +80,7 @@ a:hover {
 
 .btn-primary {
   background: var(--color-gold);
-  color: #000;
+  color: var(--color-bg); /* audit-fix: replaced hardcoded #000 with theme token */
   font-weight: 600;
   border: none;
   border-radius: var(--radius-sm);

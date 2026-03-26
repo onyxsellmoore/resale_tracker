@@ -26,7 +26,7 @@ export function UsersPage() {
 
   return (
     <div className="page-enter">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}> {/* audit-fix: vertically center header buttons */}
         <h1>Team Members</h1>
         <button
           type="button"

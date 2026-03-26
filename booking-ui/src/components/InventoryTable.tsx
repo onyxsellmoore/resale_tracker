@@ -116,26 +116,26 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                   </span>
                 </td>
                 <td>
-                  <Link to={`/inventory/edit/${item.id}`} className="btn-secondary" style={{ textDecoration: 'none' }}>Edit</Link>
+                  <Link to={`/inventory/edit/${item.id}`} className="btn-action">Edit</Link>
                   {item.status === 'AVAILABLE' && (
                     <>
-                      <Link to={`/sales/new?itemId=${item.id}`} className="btn-secondary" style={{ textDecoration: 'none', marginLeft: 8 }}>Mark Sold</Link>
+                      <Link to={`/sales/new?itemId=${item.id}`} className="btn-action" style={{ marginLeft: '0.5rem' }}>Mark Sold</Link>
                       {onDelete && confirmingDeleteId === item.id ? (
-                        <div style={{ marginTop: 4 }}>
-                          <div style={{ fontSize: '0.8rem', marginBottom: 4 }}>
+                        <div style={{ marginTop: '0.25rem' }}>
+                          <div style={{ fontSize: '0.8rem', marginBottom: '0.25rem' }}>
                             Permanently delete {item.name}? This cannot be undone.
                           </div>
                           <button
                             type="button"
-                            className="btn-danger"
+                            className="btn-action btn-danger"
                             onClick={() => { onDelete(item.id); setConfirmingDeleteId(null) }}
                           >
                             Yes, delete
                           </button>
                           <button
                             type="button"
-                            className="btn-secondary"
-                            style={{ marginLeft: 8 }}
+                            className="btn-action"
+                            style={{ marginLeft: '0.5rem' }}
                             onClick={() => setConfirmingDeleteId(null)}
                           >
                             Cancel
@@ -144,8 +144,8 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                       ) : onDelete && (
                         <button
                           type="button"
-                          className="btn-danger"
-                          style={{ marginLeft: 8 }}
+                          className="btn-action btn-danger"
+                          style={{ marginLeft: '0.5rem' }}
                           onClick={() => setConfirmingDeleteId(item.id)}
                         >
                           Delete

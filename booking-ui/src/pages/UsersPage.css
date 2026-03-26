@@ -45,8 +45,8 @@
 }
 
 .role-seller {
-  border-color: #60a5fa;
-  color: #60a5fa;
+  border-color: var(--color-info); /* audit-fix: replaced hardcoded hex with theme token */
+  color: var(--color-info); /* audit-fix: replaced hardcoded hex with theme token */
 }
 
 .role-accountant {

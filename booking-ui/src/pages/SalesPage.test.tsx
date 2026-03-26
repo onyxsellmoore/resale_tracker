@@ -64,4 +64,14 @@ describe('SalesPage', () => {
       expect(screen.getByText(/back to sales/i)).toBeInTheDocument()
     })
   })
+
+  it('Import Sales and Record a Sale buttons both have the btn-action class', async () => {
+    renderPage(['/sales'])
+    await waitFor(() => {
+      const importBtn = screen.getByRole('button', { name: /import sales/i })
+      const recordBtn = screen.getByRole('button', { name: /record a sale/i })
+      expect(importBtn.className).toContain('btn-action')
+      expect(recordBtn.className).toContain('btn-action')
+    })
+  })
 })

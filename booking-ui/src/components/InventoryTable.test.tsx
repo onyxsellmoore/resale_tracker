@@ -68,12 +68,12 @@ describe('InventoryTable', () => {
     expect(badge.className).toContain('status-badge-sold')
   })
 
-  it('Mark Sold link present for AVAILABLE item with btn-secondary class', () => {
+  it('Mark Sold link present for AVAILABLE item with btn-action class', () => {
     renderTable()
     const row = screen.getByTestId('item-row-1')
     const link = within(row).getByText('Mark Sold')
     expect(link).toBeInTheDocument()
-    expect(link.className).toContain('btn-secondary')
+    expect(link.className).toContain('btn-action')
   })
 
   it('Edit button rendered for every item and links to /inventory/edit/[id]', () => {
@@ -169,5 +169,22 @@ describe('InventoryTable', () => {
     await user.click(within(row).getByRole('button', { name: /delete/i }))
     await user.click(screen.getByRole('button', { name: /yes, delete/i }))
     expect(onDelete).toHaveBeenCalledWith('1')
+  })
+
+  it('Edit, Mark Sold, and Delete buttons all have the btn-action class', () => {
+    const onDelete = vi.fn()
+    render(
+      <MemoryRouter>
+        <InventoryTable items={mockItems} onDelete={onDelete} />
+      </MemoryRouter>
+    )
+    const row = screen.getByTestId('item-row-1')
+    const editBtn = within(row).getByText('Edit')
+    const markSoldBtn = within(row).getByText('Mark Sold')
+    const deleteBtn = within(row).getByRole('button', { name: /delete/i })
+
+    expect(editBtn.className).toContain('btn-action')
+    expect(markSoldBtn.className).toContain('btn-action')
+    expect(deleteBtn.className).toContain('btn-action')
   })
 })

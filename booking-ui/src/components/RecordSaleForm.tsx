@@ -4,7 +4,6 @@ import { useAuth } from '../auth/AuthContext'
 import { createSale } from '../api/salesApi'
 import { formatCurrency } from '../utils/format'
 import { EmptyState } from './EmptyState'
-import { ItemSearchInput } from './ItemSearchInput'
 import type { ItemDTO } from '../types'
 import './Form.css'
 
@@ -15,6 +14,9 @@ interface RecordSaleFormProps {
   preselectedItemId?: string
 }
 
+const DEFAULT_PLATFORMS = ['Vestiaire', 'Poshmark', 'Ebay', 'Mercari']
+const ADD_NEW_VALUE = '__add_new__'
+
 export function RecordSaleForm({ businessId, items, onSuccess, preselectedItemId }: RecordSaleFormProps) {
   const { token } = useAuth()
   const availableItems = useMemo(
@@ -24,12 +26,21 @@ export function RecordSaleForm({ businessId, items, onSuccess, preselectedItemId
 
   const [selectedItemId, setSelectedItemId] = useState(preselectedItemId ?? '')
   const [platform, setPlatform] = useState('')
+  const [customPlatforms, setCustomPlatforms] = useState<string[]>([])
+  const [showAddPlatform, setShowAddPlatform] = useState(false)
+  const [newPlatformName, setNewPlatformName] = useState('')
+  const [previousPlatform, setPreviousPlatform] = useState('')
   const [salePrice, setSalePrice] = useState('')
   const [platformFees, setPlatformFees] = useState('')
   const [soldAt, setSoldAt] = useState(new Date().toISOString().split('T')[0])
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
+
+  const allPlatforms = useMemo(
+    () => [...DEFAULT_PLATFORMS, ...customPlatforms],
+    [customPlatforms]
+  )
 
   if (availableItems.length === 0) {
     return (
@@ -47,6 +58,49 @@ export function RecordSaleForm({ businessId, items, onSuccess, preselectedItemId
   const feesNum = parseFloat(platformFees) || 0
   const netProceeds = salePriceNum - feesNum
   const profit = netProceeds - purchasePrice
+
+  function itemLabel(item: ItemDTO): string {
+    return item.brand ? `${item.name} (${item.brand})` : item.name
+  }
+
+  function handlePlatformChange(value: string) {
+    if (value === ADD_NEW_VALUE) {
+      setPreviousPlatform(platform)
+      setShowAddPlatform(true)
+      setNewPlatformName('')
+    } else {
+      setPlatform(value)
+      setShowAddPlatform(false)
+    }
+  }
+
+  function handleAddPlatformConfirm() {
+    const trimmed = newPlatformName.trim()
+    if (!trimmed) return
+    const isDuplicate = allPlatforms.some(
+      (p) => p.toLowerCase() === trimmed.toLowerCase()
+    )
+    if (isDuplicate) return
+    setCustomPlatforms((prev) => [...prev, trimmed])
+    setPlatform(trimmed)
+    setShowAddPlatform(false)
+    setNewPlatformName('')
+  }
+
+  function handleAddPlatformDismiss() {
+    setShowAddPlatform(false)
+    setNewPlatformName('')
+    setPlatform(previousPlatform)
+  }
+
+  function handleNewPlatformKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleAddPlatformConfirm()
+    } else if (e.key === 'Escape') {
+      handleAddPlatformDismiss()
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -116,19 +170,60 @@ export function RecordSaleForm({ businessId, items, onSuccess, preselectedItemId
 
       <div className="form-group">
         <label htmlFor="sale-item">Item</label>
-        <ItemSearchInput
+        <select
           id="sale-item"
-          items={availableItems}
-          value={selectedItemId || null}
-          onChange={(item) => setSelectedItemId(item?.id ?? '')}
           aria-label="Item"
-          placeholder="Search items..."
-        />
+          value={selectedItemId}
+          onChange={(e) => setSelectedItemId(e.target.value)}
+          className="form-input"
+        >
+          <option value="">Select an item…</option>
+          {availableItems.map((item) => (
+            <option key={item.id} value={item.id}>
+              {itemLabel(item)}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="form-group">
         <label htmlFor="sale-platform">Platform</label>
-        <input id="sale-platform" aria-label="Platform" value={platform} onChange={(e) => setPlatform(e.target.value)} placeholder="e.g. Poshmark, Mercari, Vestiaire" className="form-input" />
+        <select
+          id="sale-platform"
+          aria-label="Platform"
+          value={showAddPlatform ? ADD_NEW_VALUE : platform}
+          onChange={(e) => handlePlatformChange(e.target.value)}
+          className="form-input"
+        >
+          <option value="">Select a platform…</option>
+          {allPlatforms.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+          <option value={ADD_NEW_VALUE}>＋ Add new platform…</option>
+        </select>
+        {showAddPlatform && (
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <input
+              aria-label="New platform name"
+              type="text"
+              className="form-input"
+              value={newPlatformName}
+              onChange={(e) => setNewPlatformName(e.target.value)}
+              onKeyDown={handleNewPlatformKeyDown}
+              onBlur={handleAddPlatformDismiss}
+              placeholder="Platform name"
+              autoFocus
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className="btn-action"
+              onMouseDown={(e) => { e.preventDefault(); handleAddPlatformConfirm() }}
+            >
+              Add
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="form-row">

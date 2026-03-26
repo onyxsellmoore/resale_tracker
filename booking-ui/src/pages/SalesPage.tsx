@@ -32,14 +32,14 @@ function SalesListView() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h1>Sales</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <Link to="/sales/import">
-            <button type="button" className="btn-secondary">Import Sales</button>
+            <button type="button" className="btn-action">Import Sales</button>
           </Link>
           <Link to="/sales/new">
-            <button type="button" className="btn-primary">Record a Sale</button>
+            <button type="button" className="btn-action btn-primary">Record a Sale</button>
           </Link>
         </div>
       </div>

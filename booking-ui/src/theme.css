@@ -25,6 +25,7 @@
   /* Semantic */
   --color-profit:     #4ade80;
   --color-loss:       #f87171;
+  --color-info:       #60a5fa;
 
   /* Typography */
   --font-display: 'Playfair Display', Georgia, serif;
@@ -36,4 +37,49 @@
   --radius-lg:    12px;
   --shadow-card:  0 2px 16px rgba(0,0,0,0.5);
   --shadow-gold:  0 0 16px rgba(201,168,76,0.25);
+}
+
+/* Uniform action button for table rows and page headers */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.5rem;
+  height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+  border: 1px solid var(--color-brand);
+  background: transparent;
+  color: var(--color-brand-hover);
+}
+
+.btn-action:hover {
+  background: var(--color-surface-2);
+}
+
+.btn-action.btn-danger {
+  border-color: var(--color-loss);
+  color: var(--color-loss);
+}
+
+.btn-action.btn-danger:hover {
+  background: var(--color-loss);
+  color: var(--color-text);
+}
+
+.btn-action.btn-primary {
+  background: var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-bg);
+}
+
+.btn-action.btn-primary:hover {
+  background: var(--color-gold-hover);
+  box-shadow: var(--shadow-gold);
 }
