@@ -242,7 +242,9 @@
       "Bash(npm --version)",
       "Bash(npm view:*)",
       "Bash(npx nvm:*)",
-      "Bash(./mvnw -B verify)"
+      "Bash(./mvnw -B verify)",
+      "Bash(npm search:*)",
+      "Bash(npx biome:*)"
     ]
   }
 }
