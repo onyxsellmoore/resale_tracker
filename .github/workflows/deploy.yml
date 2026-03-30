@@ -151,7 +151,7 @@ jobs:
         working-directory: booking-ui
         run: |
           npm ci
-          cp .env.production.example .env.production
+          echo 'VITE_API_URL='${{ secrets.VITE_API_URL }} > .env.production
           npm run build
 
       - name: Deploy to Firebase Hosting
