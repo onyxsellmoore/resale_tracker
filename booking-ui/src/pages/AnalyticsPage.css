@@ -1,0 +1,41 @@
+.analytics-presets {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.analytics-preset-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.analytics-preset-btn:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+.analytics-preset-btn-active {
+  color: var(--color-gold);
+  border-color: var(--color-gold);
+  font-weight: 600;
+}
+
+.analytics-date-range {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.analytics-date-input {
+  display: inline;
+  width: auto;
+}

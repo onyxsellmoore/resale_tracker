@@ -71,7 +71,7 @@ export function NavBar() {
         </Link>
       )}
       {canAddItem && (
-        <Link to="/inventory" className="navbar-add-item">
+        <Link to="/inventory" className="navbar-add-item navbar-add-item-ghost">
           Add Item
         </Link>
       )}
@@ -86,12 +86,16 @@ export function NavBar() {
       )}
       <button
         type="button"
-        className="navbar-hamburger"
+        className={`navbar-hamburger${drawerOpen ? ' navbar-hamburger-open' : ''}`}
         aria-label="Menu"
         aria-expanded={drawerOpen ? 'true' : 'false'}
         onClick={() => setDrawerOpen((prev) => !prev)}
       >
-        ☰
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" className="hamburger-icon">
+          <line className="hamburger-line hamburger-line-1" x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line className="hamburger-line hamburger-line-2" x1="3" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line className="hamburger-line hamburger-line-3" x1="3" y1="18" x2="21" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
       </button>
       {drawerOpen && (
         <div className="navbar-drawer" data-testid="nav-drawer">

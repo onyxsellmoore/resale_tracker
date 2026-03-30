@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, act, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
@@ -169,6 +169,58 @@ describe('InventoryTable', () => {
     await user.click(within(row).getByRole('button', { name: /delete/i }))
     await user.click(screen.getByRole('button', { name: /yes, delete/i }))
     expect(onDelete).toHaveBeenCalledWith('1')
+  })
+
+  it('search input is present in the DOM', () => {
+    renderTable()
+    expect(screen.getByLabelText('Search inventory')).toBeInTheDocument()
+  })
+
+  it('after typing a query, only items whose name or brand contains that string are rendered', () => {
+    vi.useFakeTimers()
+    renderTable()
+
+    const input = screen.getByLabelText('Search inventory')
+    fireEvent.change(input, { target: { value: 'gucci' } })
+    act(() => { vi.advanceTimersByTime(300) })
+
+    expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
+    expect(screen.queryByText('Prada Shoes')).not.toBeInTheDocument()
+
+    vi.useRealTimers()
+  })
+
+  it('empty state message appears and contains the query string when no results match', () => {
+    vi.useFakeTimers()
+    renderTable()
+
+    const input = screen.getByLabelText('Search inventory')
+    fireEvent.change(input, { target: { value: 'zzznomatch' } })
+    act(() => { vi.advanceTimersByTime(300) })
+
+    expect(screen.getByTestId('search-empty-state')).toBeInTheDocument()
+    expect(screen.getByText(/No items matching 'zzznomatch'/)).toBeInTheDocument()
+
+    vi.useRealTimers()
+  })
+
+  it('clicking "Clear" empties the search input and restores all status-filtered items', () => {
+    vi.useFakeTimers()
+    renderTable()
+
+    const input = screen.getByLabelText('Search inventory')
+    fireEvent.change(input, { target: { value: 'zzznomatch' } })
+    act(() => { vi.advanceTimersByTime(300) })
+
+    const clearBtn = screen.getByRole('button', { name: /clear/i })
+    fireEvent.click(clearBtn)
+    act(() => { vi.advanceTimersByTime(300) })
+
+    expect(input).toHaveValue('')
+    expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
+    expect(screen.getByText('Prada Shoes')).toBeInTheDocument()
+
+    vi.useRealTimers()
   })
 
   it('Edit, Mark Sold, and Delete buttons all have the btn-action class', () => {

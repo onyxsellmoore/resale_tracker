@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect } from 'vitest'
 import { AuthProvider, useAuth } from '../auth/AuthContext'
@@ -79,5 +80,30 @@ describe('NavBar', () => {
     renderNavBar('ADMIN', '/analytics')
     const analyticsSpan = screen.getByText('Analytics')
     expect(analyticsSpan).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('hamburger button contains an SVG element instead of text', () => {
+    renderNavBar('ADMIN')
+    const hamburger = screen.getByRole('button', { name: /menu/i })
+    expect(hamburger.querySelector('svg')).toBeInTheDocument()
+    expect(hamburger.textContent).toBe('')
+  })
+
+  it('clicking hamburger twice opens then closes the drawer', async () => {
+    const user = userEvent.setup()
+    renderNavBar('ADMIN')
+    const hamburger = screen.getByRole('button', { name: /menu/i })
+
+    await user.click(hamburger)
+    expect(screen.getByTestId('nav-drawer')).toBeInTheDocument()
+
+    await user.click(hamburger)
+    expect(screen.queryByTestId('nav-drawer')).not.toBeInTheDocument()
+  })
+
+  it('addItemLinkHasGhostButtonClass', () => {
+    renderNavBar('ADMIN')
+    const addItemLink = screen.getByRole('link', { name: /add item/i })
+    expect(addItemLink).toHaveClass('navbar-add-item-ghost')
   })
 })

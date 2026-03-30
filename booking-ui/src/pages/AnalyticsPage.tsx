@@ -9,16 +9,43 @@ import { CategoryTable } from '../components/CategoryTable'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { EmptyState } from '../components/EmptyState'
+import './AnalyticsPage.css'
 
-function getCurrentMonth() {
+type Preset = 'this-month' | 'last-month' | 'this-year' | null
+
+function getPresetDates(preset: 'this-month' | 'last-month' | 'this-year') {
   const now = new Date()
   const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const lastDay = new Date(year, now.getMonth() + 1, 0).getDate()
-  return {
-    from: `${year}-${month}-01`,
-    to: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
+
+  if (preset === 'this-month') {
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate()
+    return {
+      from: `${year}-${month}-01`,
+      to: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
+    }
   }
+
+  if (preset === 'last-month') {
+    const prevMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1
+    const prevYear = now.getMonth() === 0 ? year - 1 : year
+    const month = String(prevMonth + 1).padStart(2, '0')
+    const lastDay = new Date(prevYear, prevMonth + 1, 0).getDate()
+    return {
+      from: `${prevYear}-${month}-01`,
+      to: `${prevYear}-${month}-${String(lastDay).padStart(2, '0')}`,
+    }
+  }
+
+  // this-year
+  return {
+    from: `${year}-01-01`,
+    to: `${year}-12-31`,
+  }
+}
+
+function getCurrentMonth() {
+  return getPresetDates('this-month')
 }
 
 function isEmptyData(data: Awaited<ReturnType<typeof getAnalytics>>): boolean {
@@ -31,7 +58,25 @@ export function AnalyticsPage() {
   const defaults = getCurrentMonth()
   const [from, setFrom] = useState(defaults.from)
   const [to, setTo] = useState(defaults.to)
+  const [activePreset, setActivePreset] = useState<Preset>('this-month')
   const queryClient = useQueryClient()
+
+  function applyPreset(preset: 'this-month' | 'last-month' | 'this-year') {
+    const dates = getPresetDates(preset)
+    setFrom(dates.from)
+    setTo(dates.to)
+    setActivePreset(preset)
+  }
+
+  function handleFromChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFrom(e.target.value)
+    setActivePreset(null)
+  }
+
+  function handleToChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setTo(e.target.value)
+    setActivePreset(null)
+  }
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['analytics', businessId, from, to],
@@ -42,14 +87,38 @@ export function AnalyticsPage() {
     <div className="page-enter">
       <h1>Analytics</h1>
 
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="analytics-presets">
+        <button
+          type="button"
+          className={`analytics-preset-btn${activePreset === 'this-month' ? ' analytics-preset-btn-active' : ''}`}
+          onClick={() => applyPreset('this-month')}
+        >
+          This Month
+        </button>
+        <button
+          type="button"
+          className={`analytics-preset-btn${activePreset === 'last-month' ? ' analytics-preset-btn-active' : ''}`}
+          onClick={() => applyPreset('last-month')}
+        >
+          Last Month
+        </button>
+        <button
+          type="button"
+          className={`analytics-preset-btn${activePreset === 'this-year' ? ' analytics-preset-btn-active' : ''}`}
+          onClick={() => applyPreset('this-year')}
+        >
+          This Year
+        </button>
+      </div>
+
+      <div className="analytics-date-range">
         <label>
           From:{' '}
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="form-input" style={{ display: 'inline', width: 'auto' }} />
+          <input type="date" value={from} onChange={handleFromChange} className="form-input analytics-date-input" />
         </label>
         <label>
           To:{' '}
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="form-input" style={{ display: 'inline', width: 'auto' }} />
+          <input type="date" value={to} onChange={handleToChange} className="form-input analytics-date-input" />
         </label>
       </div>
 

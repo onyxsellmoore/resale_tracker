@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import type { ItemDTO, ItemStatus } from '../types'
 import './InventoryTable.css'
@@ -40,9 +40,16 @@ function compareItems(a: ItemDTO, b: ItemDTO, key: SortKey, dir: SortDir): numbe
 
 export function InventoryTable({ items, onDelete }: InventoryTableProps) {
   const [statusFilter, setStatusFilter] = useState<FilterValue>('ALL')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>(null)
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   function handleSort(key: SortKey) {
     if (!key) return
@@ -55,9 +62,22 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
     }
   }
 
-  const filtered = statusFilter === 'ALL'
-    ? items
-    : items.filter((item) => item.status === statusFilter)
+  const filtered = useMemo(() => {
+    let result = statusFilter === 'ALL'
+      ? items
+      : items.filter((item) => item.status === statusFilter)
+
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase()
+      result = result.filter(
+        (item) =>
+          (item.name ?? '').toLowerCase().includes(query) ||
+          (item.brand ?? '').toLowerCase().includes(query)
+      )
+    }
+
+    return result
+  }, [items, statusFilter, debouncedSearch])
 
   const sorted = useMemo(() => {
     if (!sortKey) return filtered
@@ -67,17 +87,30 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
   return (
     <div className="inventory-card">
       <div className="inventory-filter">
-        <label htmlFor="status-filter">Status filter</label>
-        <select
-          id="status-filter"
-          aria-label="Status filter"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as FilterValue)}
-        >
-          <option value="ALL">All</option>
-          <option value="AVAILABLE">Available</option>
-          <option value="SOLD">Sold</option>
-        </select>
+        <div className="search-filter">
+          <label htmlFor="search-input">Search</label>
+          <input
+            id="search-input"
+            type="text"
+            aria-label="Search inventory"
+            placeholder="Search by name or brand…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="status-filter-row">
+          <label htmlFor="status-filter">Status filter</label>
+          <select
+            id="status-filter"
+            aria-label="Status filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as FilterValue)}
+          >
+            <option value="ALL">All</option>
+            <option value="AVAILABLE">Available</option>
+            <option value="SOLD">Sold</option>
+          </select>
+        </div>
       </div>
 
       <div className="table-scroll-wrapper" data-testid="table-scroll-wrapper">
@@ -158,6 +191,14 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
             ))}
           </tbody>
         </table>
+        {debouncedSearch && sorted.length === 0 && (
+          <div className="search-empty-state" data-testid="search-empty-state">
+            <p>No items matching &apos;{debouncedSearch}&apos;</p>
+            <button type="button" className="btn-action" onClick={() => setSearchQuery('')}>
+              Clear
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

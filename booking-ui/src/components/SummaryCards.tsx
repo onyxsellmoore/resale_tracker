@@ -14,6 +14,14 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
 
   const profitClass = summary.totalProfit >= 0 ? 'summary-card-value-gold' : 'summary-card-value-loss'
 
+  const profitMargin = summary.totalRevenue === 0
+    ? '—'
+    : `${((summary.totalProfit / summary.totalRevenue) * 100).toFixed(1)}%`
+
+  const marginClass = summary.totalRevenue === 0
+    ? ''
+    : summary.totalProfit >= 0 ? 'summary-card-value-gold' : 'summary-card-value-loss'
+
   const cards = [
     { label: 'Items Sold', value: String(Math.round(animatedItemsSold)), testId: 'card-itemsSold' },
     { label: 'Total Revenue', value: formatCurrency(animatedRevenue), testId: 'card-totalRevenue' },
@@ -26,6 +34,12 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
       testId: 'card-totalProfit',
       valueClass: profitClass,
       isProfit: true,
+    },
+    {
+      label: 'Profit Margin',
+      value: profitMargin,
+      testId: 'card-profitMargin',
+      valueClass: marginClass,
     },
   ]
 

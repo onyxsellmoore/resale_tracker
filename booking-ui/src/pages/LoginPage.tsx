@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { beginPasskeyLogin, completePasskeyLogin, loginWithPassword, b64urlToBytes } from '../api/authApi'
 import '../components/Form.css'
+import './LoginPage.css'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -78,55 +79,60 @@ export function LoginPage() {
   }
 
   return (
-    <div className="page-enter" style={{ maxWidth: 400, margin: '40px auto', padding: 20 }}>
-      <h1>Login</h1>
-      {sessionExpired && (
-        <div className="form-error" style={{ marginBottom: 12 }}>
-          Your session has expired. Please sign in again.
-        </div>
-      )}
-      <form onSubmit={handleSubmit} className="form-card">
-        {error && <div className="form-error">{error}</div>}
-
-        <div className="form-group">
-          <label htmlFor="login-email">Email</label>
-          <input
-            id="login-email"
-            aria-label="Email"
-            type="email"
-            value={email}
-            onChange={handleEmailChange}
-            className="form-input"
-          />
-        </div>
-
-        {showPasswordFallback && (
-          <>
-            <div className="form-error" style={{ marginBottom: 8 }}>
-              No passkey found for this account. Enter your temporary password to sign in.
-            </div>
-            <div className="form-group">
-              <label htmlFor="login-password">Temporary Password</label>
-              <input
-                id="login-password"
-                aria-label="Temporary Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="form-input"
-              />
-            </div>
-          </>
+    <div className="login-page page-enter">
+      <div className="login-hero">
+        <h1 className="login-hero-title">Inventory Ledger</h1>
+        <p className="login-hero-tagline">Your resale business, organized.</p>
+      </div>
+      <div className="login-container">
+        {sessionExpired && (
+          <div className="form-error login-session-expired">
+            Your session has expired. Please sign in again.
+          </div>
         )}
+        <form onSubmit={handleSubmit} className="form-card">
+          {error && <div className="form-error">{error}</div>}
 
-        <button type="submit" disabled={submitting} className="btn-primary">
-          {submitting ? 'Signing in...' : showPasswordFallback ? 'Sign in with password' : 'Sign in with passkey'}
-        </button>
+          <div className="form-group">
+            <label htmlFor="login-email">Email</label>
+            <input
+              id="login-email"
+              aria-label="Email"
+              type="email"
+              value={email}
+              onChange={handleEmailChange}
+              className="form-input"
+            />
+          </div>
 
-        <p style={{ marginTop: 16, color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-          No account yet? <Link to="/setup">Set up your organization</Link>
-        </p>
-      </form>
+          {showPasswordFallback && (
+            <>
+              <div className="form-error login-no-passkey-msg">
+                No passkey found for this account. Enter your temporary password to sign in.
+              </div>
+              <div className="form-group">
+                <label htmlFor="login-password">Temporary Password</label>
+                <input
+                  id="login-password"
+                  aria-label="Temporary Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-input"
+                />
+              </div>
+            </>
+          )}
+
+          <button type="submit" disabled={submitting} className="btn-primary">
+            {submitting ? 'Signing in...' : showPasswordFallback ? 'Sign in with password' : 'Sign in with passkey'}
+          </button>
+
+          <p className="login-footer">
+            No account yet? <Link to="/setup">Set up your organization</Link>
+          </p>
+        </form>
+      </div>
     </div>
   )
 }

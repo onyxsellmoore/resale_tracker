@@ -13,6 +13,16 @@ const positiveSummary: AnalyticsSummary = {
   averageMargin: 54.0,
 }
 
+const zeroRevenueSummary: AnalyticsSummary = {
+  itemsSold: 0,
+  totalRevenue: 0,
+  totalFees: 0,
+  totalNetProceeds: 0,
+  totalCostOfGoods: 0,
+  totalProfit: 0,
+  averageMargin: 0,
+}
+
 const negativeSummary: AnalyticsSummary = {
   itemsSold: 2,
   totalRevenue: 100.0,
@@ -32,7 +42,7 @@ describe('SummaryCards', () => {
     act(() => { vi.advanceTimersByTime(700) })
   }
 
-  it('renders all 6 cards', () => {
+  it('renders all 7 cards', () => {
     renderAndFinishAnimations(positiveSummary)
     expect(screen.getByText('Items Sold')).toBeInTheDocument()
     expect(screen.getByText('Total Revenue')).toBeInTheDocument()
@@ -40,6 +50,7 @@ describe('SummaryCards', () => {
     expect(screen.getByText('Net Proceeds')).toBeInTheDocument()
     expect(screen.getByText('Cost of Goods')).toBeInTheDocument()
     expect(screen.getByText('Total Profit')).toBeInTheDocument()
+    expect(screen.getByText('Profit Margin')).toBeInTheDocument()
   })
 
   it('revenue formatted as "$X,XXX.00"', () => {
@@ -51,6 +62,19 @@ describe('SummaryCards', () => {
     renderAndFinishAnimations(positiveSummary)
     const profitCard = screen.getByTestId('card-totalProfit')
     expect(profitCard.className).toContain('summary-card-profit')
+  })
+
+  it('displays — for Profit Margin when totalRevenue is 0', () => {
+    renderAndFinishAnimations(zeroRevenueSummary)
+    const marginCard = screen.getByTestId('card-profitMargin')
+    expect(marginCard).toHaveTextContent('—')
+  })
+
+  it('displays formatted percentage for Profit Margin when totalRevenue is positive', () => {
+    renderAndFinishAnimations(positiveSummary)
+    const marginCard = screen.getByTestId('card-profitMargin')
+    // 1350 / 2500 * 100 = 54.0%
+    expect(marginCard).toHaveTextContent('54.0%')
   })
 
   it('negative profit card has red styling', () => {

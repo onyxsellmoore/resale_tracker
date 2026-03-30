@@ -175,6 +175,32 @@ describe('LoginPage', () => {
     })
   })
 
+  it('renders brand hero heading "Inventory Ledger"', () => {
+    renderPage()
+    expect(screen.getByText('Inventory Ledger')).toBeInTheDocument()
+  })
+
+  it('renders tagline beneath the heading', () => {
+    renderPage()
+    const heading = screen.getByText('Inventory Ledger')
+    const tagline = screen.getByText('Your resale business, organized.')
+    expect(heading.compareDocumentPosition(tagline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('form card and submit button are present and functional', async () => {
+    mockBeginPasskeyLogin.mockResolvedValue({ outcome: 'no_passkey' })
+    renderPage()
+    const user = userEvent.setup()
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+    const submitBtn = screen.getByRole('button', { name: /sign in with passkey/i })
+    expect(submitBtn).toBeInTheDocument()
+    await user.type(screen.getByLabelText(/email/i), 'test@test.com')
+    await user.click(submitBtn)
+    await waitFor(() => {
+      expect(mockBeginPasskeyLogin).toHaveBeenCalledWith('test@test.com')
+    })
+  })
+
   it('changing email hides password fallback', async () => {
     mockBeginPasskeyLogin.mockResolvedValue({ outcome: 'no_passkey' })
 
