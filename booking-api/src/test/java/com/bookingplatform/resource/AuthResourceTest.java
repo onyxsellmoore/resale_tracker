@@ -539,6 +539,28 @@ class AuthResourceTest {
         }
     }
 
+    @Nested @DisplayName("origin validation")
+    class OriginValidation {
+
+        @Test @DisplayName("iOS localhost origin (https://localhost) is accepted")
+        void originValidation_iOSLocalhost_isAccepted() {
+            org.junit.jupiter.api.Assertions.assertTrue(
+                    authService.isAllowedOrigin("https://localhost"));
+        }
+
+        @Test @DisplayName("web localhost origin (http://localhost:5173) is accepted")
+        void originValidation_webLocalhost_isAccepted() {
+            org.junit.jupiter.api.Assertions.assertTrue(
+                    authService.isAllowedOrigin("http://localhost:8081"));
+        }
+
+        @Test @DisplayName("unknown origin (https://evil.com) is rejected")
+        void originValidation_unknownOrigin_isRejected() {
+            org.junit.jupiter.api.Assertions.assertFalse(
+                    authService.isAllowedOrigin("https://evil.com"));
+        }
+    }
+
     @Nested @DisplayName("duplicate registration")
     class DuplicateRegistration {
 

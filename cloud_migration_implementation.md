@@ -1,4 +1,4 @@
-# Cloud Migration Implementation Plan — Take A Vintage (TAV)
+# Cloud Migration Implementation Plan — Booking Platform
 
 **Date:** 2026-03-20
 **Status:** Draft — ready for team review
@@ -8,7 +8,7 @@
 
 ## 1. Why Migrate?
 
-Right now, TAV runs entirely on a single machine via Docker Compose. That means:
+Right now, the platform runs entirely on a single machine via Docker Compose. That means:
 
 - If the machine goes down, the app goes down.
 - Accessing the app from anywhere other than that machine requires extra network setup.
@@ -239,8 +239,8 @@ The following environment variables replace hardcoded values in `application.pro
 |---|---|
 | `MONGO_CONNECTION_STRING` | Full Atlas connection URI with credentials |
 | `JWT_SECRET` | The HS256 signing key (must be changed from dev default) |
-| `WEBAUTHN_RP_ID` | Production domain (e.g., `tav.yourdomain.com`) |
-| `WEBAUTHN_ORIGIN` | Full origin (e.g., `https://tav.yourdomain.com`) |
+| `WEBAUTHN_RP_ID` | Production domain (e.g., `app.yourdomain.com`) |
+| `WEBAUTHN_ORIGIN` | Full origin (e.g., `https://app.yourdomain.com`) |
 | `CORS_ORIGINS` | Firebase Hosting URL for the frontend |
 
 ### WebAuthn / Passkey note
@@ -456,7 +456,7 @@ Before go-live, confirm the following:
 
 ## 12. Summary
 
-This migration moves TAV from a single machine to a resilient, cloud-hosted platform at zero cost by using services that are purpose-built for small-scale workloads:
+This migration moves the platform from a single machine to a resilient, cloud-hosted platform at zero cost by using services that are purpose-built for small-scale workloads:
 
 - **MongoDB Atlas M0** replaces the Docker MongoDB container with zero code changes — it is the same database engine, just hosted for you.
 - **Google Cloud Run** hosts the Quarkus backend as a Docker container, scales to zero when idle (no cost), and spins up in under a second with a native build.

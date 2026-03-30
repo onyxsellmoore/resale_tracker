@@ -1,0 +1,56 @@
+import XCTest
+@testable import Booking
+
+@MainActor
+final class AnalyticsViewModelTests: XCTestCase {
+
+    private var keychain: KeychainService!
+    private var session: URLSession!
+    private var apiClient: APIClient!
+    private var vm: AnalyticsViewModel!
+
+    override func setUp() {
+        super.setUp()
+        keychain = KeychainService.makeTestInstance()
+        try! keychain.save(key: .accessToken, data: Data("test-token".utf8))
+        session = MockURLProtocol.makeMockSession()
+        apiClient = APIClient(session: session, baseURL: URL(string: "http://localhost:8080")!, keychain: keychain)
+        vm = AnalyticsViewModel(apiClient: apiClient)
+    }
+
+    override func tearDown() {
+        keychain.clearAll()
+        MockURLProtocol.requestHandler = nil
+        super.tearDown()
+    }
+
+    func testFetchAnalytics_callsGetAnalyticsEndpoint() async throws {
+        let summary: [String: Any] = [
+            "totalRevenue": 1000.0,
+            "totalProfit": 500.0,
+            "totalSales": 10,
+            "averageProfit": 50.0,
+            "salesByPlatform": [
+                ["platform": "eBay", "count": 5, "revenue": 600.0],
+                ["platform": "Poshmark", "count": 5, "revenue": 400.0]
+            ]
+        ]
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertTrue(request.url!.path.contains("/api/v1/analytics"))
+            XCTAssertEqual(request.httpMethod, "GET")
+            let data = try JSONSerialization.data(withJSONObject: summary)
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, data)
+        }
+
+        await vm.fetchAnalytics()
+
+        XCTAssertNotNil(vm.summary)
+        XCTAssertEqual(vm.summary?.totalSales, 10)
+    }
+
+    func testDefaultFrom_isApproximately30DaysAgo() throws {
+        let expected = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+        let diff = abs(vm.from.timeIntervalSince(expected))
+        XCTAssertLessThan(diff, 60, "Default 'from' should be ~30 days ago")
+    }
+}

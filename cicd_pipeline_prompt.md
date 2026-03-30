@@ -1,4 +1,4 @@
-# CI/CD Pipeline — TAV Booking Platform
+# CI/CD Pipeline — Booking Platform
 
 ## Read these files before acting
 ```
@@ -175,9 +175,9 @@ Single job `atlas-backup`:
 - Fetch URI: `MONGO_URI=$(gcloud secrets versions access latest --secret=mongo-uri --project=resales-tracker)`
 - `DATE=$(date +%Y-%m-%d)`
 - `mongodump --uri="$MONGO_URI" --db=booking --archive=/tmp/booking-$DATE.gz --gzip`
-- `gsutil cp /tmp/booking-$DATE.gz gs://tav-backups/booking-$DATE.gz`
+- `gsutil cp /tmp/booking-$DATE.gz gs://booking-backups/booking-$DATE.gz`
 - Prune to 13 most recent (90-day window):
-  `gsutil ls gs://tav-backups/ | grep booking- | sort | head -n -13 | xargs -r gsutil rm`
+  `gsutil ls gs://booking-backups/ | grep booking- | sort | head -n -13 | xargs -r gsutil rm`
 - On failure emit `::error::Atlas backup failed` annotation
 
 ---
@@ -191,7 +191,7 @@ Steps in order:
 1. Enable APIs: `run`, `artifactregistry`, `secretmanager`, `storage`, `iamcredentials`
    on project `resales-tracker`
 2. Create Artifact Registry repo `booking` (docker, us-central1) if absent
-3. Create GCS bucket `gs://tav-backups` (us-central1) if absent
+3. Create GCS bucket `gs://booking-backups` (us-central1) if absent
 4. Create SA `github-actions@resales-tracker.iam.gserviceaccount.com` if absent; bind roles:
    `run.admin`, `artifactregistry.writer`, `secretmanager.secretAccessor`,
    `storage.objectAdmin`, `iam.serviceAccountUser`

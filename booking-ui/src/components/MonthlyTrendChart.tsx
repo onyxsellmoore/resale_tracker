@@ -1,6 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import type { MonthBreakdown } from '../types'
 import { CHART_COLORS } from '../utils/chartColors'
+import { formatCurrency } from '../utils/format'
 
 interface MonthlyTrendChartProps {
   data: MonthBreakdown[]
@@ -14,7 +15,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
         <XAxis dataKey="month" stroke={CHART_COLORS.textMuted} />
         <YAxis stroke={CHART_COLORS.textMuted} />
         <Tooltip
-          formatter={((value: number) => `$${value.toFixed(2)}`) as any}
+          formatter={((value: number) => formatCurrency(value)) as any}
           contentStyle={{ background: CHART_COLORS.surface2, border: `1px solid ${CHART_COLORS.border}` }}
         />
         <Legend />

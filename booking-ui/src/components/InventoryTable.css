@@ -87,13 +87,13 @@
 }
 
 .status-badge-available {
-  background: rgba(45, 106, 45, 0.2);
+  background: var(--color-brand-faint);
   color: var(--color-profit);
   border: 1px solid var(--color-brand);
 }
 
 .status-badge-sold {
-  background: rgba(107, 143, 107, 0.1);
+  background: var(--color-text-muted-faint);
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
 }

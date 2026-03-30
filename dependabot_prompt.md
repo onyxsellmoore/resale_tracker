@@ -1,4 +1,4 @@
-# Dependabot — TAV Booking Platform
+# Dependabot — Booking Platform
 
 ## Read these files before acting
 ```

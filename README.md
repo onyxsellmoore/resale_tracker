@@ -7,6 +7,8 @@ Inventory and sales tracking platform for small businesses. Built with Quarkus 3
 - Java 25
 - Node 20+
 - Docker Desktop
+- Xcode 15+ (for the iOS app — optional if you only need web)
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 
 ## Run locally
 
@@ -41,6 +43,139 @@ Frontend:
 ```bash
 cd booking-ui && npm test -- --run
 ```
+
+iOS:
+
+```bash
+cd booking-ios
+xcodegen generate                        # creates Booking.xcodeproj from project.yml
+xcodebuild test -scheme Booking \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+```
+
+> **Note:** If `xcodebuild` fails with "unable to find utility", your active developer directory may point to CommandLineTools instead of Xcode. Fix with `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, or prefix commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+
+## Run the iOS app on Simulator
+
+The backend must be running first — see [Run locally](#run-locally) steps 1 and 2. Verify the backend is up:
+
+```bash
+curl -s http://localhost:8080/api/v1/auth/register | head -c 100
+# Should return a JSON error (not "connection refused")
+```
+
+### 1 — Generate the Xcode project and open it
+
+The `.xcodeproj` is generated from `booking-ios/project.yml` and is not checked into git.
+
+```bash
+cd booking-ios
+xcodegen generate
+open Booking.xcodeproj
+```
+
+### 2 — Build and run
+
+In Xcode, select an iPhone simulator from the device dropdown (e.g. "iPhone 17 Pro"), then press **Cmd+R**. The app launches on the simulator showing the login screen.
+
+<details>
+<summary>Command-line alternative (no Xcode GUI)</summary>
+
+```bash
+xcodebuild build -scheme Booking \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+
+xcrun simctl boot 'iPhone 17 Pro'
+xcrun simctl install booted \
+  ~/Library/Developer/Xcode/DerivedData/Booking-*/Build/Products/Debug-iphonesimulator/Booking.app
+xcrun simctl launch booted com.tav.booking
+```
+</details>
+
+### 3 — Enroll Face ID (one-time setup)
+
+Before you can register or sign in with a passkey, the simulator needs Face ID enabled:
+
+1. In the Simulator menu bar: **Features → Face ID → Enrolled**
+
+You only need to do this once per simulator instance.
+
+### 4 — Create an organization and register
+
+1. Tap **Create a new organization**
+2. Fill in Organization Name, Your Name, and Email, then tap **Create Organization**
+3. A Face ID prompt appears — in the Simulator menu bar, quickly click **Features → Face ID → Matching Face** (the prompt times out after a few seconds)
+4. On success you land on the Inventory tab, already logged in
+
+### 5 — Sign in again later
+
+1. On the login screen, enter the same email you registered with
+2. Tap **Sign in with Passkey**
+3. Approve Face ID (**Features → Face ID → Matching Face**)
+4. You land on the Inventory tab
+
+The app connects to `http://localhost:8080` (configured in `Info.plist` → `API_BASE_URL`). If you see a network error, make sure the backend is running.
+
+## Install on a personal device
+
+Any free Apple ID works — a paid Developer Program membership ($99/year) is only required for App Store distribution.
+
+### 1 — Configure signing
+
+1. Open `booking-ios/Booking.xcodeproj` in Xcode
+2. Select the **Booking** target → **Signing & Capabilities**
+3. Change **Team** to your Apple ID (sign in via Xcode → Settings → Accounts if not already added)
+4. Xcode auto-generates a free provisioning profile for the device. You may need to change the bundle ID to something unique (e.g. `com.yourname.booking`) since free profiles require a unique identifier
+
+### 2 — Set up Associated Domains
+
+Passkeys on a real device require the `rpId` to match a domain you control, verified via an `apple-app-site-association` file.
+
+1. In Xcode → **Signing & Capabilities → + Capability → Associated Domains**
+2. Add `webcredentials:yourdomain.com`
+3. Host the following at `https://yourdomain.com/.well-known/apple-app-site-association`:
+
+   ```json
+   {
+     "webcredentials": {
+       "apps": ["<TEAM_ID>.com.tav.booking"]
+     }
+   }
+   ```
+
+   Replace `<TEAM_ID>` with your 10-character Apple team identifier (visible in the Developer portal).
+
+4. Update backend config to match:
+
+   ```properties
+   booking.webauthn.rp-id=yourdomain.com
+   booking.webauthn.origin=https://yourdomain.com
+   booking.webauthn.allowed-origins=https://yourdomain.com
+   ```
+
+### 3 — Update the API base URL
+
+Edit `booking-ios/Booking/Info.plist` and change `API_BASE_URL` from `http://localhost:8080` to your deployed backend URL (e.g. `https://booking-api-xxxxx.run.app`).
+
+Or, for local testing over Wi-Fi, use your Mac's local IP:
+
+```bash
+# Find your Mac's IP
+ipconfig getifaddr en0    # e.g. 192.168.1.42
+```
+
+Then set `API_BASE_URL` to `http://192.168.1.42:8080` and ensure the `NSAppTransportSecurity` exception in Info.plist covers that host.
+
+### 4 — Build and run
+
+1. Connect your iPhone via USB (or use wireless debugging if paired)
+2. Select your device from the Xcode device dropdown
+3. Press **Cmd+R**
+4. On first install, go to **Settings → General → VPN & Device Management** on the phone and trust your developer certificate
+
+### Passkey sync across devices
+
+Passkeys created on one Apple device sync automatically via iCloud Keychain to all devices signed into the same Apple ID (with Keychain enabled in iCloud settings). This means a passkey registered on Simulator won't appear on a real device — register a new passkey on each device, or use real devices that share an iCloud account.
 
 ## Testing the import feature
 

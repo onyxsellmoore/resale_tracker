@@ -42,7 +42,7 @@ export function AnalyticsPage() {
     <div className="page-enter">
       <h1>Analytics</h1>
 
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
         <label>
           From:{' '}
           <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="form-input" style={{ display: 'inline', width: 'auto' }} />
@@ -73,7 +73,7 @@ export function AnalyticsPage() {
         <>
           <SummaryCards summary={data.summary} />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
+          <div className="chart-grid">
             <div className="chart-card">
               <h2>Profit by Platform</h2>
               <ProfitByPlatformChart data={data.byPlatform} />

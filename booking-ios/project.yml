@@ -1,0 +1,62 @@
+name: Booking
+options:
+  bundleIdPrefix: com.tav
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "15.0"
+  minimumXcodeGenVersion: "2.30"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+
+targets:
+  Booking:
+    type: application
+    platform: iOS
+    sources:
+      - path: Booking
+    resources:
+      - path: Booking/Assets.xcassets
+    info:
+      path: Booking/Info.plist
+      properties:
+        API_BASE_URL: "http://localhost:8080"
+        NSAppTransportSecurity:
+          NSExceptionDomains:
+            localhost:
+              NSExceptionAllowsInsecureHTTPLoads: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tav.booking
+        CODE_SIGN_ENTITLEMENTS: Booking/Booking.entitlements
+        INFOPLIST_FILE: Booking/Info.plist
+    entitlements:
+      path: Booking/Booking.entitlements
+      properties:
+        keychain-access-groups:
+          - "$(AppIdentifierPrefix)com.tav.booking"
+
+  BookingTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: BookingTests
+    dependencies:
+      - target: Booking
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tav.booking.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Booking.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Booking"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  Booking:
+    build:
+      targets:
+        Booking: all
+        BookingTests: [test]
+    test:
+      targets:
+        - BookingTests

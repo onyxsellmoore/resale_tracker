@@ -100,7 +100,7 @@ export function OrgSetupPage() {
         ))}
 
         {status && (
-          <div style={{ color: 'var(--color-success)', marginBottom: 12, fontSize: '0.9rem' }}>
+          <div style={{ color: 'var(--color-profit)', marginBottom: 12, fontSize: '0.9rem' }}>
             {status}
           </div>
         )}

@@ -1,4 +1,4 @@
-# Security & Performance Review — TAV Booking Platform
+# Security & Performance Review — Booking Platform
 
 ## Context (read before acting)
 - Stack: Quarkus 3/Java 25 backend, React 19/TypeScript frontend, MongoDB Atlas

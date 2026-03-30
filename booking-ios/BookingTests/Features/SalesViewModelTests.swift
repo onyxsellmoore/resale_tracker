@@ -1,0 +1,70 @@
+import XCTest
+@testable import Booking
+
+@MainActor
+final class SalesViewModelTests: XCTestCase {
+
+    private var keychain: KeychainService!
+    private var session: URLSession!
+    private var apiClient: APIClient!
+    private var vm: SalesViewModel!
+
+    override func setUp() {
+        super.setUp()
+        keychain = KeychainService.makeTestInstance()
+        try! keychain.save(key: .accessToken, data: Data("test-token".utf8))
+        session = MockURLProtocol.makeMockSession()
+        apiClient = APIClient(session: session, baseURL: URL(string: "http://localhost:8080")!, keychain: keychain)
+        vm = SalesViewModel(apiClient: apiClient)
+    }
+
+    override func tearDown() {
+        keychain.clearAll()
+        MockURLProtocol.requestHandler = nil
+        super.tearDown()
+    }
+
+    func testRecordSale_feesExceedPrice_setsValidationError_noAPICallMade() async throws {
+        var apiCalled = false
+        MockURLProtocol.requestHandler = { _ in
+            apiCalled = true
+            return (HTTPURLResponse(url: URL(string: "http://localhost")!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data())
+        }
+
+        let result = await vm.recordSale(itemId: "1", platform: "eBay",
+                                          salePrice: Decimal(10), platformFees: Decimal(11))
+
+        XCTAssertFalse(result)
+        XCTAssertFalse(apiCalled)
+        XCTAssertNotNil(vm.validationError)
+        XCTAssertEqual(vm.validationError, "Platform fees cannot exceed sale price")
+    }
+
+    func testFetchSales_withFilters_includesPlatformAndDatesInURL() async throws {
+        MockURLProtocol.requestHandler = { request in
+            let url = request.url!.absoluteString
+            XCTAssertTrue(url.contains("platform=eBay"))
+            XCTAssertTrue(url.contains("from=2024-01-01"))
+            XCTAssertTrue(url.contains("to=2024-12-31"))
+            let data = try JSONSerialization.data(withJSONObject: [] as [Any])
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, data)
+        }
+
+        await vm.fetchSales(platform: "eBay", from: "2024-01-01", to: "2024-12-31")
+
+        XCTAssertEqual(vm.sales.count, 0)
+    }
+
+    func testSaleProfit_formatsAsCurrency_nonEmpty() async throws {
+        let sale = Sale(id: "1", itemId: "1", platform: "eBay",
+                        salePrice: MoneyDecimal(Decimal(150)),
+                        platformFees: MoneyDecimal(Decimal(15)),
+                        netProceeds: MoneyDecimal(Decimal(135)),
+                        profit: MoneyDecimal(Decimal(35)))
+
+        let formatted = sale.profit.value.currencyFormatted()
+
+        XCTAssertFalse(formatted.isEmpty)
+        XCTAssertTrue(formatted.contains("35"))
+    }
+}

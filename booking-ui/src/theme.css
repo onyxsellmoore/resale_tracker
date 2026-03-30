@@ -31,12 +31,18 @@
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body:    'Inter', system-ui, sans-serif;
 
+  /* Derived / translucent */
+  --color-brand-faint:     rgba(45, 106, 45, 0.2);
+  --color-brand-focus:     rgba(45, 106, 45, 0.3);
+  --color-text-muted-faint: rgba(107, 143, 107, 0.1);
+
   /* Spacing & shape */
   --radius-sm:    4px;
   --radius-md:    8px;
   --radius-lg:    12px;
   --shadow-card:  0 2px 16px rgba(0,0,0,0.5);
   --shadow-gold:  0 0 16px rgba(201,168,76,0.25);
+  --shadow-focus: 0 0 0 2px var(--color-brand-focus);
 }
 
 /* Uniform action button for table rows and page headers */

@@ -13,9 +13,11 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -26,6 +28,7 @@ import java.util.*;
 @ApplicationScoped
 public class AuthService {
 
+    private static final Logger LOG = Logger.getLogger(AuthService.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final ObjectMapper CBOR_MAPPER = new ObjectMapper(new CBORFactory());
 
@@ -55,6 +58,34 @@ public class AuthService {
 
     @ConfigProperty(name = "booking.webauthn.origin", defaultValue = "http://localhost:5173")
     String expectedOrigin;
+
+    @ConfigProperty(name = "booking.webauthn.allowed-origins")
+    String allowedOriginsRaw;
+
+    private Set<String> allowedOrigins;
+
+    @PostConstruct
+    void init() {
+        allowedOrigins = new HashSet<>();
+        for (String entry : allowedOriginsRaw.split(",")) {
+            String trimmed = entry.trim().toLowerCase();
+            if (trimmed.isEmpty()) {
+                LOG.warn("Empty entry in booking.webauthn.allowed-origins — skipping");
+                continue;
+            }
+            allowedOrigins.add(trimmed);
+        }
+        if (allowedOrigins.isEmpty()) {
+            throw new IllegalStateException(
+                    "booking.webauthn.allowed-origins must contain at least one valid origin");
+        }
+        LOG.infof("WebAuthn allowed origins: %s", allowedOrigins);
+    }
+
+    public boolean isAllowedOrigin(String origin) {
+        if (origin == null) return false;
+        return allowedOrigins.contains(origin.toLowerCase());
+    }
 
     // Challenge store — in production use Redis or DB with TTL
     private final Map<String, ChallengeData> challenges = new java.util.concurrent.ConcurrentHashMap<>();
@@ -156,7 +187,7 @@ public class AuthService {
             }
 
             String origin = clientData.has("origin") ? clientData.get("origin").asText() : null;
-            if (!expectedOrigin.equals(origin)) {
+            if (!isAllowedOrigin(origin)) {
                 return Optional.empty();
             }
 
@@ -407,7 +438,7 @@ public class AuthService {
             }
 
             String origin = clientData.has("origin") ? clientData.get("origin").asText() : null;
-            if (!expectedOrigin.equals(origin)) {
+            if (!isAllowedOrigin(origin)) {
                 return Optional.empty();
             }
 

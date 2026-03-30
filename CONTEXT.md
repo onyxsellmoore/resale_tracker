@@ -1,4 +1,4 @@
-# CONTEXT.md — Take A Vintage (TAV) Booking Platform
+# CONTEXT.md — Booking Platform
 <!-- Re-generate by running the generate-context prompt against Claude Code -->
 
 ## 1. Project Purpose
@@ -346,6 +346,16 @@ cd booking-api && ./mvnw clean install -DskipTests
 cd booking-ui  && rm -rf node_modules && npm install && npm run build
 ```
 
+### iOS (Simulator)
+Requirements: Xcode 15+, macOS 14+
+```bash
+open booking-ios/Booking.xcodeproj                # Open in Xcode
+# Run: Cmd+R — select iOS 17+ simulator
+# Test: Cmd+U, or:
+xcodebuild test -scheme Booking -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+```
+API target: `http://localhost:8080` (set in Info.plist `API_BASE_URL`)
+
 ### Deploy to production
 
 Production deploys happen automatically via GitHub Actions on push to `main`.
@@ -398,3 +408,51 @@ All workflow files live in `.github/workflows/`.
 **Secrets at runtime:** Cloud Run pulls from Google Secret Manager (`mongo-uri`, `jwt-secret`, `webauthn-rp-id`, `webauthn-origin`, `cors-origins`).
 **Security scanning:** OWASP Dependency Check (backend), npm audit (frontend), Trivy (filesystem). Dependabot: weekly PRs for Maven, npm, and GitHub Actions dependencies; patch updates auto-merge after CI gate; minor/major require manual review.
 **GCP bootstrap:** Run `scripts/gcp-setup.sh` once per project to create Artifact Registry, service account, WIF pool, secrets, and GCS backup bucket (idempotent — safe to re-run).
+
+## 13. iOS App
+
+### Requirements
+- Xcode 15+, macOS 14 Sonoma+
+- iOS 17+ Simulator (included with Xcode)
+
+### Build & Run on Simulator
+```bash
+open booking-ios/Booking.xcodeproj
+# Select iPhone 15 Pro simulator → Cmd+R
+# Or from command line:
+xcodebuild build -scheme Booking \
+  -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+```
+
+### Run iOS Tests
+```bash
+xcodebuild test -scheme Booking \
+  -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+```
+
+### Info.plist Configuration
+- `API_BASE_URL` = `http://localhost:8080` for local dev
+- `NSExceptionDomains/localhost` = insecure HTTP allowed (dev only)
+
+### Passkeys on Simulator
+Required setup before first run:
+1. Simulator menu → **Features → Face ID → Enrolled** (enables biometric capability)
+2. When the passkey prompt appears during registration or login:
+   Simulator menu → **Features → Face ID → Matching Face**
+   *(must do this quickly — the prompt times out)*
+3. `rpId = localhost` is automatically allowed by Simulator without Associated Domains
+
+Note: ASAuthorizationController (passkey UI) requires interactive Face ID input.
+Unit tests cannot automate this; the passkey presentation flow must be tested manually.
+
+### Real Device Testing (Future — Not Required for Local Dev)
+- Any free Apple ID can side-load to a personal device (paid account only needed for App Store)
+- Requires Associated Domains capability + apple-app-site-association file at your domain
+- Requires backend `WEBAUTHN_RP_ID` updated to match your domain
+- Connect device → Xcode → Product → Run (select device as destination)
+- First run: Settings → General → VPN & Device Management → trust developer profile
+
+### Passkey Cross-Device Sync (Future)
+- Passkeys sync via iCloud Keychain when rpId is a bare domain
+- Both devices must be signed into the same iCloud account with Keychain enabled
+- Simulator cannot sync passkeys between instances; use real devices for sync testing

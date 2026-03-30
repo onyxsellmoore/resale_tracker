@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────
-# Idempotent GCP bootstrap for TAV Booking Platform
+# Idempotent GCP bootstrap for Booking Platform
 # Run once per project (safe to re-run — all commands are idempotent).
 # Prerequisites: gcloud CLI authenticated, billing enabled.
 # ─────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ gcloud artifacts repositories describe "${AR_REPO}" \
 || gcloud artifacts repositories create "${AR_REPO}" \
   --repository-format=docker \
   --location="${REGION}" \
-  --description="TAV Booking Docker images" \
+  --description="Booking Platform Docker images" \
   --quiet
 
 # ── Service Account ─────────────────────────────────────────

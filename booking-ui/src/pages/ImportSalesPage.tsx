@@ -7,6 +7,7 @@ import { getItems, createItem } from '../api/inventoryApi'
 import { validateCsvStructure, parseImportFile } from '../utils/importParser'
 import { ItemSearchInput } from '../components/ItemSearchInput'
 import type { ParsedSaleRow, SaleDTO, ItemCondition } from '../types'
+import { formatCurrency } from '../utils/format'
 import '../components/Form.css'
 
 interface RowState {
@@ -259,8 +260,8 @@ export function ImportSalesPage() {
               <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <td style={tdStyle}>{rs.row.title}</td>
                 <td style={tdStyle}>{rs.row.platform}</td>
-                <td style={tdStyle}>${rs.row.salePrice.toFixed(2)}</td>
-                <td style={tdStyle}>${rs.row.platformFees.toFixed(2)}</td>
+                <td style={tdStyle}>{formatCurrency(rs.row.salePrice)}</td>
+                <td style={tdStyle}>{formatCurrency(rs.row.platformFees)}</td>
                 <td style={tdStyle}>{rs.row.soldAt.split('T')[0]}</td>
                 <td style={tdStyle}>
                   {rs.isDuplicate ? (
@@ -371,8 +372,8 @@ export function ImportSalesPage() {
                 <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={tdStyle}>{rs.row.title}</td>
                   <td style={tdStyle}>{rs.row.platform}</td>
-                  <td style={tdStyle}>${rs.row.salePrice.toFixed(2)}</td>
-                  <td style={tdStyle}>${rs.row.platformFees.toFixed(2)}</td>
+                  <td style={tdStyle}>{formatCurrency(rs.row.salePrice)}</td>
+                  <td style={tdStyle}>{formatCurrency(rs.row.platformFees)}</td>
                   <td style={tdStyle}>{matched ? matched.name : `New: ${rs.row.title}`}</td>
                 </tr>
               )
