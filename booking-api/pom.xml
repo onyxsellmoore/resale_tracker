@@ -95,6 +95,23 @@
             <artifactId>quarkus-test-mongodb</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- BEGIN injected dependencies for security fixes -->
+        <!-- Source: https://mvnrepository.com/artifact/io.netty/netty-codec-http2 -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>4.1.132.Final</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/io.netty/netty-codec-http2 -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.1.132.Final</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- END injected dependencies for security fixes -->
+
     </dependencies>
 
     <build>
