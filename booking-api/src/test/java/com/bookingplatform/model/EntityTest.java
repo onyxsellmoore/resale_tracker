@@ -84,8 +84,9 @@ class EntityTest {
 
     @Test
     void itemStatus_allValuesExist() {
-        assertEquals(2, ItemStatus.values().length);
+        assertEquals(3, ItemStatus.values().length);
         assertNotNull(ItemStatus.valueOf("AVAILABLE"));
         assertNotNull(ItemStatus.valueOf("SOLD"));
+        assertNotNull(ItemStatus.valueOf("UNKNOWN"));
     }
 }

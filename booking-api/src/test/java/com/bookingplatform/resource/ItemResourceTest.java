@@ -10,13 +10,16 @@ import com.bookingplatform.repository.SaleRepository;
 import com.bookingplatform.repository.UserRepository;
 import com.bookingplatform.security.SecurityEnabledProfile;
 import com.bookingplatform.service.AuthService;
+import com.mongodb.client.MongoClient;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.mongodb.MongoTestResource;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
+import org.bson.Document;
 import org.bson.types.Decimal128;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Date;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -44,6 +48,10 @@ class ItemResourceTest {
     UserRepository userRepository;
     @Inject
     AuthService authService;
+    @Inject
+    MongoClient mongoClient;
+    @ConfigProperty(name = "quarkus.mongodb.database")
+    String databaseName;
 
     private String adminToken;
     private String orgId;
@@ -387,6 +395,131 @@ class ItemResourceTest {
         }
 
         @Nested
+        @DisplayName("legacy/unknown status values in DB")
+        class LegacyStatus {
+
+            /**
+             * Items with a removed status value (e.g. "DELETED") exist in the production
+             * database. The API must not crash with a 500; it should return them with
+             * status UNKNOWN so the user can edit or delete them.
+             */
+            @Test
+            @DisplayName("item with legacy DELETED status in DB → 200 with status UNKNOWN")
+            void legacyDeletedStatus_returnsUnknown() {
+                insertRawItem(orgId, "Legacy Item", "DELETED");
+
+                given()
+                        .header("Authorization", "Bearer " + adminToken)
+                        .when()
+                        .get("/api/v1/items")
+                        .then()
+                        .statusCode(200)
+                        .body("size()", equalTo(1))
+                        .body("[0].name", equalTo("Legacy Item"))
+                        .body("[0].status", equalTo("UNKNOWN"));
+            }
+
+            /**
+             * Items with a completely unrecognized status string should also
+             * gracefully degrade to UNKNOWN.
+             */
+            @Test
+            @DisplayName("item with arbitrary unknown status in DB → 200 with status UNKNOWN")
+            void arbitraryUnknownStatus_returnsUnknown() {
+                insertRawItem(orgId, "Mystery Item", "SOME_FUTURE_STATUS");
+
+                given()
+                        .header("Authorization", "Bearer " + adminToken)
+                        .when()
+                        .get("/api/v1/items")
+                        .then()
+                        .statusCode(200)
+                        .body("size()", equalTo(1))
+                        .body("[0].name", equalTo("Mystery Item"))
+                        .body("[0].status", equalTo("UNKNOWN"));
+            }
+
+            /**
+             * Mixed results: valid items alongside legacy items should all be returned.
+             */
+            @Test
+            @DisplayName("mix of valid and legacy status items → 200 with all items")
+            void mixedStatuses_allReturned() {
+                createTestItem(orgId, "Normal Item", ItemStatus.AVAILABLE);
+                insertRawItem(orgId, "Old Item", "DELETED");
+
+                given()
+                        .header("Authorization", "Bearer " + adminToken)
+                        .when()
+                        .get("/api/v1/items")
+                        .then()
+                        .statusCode(200)
+                        .body("size()", equalTo(2))
+                        .body("name", hasItems("Normal Item", "Old Item"));
+            }
+
+            /**
+             * GET /items/:id must also handle legacy status without crashing.
+             */
+            @Test
+            @DisplayName("GET /items/:id with legacy status → 200 with status UNKNOWN")
+            void getById_legacyStatus_returnsUnknown() {
+                Document doc = insertRawItem(orgId, "Legacy Single", "DELETED");
+                String itemId = doc.getObjectId("_id").toHexString();
+
+                given()
+                        .header("Authorization", "Bearer " + adminToken)
+                        .when()
+                        .get("/api/v1/items/{id}", itemId)
+                        .then()
+                        .statusCode(200)
+                        .body("name", equalTo("Legacy Single"))
+                        .body("status", equalTo("UNKNOWN"));
+            }
+
+            /**
+             * PATCH must be able to deserialize and update a legacy-status item
+             * without crashing.
+             */
+            @Test
+            @DisplayName("PATCH /items/:id with legacy status → 200, can update name")
+            void patch_legacyStatus_canUpdate() {
+                Document doc = insertRawItem(orgId, "Patchable Legacy", "DELETED");
+                String itemId = doc.getObjectId("_id").toHexString();
+
+                given()
+                        .contentType(ContentType.JSON)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .body("""
+                                {"name": "Renamed Legacy"}
+                                """)
+                        .when()
+                        .patch("/api/v1/items/{id}", itemId)
+                        .then()
+                        .statusCode(200)
+                        .body("name", equalTo("Renamed Legacy"));
+            }
+
+            /**
+             * DELETE must be able to deserialize and hard-delete a legacy-status item.
+             * UNKNOWN status is not SOLD, so deletion should succeed.
+             */
+            @Test
+            @DisplayName("DELETE /items/:id with legacy status → 204")
+            void delete_legacyStatus_succeeds() {
+                Document doc = insertRawItem(orgId, "Deletable Legacy", "DELETED");
+                String itemId = doc.getObjectId("_id").toHexString();
+
+                given()
+                        .header("Authorization", "Bearer " + adminToken)
+                        .when()
+                        .delete("/api/v1/items/{id}", itemId)
+                        .then()
+                        .statusCode(204);
+            }
+        }
+
+        @Nested
         @DisplayName("businessId injection")
         class BusinessIdInjection {
 
@@ -486,6 +619,33 @@ class ItemResourceTest {
         }
     }
 
+    /**
+     * Inserts a raw BSON document into the items collection, bypassing Java enum
+     * validation. Used to simulate legacy or corrupted documents with status values
+     * that no longer exist in the ItemStatus enum.
+     */
+    private Document insertRawItem(String businessId, String name, String rawStatus) {
+        Document doc = new Document()
+                .append("businessId", businessId)
+                .append("name", name)
+                .append("brand", "Gucci")
+                .append("category", "Handbags")
+                .append("condition", "EXCELLENT")
+                .append("purchasePrice", new Decimal128(new BigDecimal("250.00")))
+                .append("purchaseDate", Date.from(Instant.parse("2025-01-15T00:00:00Z")))
+                .append("status", rawStatus)
+                .append("createdAt", Date.from(Instant.now()))
+                .append("updatedAt", Date.from(Instant.now()));
+        mongoClient.getDatabase(databaseName)
+                .getCollection("items")
+                .insertOne(doc);
+        return doc;
+    }
+
+    /**
+     * Creates and persists a test item with the given businessId, name, and status
+     * using the standard Java model layer.
+     */
     private Item createTestItem(String businessId, String name, ItemStatus status) {
         Item item = new Item();
         item.businessId = businessId;
