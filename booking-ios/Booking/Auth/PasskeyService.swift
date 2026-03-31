@@ -202,7 +202,11 @@ class PasskeyService: NSObject, PasskeyLoginProvider {
     private func performAuthorization(
         requests: [ASAuthorizationRequest]
     ) async throws -> ASAuthorizationCredential {
-        try await withCheckedThrowingContinuation { continuation in
+        // Cancel any lingering continuation to avoid "request already pending"
+        authorizationContinuation?.resume(throwing: PasskeyError.userCancelled)
+        authorizationContinuation = nil
+
+        return try await withCheckedThrowingContinuation { continuation in
             self.authorizationContinuation = continuation
             let controller = ASAuthorizationController(authorizationRequests: requests)
             controller.delegate = self

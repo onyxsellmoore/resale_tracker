@@ -68,6 +68,7 @@ struct LoginView: View {
 
                 // Register link
                 Button("Create a new organization") {
+                    viewModel.clearError()
                     showRegister = true
                 }
                 .font(AppTheme.Typography.caption)

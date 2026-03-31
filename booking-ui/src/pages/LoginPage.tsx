@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { beginPasskeyLogin, completePasskeyLogin, loginWithPassword, b64urlToBytes } from '../api/authApi'
@@ -16,6 +16,10 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [showPasswordFallback, setShowPasswordFallback] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+
+  // Abort any pending WebAuthn request on unmount
+  useEffect(() => () => { abortRef.current?.abort() }, [])
 
   function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
     setEmail(e.target.value)
@@ -51,6 +55,11 @@ export function LoginPage() {
 
       const options = result.options
 
+      // Abort any previous in-flight WebAuthn request to avoid "request already pending"
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+
       const assertion = await navigator.credentials.get({
         publicKey: {
           challenge: b64urlToBytes(options.challenge) as unknown as BufferSource,
@@ -61,6 +70,7 @@ export function LoginPage() {
           })),
           timeout: options.timeout,
         },
+        signal: controller.signal,
       }) as PublicKeyCredential
 
       const auth = await completePasskeyLogin(email.trim(), assertion)

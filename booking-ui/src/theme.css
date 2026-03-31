@@ -104,3 +104,11 @@
   background: var(--color-gold-hover);
   box-shadow: var(--shadow-gold);
 }
+
+/* Flex container for action buttons in table cells */
+.actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}

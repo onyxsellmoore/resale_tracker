@@ -1,5 +1,5 @@
 export type ItemCondition = 'NEW' | 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR'
-export type ItemStatus = 'AVAILABLE' | 'SOLD' | 'DELETED'
+export type ItemStatus = 'AVAILABLE' | 'SOLD'
 
 export interface ItemDTO {
   id: string

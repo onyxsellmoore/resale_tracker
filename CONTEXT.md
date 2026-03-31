@@ -54,7 +54,7 @@ Item  (collection: "items")
   purchaseDate Instant     — (immutable after create)
   description  String
   notes        String
-  status       ItemStatus  — AVAILABLE | SOLD | DELETED
+  status       ItemStatus  — AVAILABLE | SOLD
 
 Sale  (collection: "sales")
   businessId   String     — org/business scope key
@@ -121,7 +121,7 @@ BACKEND: /api/v1/items
   GET  /                     — list items (?status=AVAILABLE)     [ALL ROLES]
   GET  /:id                  — get single item                    [ALL ROLES]
   PATCH /:id                 — update mutable fields              [ALL ROLES]
-  DELETE /:id                — soft-delete (→ DELETED status)     [ADMIN]
+  DELETE /:id                — hard-delete item from database      [ADMIN]
 
 BACKEND: /api/v1/sales
   POST /                     — record sale, mark item SOLD        [ADMIN,SELLER]
@@ -216,7 +216,7 @@ INFRA:
 - **Frontend colors for charts**: Import from `booking-ui/src/utils/chartColors.ts`, which mirrors theme.css tokens.
 - **Test hygiene**: `@BeforeEach` deletes all documents. Tests with security enabled use `@TestProfile(SecurityEnabledProfile.class)`.
 - **Immutable fields**: `purchasePrice` and `purchaseDate` on Item cannot be changed after creation.
-- **Soft delete**: Items are soft-deleted (status → DELETED), never hard-deleted. Sold items cannot be deleted.
+- **Hard delete**: Items are permanently deleted from the database. Sold items cannot be deleted.
 - **Simplicity**: Simplicity over everything. No over-engineering. (CLAUDE.md)
 
 ## 9. Common Patterns

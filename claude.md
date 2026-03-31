@@ -1,4 +1,6 @@
-Read CONTEXT.md before making any changes.
-Test driven development always
-Default data structure is a set.  Use a list only for UIs or if order matters.
-Make no mistakes 
+- Read CONTEXT.md before making any changes.
+- Test driven development always
+- Default data structure is a set.  Use a list only for UIs or if order matters.
+- Make no mistakes
+- gcloud CLI path: ~/Downloads/google-cloud-sdk/bin/gcloud
+- Document every function including tests

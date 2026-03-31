@@ -149,39 +149,40 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                   </span>
                 </td>
                 <td>
-                  <Link to={`/inventory/edit/${item.id}`} className="btn-action">Edit</Link>
-                  {item.status === 'AVAILABLE' && (
-                    <>
-                      <Link to={`/sales/new?itemId=${item.id}`} className="btn-action" style={{ marginLeft: '0.5rem' }}>Mark Sold</Link>
-                      {onDelete && confirmingDeleteId === item.id ? (
-                        <>
+                  <div className="actions-cell">
+                    <Link to={`/inventory/edit/${item.id}`} className="btn-action">Edit</Link>
+                    {item.status === 'AVAILABLE' && (
+                      <>
+                        <Link to={`/sales/new?itemId=${item.id}`} className="btn-action">Mark Sold</Link>
+                        {onDelete && confirmingDeleteId === item.id ? (
+                          <>
+                            <button
+                              type="button"
+                              className="btn-action btn-confirm-delete"
+                              onClick={() => { onDelete(item.id); setConfirmingDeleteId(null) }}
+                            >
+                              Yes, delete
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-action btn-ghost"
+                              onClick={() => setConfirmingDeleteId(null)}
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : onDelete && (
                           <button
                             type="button"
-                            className="btn-action btn-confirm-delete"
-                            onClick={() => { onDelete(item.id); setConfirmingDeleteId(null) }}
+                            className="btn-action btn-danger"
+                            onClick={() => setConfirmingDeleteId(item.id)}
                           >
-                            Yes, delete
+                            Delete
                           </button>
-                          <button
-                            type="button"
-                            className="btn-action btn-ghost"
-                            onClick={() => setConfirmingDeleteId(null)}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : onDelete && (
-                        <button
-                          type="button"
-                          className="btn-action btn-danger"
-                          style={{ marginLeft: '0.5rem' }}
-                          onClick={() => setConfirmingDeleteId(item.id)}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </>
-                  )}
+                        )}
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

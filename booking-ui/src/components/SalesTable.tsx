@@ -116,17 +116,18 @@ export function SalesTable({ sales, onDelete }: SalesTableProps) {
                 </td>
                 <td>{new Date(sale.soldAt).toLocaleDateString()}</td>
                 <td>
-                  <Link to={`/sales/edit/${sale.id}`} className="btn-action">Edit</Link>
-                  {onDelete && (
-                    <button
-                      type="button"
-                      className="btn-action btn-danger"
-                      style={{ marginLeft: '0.5rem' }}
-                      onClick={() => onDelete(sale.id)}
-                    >
-                      Delete
-                    </button>
-                  )}
+                  <div className="actions-cell">
+                    <Link to={`/sales/edit/${sale.id}`} className="btn-action">Edit</Link>
+                    {onDelete && (
+                      <button
+                        type="button"
+                        className="btn-action btn-danger"
+                        onClick={() => onDelete(sale.id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

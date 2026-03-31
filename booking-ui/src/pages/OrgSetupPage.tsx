@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { register, beginPasskeyRegistration, completePasskeyRegistration, b64urlToBytes } from '../api/authApi'
@@ -24,6 +24,10 @@ export function OrgSetupPage() {
   const [errors, setErrors] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
+
+  // Abort any pending WebAuthn request on unmount
+  useEffect(() => () => { abortRef.current?.abort() }, [])
 
   function handleOrgNameChange(value: string) {
     setOrgName(value)
@@ -67,6 +71,11 @@ export function OrgSetupPage() {
 
       const options = await beginPasskeyRegistration(email.trim())
 
+      // Abort any previous in-flight WebAuthn request to avoid "request already pending"
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+
       const credential = await navigator.credentials.create({
         publicKey: {
           ...options,
@@ -74,6 +83,7 @@ export function OrgSetupPage() {
           user: { ...options.user, id: b64urlToBytes(options.user.id) as unknown as BufferSource },
           pubKeyCredParams: options.pubKeyCredParams.map(p => ({ ...p, type: 'public-key' as const })),
         },
+        signal: controller.signal,
       }) as PublicKeyCredential
 
       const auth = await completePasskeyRegistration(email.trim(), credential)

@@ -35,8 +35,13 @@ class AuthViewModel: ObservableObject {
         }
     }
 
+    func clearError() {
+        errorMessage = nil
+    }
+
     func registerOrg(orgName: String, orgSlug: String,
                      adminEmail: String, adminDisplayName: String) async {
+        errorMessage = nil
         isLoading = true
         defer { isLoading = false }
 
@@ -64,6 +69,7 @@ class AuthViewModel: ObservableObject {
     }
 
     func login(email: String) async {
+        errorMessage = nil
         isLoading = true
         defer { isLoading = false }
 

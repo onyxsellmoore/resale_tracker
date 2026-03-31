@@ -292,7 +292,15 @@
       "Bash(curl -s -D - -o /dev/null -X OPTIONS -H \"Origin: https://resale-tracker-pr.web.app\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: Content-Type\" \"https://booking-api-sejia6l5ca-uc.a.run.app/api/v1/auth/login/begin\")",
       "Bash(curl -s -D - -X POST -H \"Content-Type: application/json\" -H \"Origin: https://resale-tracker-pr.web.app\" -d '{\"\"email\"\":\"\"test@test.com\"\"}' \"https://booking-api-sejia6l5ca-uc.a.run.app/api/v1/auth/login/begin\")",
       "WebFetch(domain:resale-tracker-pr.web.app)",
-      "Bash(grep -o 'booking-api[^\"\"\"\"]*' /Users/jaredmoore/business/tav/resale_tracker/booking-ui/dist/assets/index-*.js)"
+      "Bash(grep -o 'booking-api[^\"\"\"\"]*' /Users/jaredmoore/business/tav/resale_tracker/booking-ui/dist/assets/index-*.js)",
+      "Bash(mongosh --quiet --eval 'db.items.find\\({status: \"\"DELETED\"\"}\\).toArray\\(\\)' booking)",
+      "Bash(docker exec:*)",
+      "Bash(~/Downloads/google-cloud-sdk/bin/gcloud secrets:*)",
+      "Bash(mongosh 'mongodb+srv://onyxAdmin:Y&ABzk8zWx3!lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker' --quiet --eval 'db.items.find\\({status: \"\"DELETED\"\"}, {name: 1, status: 1}\\).toArray\\(\\)')",
+      "Bash(mongosh 'mongodb+srv://onyxAdmin:Y%26ABzk8zWx3!lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker' --quiet --eval 'db.items.find\\({status: \"\"DELETED\"\"}, {name: 1, status: 1}\\).toArray\\(\\)')",
+      "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.items.find\\({status: \"\"DELETED\"\"}, {name: 1, status: 1}\\).toArray\\(\\)')",
+      "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.getCollectionNames\\(\\)')",
+      "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.items.distinct\\(\"\"status\"\"\\)')"
     ]
   }
 }
