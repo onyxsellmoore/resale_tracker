@@ -44,24 +44,24 @@ describe('Router', () => {
 
   it('navigating to / redirects to /login', () => {
     renderWithRouter('/')
-    expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sign in with passkey/i })).toBeInTheDocument()
   })
 
   it('navigating to /analytics when no auth token redirects to /login', () => {
     renderWithRouter('/analytics')
-    expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sign in with passkey/i })).toBeInTheDocument()
   })
 
   it('navigating to /inventory when no auth token redirects to /login', () => {
     renderWithRouter('/inventory')
-    expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sign in with passkey/i })).toBeInTheDocument()
   })
 
   it('after login, the user lands on /analytics', async () => {
     const token = fakeJwt({ sub: 'u1', orgId: 'org1', role: 'ADMIN' })
     renderWithRouter('/analytics', token)
     await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /login/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /sign in with passkey/i })).not.toBeInTheDocument()
     })
   })
 })

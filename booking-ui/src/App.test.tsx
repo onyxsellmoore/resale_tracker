@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import App from './App'
 
@@ -16,11 +16,12 @@ describe('App', () => {
 
   it('renders without crashing and shows login page', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sign in with passkey/i })).toBeInTheDocument()
   })
 
   it('renders the NavBar with brand name', () => {
     render(<App />)
-    expect(screen.getByText('Inventory Ledger')).toBeInTheDocument()
+    const nav = screen.getByRole('navigation')
+    expect(within(nav).getByText('Inventory Ledger')).toBeInTheDocument()
   })
 })
