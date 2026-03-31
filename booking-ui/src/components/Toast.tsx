@@ -5,9 +5,11 @@ interface ToastProps {
   message: string
   onDismiss: () => void
   duration?: number
+  onUndo?: () => void
+  undoLabel?: string
 }
 
-export function Toast({ message, onDismiss, duration = 3000 }: ToastProps) {
+export function Toast({ message, onDismiss, duration = 3000, onUndo, undoLabel = 'Undo' }: ToastProps) {
   useEffect(() => {
     const timer = setTimeout(onDismiss, duration)
     return () => clearTimeout(timer)
@@ -16,6 +18,15 @@ export function Toast({ message, onDismiss, duration = 3000 }: ToastProps) {
   return (
     <div className="toast">
       <span>{message}</span>
+      {onUndo && (
+        <button
+          type="button"
+          className="toast-undo"
+          onClick={() => { onUndo(); onDismiss() }}
+        >
+          {undoLabel}
+        </button>
+      )}
       <button
         type="button"
         onClick={onDismiss}

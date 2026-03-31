@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AuthProvider } from '../auth/AuthContext'
 import { AddItemForm } from './AddItemForm'
@@ -15,13 +16,34 @@ const mockCreateItem = vi.mocked(createItem)
 const mockOnItemAdded = vi.fn()
 
 function renderForm() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
   return render(
-    <AuthProvider>
-      <MemoryRouter>
-        <AddItemForm businessId="biz1" onItemAdded={mockOnItemAdded} />
-      </MemoryRouter>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <MemoryRouter>
+          <AddItemForm businessId="biz1" onItemAdded={mockOnItemAdded} />
+        </MemoryRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   )
+}
+
+const validItemResponse = {
+  id: 'new1',
+  businessId: 'biz1',
+  name: 'Test Bag',
+  brand: null,
+  category: null,
+  condition: 'GOOD',
+  purchasePrice: 100,
+  purchaseDate: '2025-01-15T00:00:00Z',
+  description: null,
+  notes: null,
+  status: 'AVAILABLE',
+  createdAt: '2025-01-15T00:00:00Z',
+  updatedAt: '2025-01-15T00:00:00Z',
 }
 
 describe('AddItemForm', () => {
@@ -64,13 +86,17 @@ describe('AddItemForm', () => {
     expect(dateInput.value).toBe(today)
   })
 
-  it('submit with empty name shows validation error', async () => {
+  it('submit with empty name shows validation error beneath the name input', async () => {
     renderForm()
     const user = userEvent.setup()
 
     await user.click(screen.getByRole('button', { name: /add item/i }))
 
-    expect(screen.getByText(/name is required/i)).toBeInTheDocument()
+    const errorEl = screen.getByTestId('error-name')
+    expect(errorEl).toHaveTextContent(/name is required/i)
+    // Error is inside the same form-group as the name input
+    const nameInput = screen.getByLabelText(/name/i)
+    expect(nameInput.parentElement!.contains(errorEl)).toBe(true)
     expect(mockCreateItem).not.toHaveBeenCalled()
   })
 
@@ -90,19 +116,12 @@ describe('AddItemForm', () => {
 
   it('valid submit calls the create API with correct payload', async () => {
     mockCreateItem.mockResolvedValueOnce({
-      id: 'new1',
-      businessId: 'biz1',
+      ...validItemResponse,
       name: 'Test Bag',
       brand: 'Gucci',
       category: 'Handbags',
       condition: 'EXCELLENT',
       purchasePrice: 250,
-      purchaseDate: '2025-01-15T00:00:00Z',
-      description: null,
-      notes: null,
-      status: 'AVAILABLE',
-      createdAt: '2025-01-15T00:00:00Z',
-      updatedAt: '2025-01-15T00:00:00Z',
     })
 
     renderForm()
@@ -133,21 +152,7 @@ describe('AddItemForm', () => {
   })
 
   it('valid submit sends purchaseDate as ISO-8601 string', async () => {
-    mockCreateItem.mockResolvedValueOnce({
-      id: 'new1',
-      businessId: 'biz1',
-      name: 'Test Bag',
-      brand: null,
-      category: null,
-      condition: 'GOOD',
-      purchasePrice: 100,
-      purchaseDate: '2025-01-15T00:00:00.000Z',
-      description: null,
-      notes: null,
-      status: 'AVAILABLE',
-      createdAt: '2025-01-15T00:00:00Z',
-      updatedAt: '2025-01-15T00:00:00Z',
-    })
+    mockCreateItem.mockResolvedValueOnce(validItemResponse)
 
     renderForm()
     const user = userEvent.setup()
@@ -155,7 +160,6 @@ describe('AddItemForm', () => {
     await user.type(screen.getByLabelText(/name/i), 'Test Bag')
     await user.clear(screen.getByLabelText(/purchase price/i))
     await user.type(screen.getByLabelText(/purchase price/i), '100')
-    // Clear the default date and type a specific one
     await user.clear(screen.getByLabelText(/purchase date/i))
     await user.type(screen.getByLabelText(/purchase date/i), '2025-01-15')
 
@@ -184,22 +188,8 @@ describe('AddItemForm', () => {
     })
   })
 
-  it('form resets after successful submission', async () => {
-    mockCreateItem.mockResolvedValueOnce({
-      id: 'new1',
-      businessId: 'biz1',
-      name: 'Test Bag',
-      brand: null,
-      category: null,
-      condition: 'GOOD',
-      purchasePrice: 100,
-      purchaseDate: '2025-01-15T00:00:00Z',
-      description: null,
-      notes: null,
-      status: 'AVAILABLE',
-      createdAt: '2025-01-15T00:00:00Z',
-      updatedAt: '2025-01-15T00:00:00Z',
-    })
+  it('form resets and calls onItemAdded after primary submit', async () => {
+    mockCreateItem.mockResolvedValueOnce(validItemResponse)
 
     renderForm()
     const user = userEvent.setup()
@@ -218,5 +208,51 @@ describe('AddItemForm', () => {
     const dateInput = screen.getByLabelText(/purchase date/i) as HTMLInputElement
     expect(dateInput.value).toBe(today)
     expect(mockOnItemAdded).toHaveBeenCalled()
+  })
+
+  it('"Save & Add Another" calls API, resets fields, and does NOT call onItemAdded', async () => {
+    mockCreateItem.mockResolvedValueOnce(validItemResponse)
+
+    renderForm()
+    const user = userEvent.setup()
+
+    const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement
+    const brandInput = screen.getByLabelText(/brand/i) as HTMLInputElement
+    const priceInput = screen.getByLabelText(/purchase price/i) as HTMLInputElement
+
+    await user.type(nameInput, 'Test Bag')
+    await user.type(brandInput, 'Gucci')
+    await user.clear(priceInput)
+    await user.type(priceInput, '100')
+
+    await user.click(screen.getByRole('button', { name: /save & add another/i }))
+
+    await waitFor(() => {
+      expect(mockCreateItem).toHaveBeenCalled()
+    })
+
+    // Fields reset
+    expect(nameInput.value).toBe('')
+    expect(brandInput.value).toBe('')
+    expect(priceInput.value).toBe('')
+
+    // Panel stays open — onItemAdded NOT called
+    expect(mockOnItemAdded).not.toHaveBeenCalled()
+  })
+
+  it('name validation error renders immediately after the name input', async () => {
+    renderForm()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /add item/i }))
+
+    const nameInput = screen.getByLabelText(/name/i)
+    const errorEl = screen.getByTestId('error-name')
+
+    // The error is a sibling of the input, inside the same parent form-group
+    expect(nameInput.parentElement).toBe(errorEl.parentElement)
+    // The error appears after the input in DOM order
+    const children = Array.from(nameInput.parentElement!.children)
+    expect(children.indexOf(errorEl)).toBeGreaterThan(children.indexOf(nameInput))
   })
 })

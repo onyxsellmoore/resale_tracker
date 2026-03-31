@@ -52,8 +52,9 @@ function SalesListView() {
       )}
       {!isLoading && !error && sales.length === 0 && (
         <EmptyState
+          icon={<span aria-hidden="true">&#x1F3F7;&#xFE0F;</span>}
           title="No sales recorded"
-          description="Once you have items in inventory, record your first sale."
+          description="Mark an available item as sold to record your first sale."
           action={<Link to="/inventory">Go to Inventory</Link>}
         />
       )}

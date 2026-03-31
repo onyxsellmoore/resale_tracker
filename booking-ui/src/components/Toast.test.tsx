@@ -32,4 +32,33 @@ describe('Toast', () => {
     fireEvent.click(screen.getByRole('button', { name: /dismiss/i }))
     expect(onDismiss).toHaveBeenCalledOnce()
   })
+
+  it('renders an Undo button when onUndo is provided', () => {
+    const onUndo = vi.fn()
+    render(<Toast message="Deleted" onDismiss={() => {}} onUndo={onUndo} />)
+
+    expect(screen.getByRole('button', { name: /undo/i })).toBeInTheDocument()
+  })
+
+  it('does not render an Undo button when onUndo is not provided', () => {
+    render(<Toast message="Done" onDismiss={() => {}} />)
+
+    expect(screen.queryByRole('button', { name: /undo/i })).not.toBeInTheDocument()
+  })
+
+  it('clicking Undo calls onUndo and onDismiss', () => {
+    const onUndo = vi.fn()
+    const onDismiss = vi.fn()
+    render(<Toast message="Deleted" onDismiss={onDismiss} onUndo={onUndo} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /undo/i }))
+    expect(onUndo).toHaveBeenCalledOnce()
+    expect(onDismiss).toHaveBeenCalledOnce()
+  })
+
+  it('uses custom undoLabel when provided', () => {
+    render(<Toast message="Deleted" onDismiss={() => {}} onUndo={() => {}} undoLabel="Revert" />)
+
+    expect(screen.getByRole('button', { name: /revert/i })).toBeInTheDocument()
+  })
 })

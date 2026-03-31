@@ -15,6 +15,21 @@
   z-index: 1000;
 }
 
+.toast-undo {
+  background: none;
+  border: none;
+  color: var(--color-gold);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0;
+}
+
+.toast-undo:hover {
+  color: var(--color-gold-hover);
+}
+
 .toast-dismiss {
   background: none;
   border: none;

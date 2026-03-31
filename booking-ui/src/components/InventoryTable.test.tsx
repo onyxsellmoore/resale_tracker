@@ -54,18 +54,24 @@ describe('InventoryTable', () => {
     expect(rows.length).toBe(3)
   })
 
-  it('AVAILABLE item shows green badge', () => {
+  it('AVAILABLE item shows green badge with title-case text', () => {
     renderTable()
     const badge = screen.getByTestId('status-badge-1')
-    expect(badge).toHaveTextContent('AVAILABLE')
+    expect(badge).toHaveTextContent('Available')
     expect(badge.className).toContain('status-badge-available')
   })
 
-  it('SOLD item shows grey badge', () => {
+  it('SOLD item shows grey badge with title-case text', () => {
     renderTable()
     const badge = screen.getByTestId('status-badge-2')
-    expect(badge).toHaveTextContent('SOLD')
+    expect(badge).toHaveTextContent('Sold')
     expect(badge.className).toContain('status-badge-sold')
+  })
+
+  it('status badge data-testid still uses original uppercase status value', () => {
+    renderTable()
+    expect(screen.getByTestId('status-badge-1')).toBeInTheDocument()
+    expect(screen.getByTestId('status-badge-2')).toBeInTheDocument()
   })
 
   it('Mark Sold link present for AVAILABLE item with btn-action class', () => {
@@ -139,7 +145,8 @@ describe('InventoryTable', () => {
     const row = screen.getByTestId('item-row-1')
     await user.click(within(row).getByRole('button', { name: /delete/i }))
     expect(onDelete).not.toHaveBeenCalled()
-    expect(screen.getByText(/permanently delete gucci bag/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /yes, delete/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   })
 
   it('clicking Cancel hides the confirmation and does not call onDelete', async () => {
@@ -167,8 +174,38 @@ describe('InventoryTable', () => {
     const user = userEvent.setup()
     const row = screen.getByTestId('item-row-1')
     await user.click(within(row).getByRole('button', { name: /delete/i }))
-    await user.click(screen.getByRole('button', { name: /yes, delete/i }))
+    const confirmBtn = screen.getByRole('button', { name: /yes, delete/i })
+    expect(confirmBtn.className).toContain('btn-confirm-delete')
+    await user.click(confirmBtn)
     expect(onDelete).toHaveBeenCalledWith('1')
+  })
+
+  it('clicking Delete adds row-delete-confirm class to the row', async () => {
+    const onDelete = vi.fn()
+    render(
+      <MemoryRouter>
+        <InventoryTable items={mockItems} onDelete={onDelete} />
+      </MemoryRouter>
+    )
+    const user = userEvent.setup()
+    const row = screen.getByTestId('item-row-1')
+    await user.click(within(row).getByRole('button', { name: /delete/i }))
+    expect(row.className).toContain('row-delete-confirm')
+  })
+
+  it('clicking Cancel removes the row-delete-confirm class', async () => {
+    const onDelete = vi.fn()
+    render(
+      <MemoryRouter>
+        <InventoryTable items={mockItems} onDelete={onDelete} />
+      </MemoryRouter>
+    )
+    const user = userEvent.setup()
+    const row = screen.getByTestId('item-row-1')
+    await user.click(within(row).getByRole('button', { name: /delete/i }))
+    expect(row.className).toContain('row-delete-confirm')
+    await user.click(screen.getByRole('button', { name: /cancel/i }))
+    expect(row.className).not.toContain('row-delete-confirm')
   })
 
   it('search input is present in the DOM', () => {

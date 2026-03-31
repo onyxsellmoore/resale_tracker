@@ -133,8 +133,9 @@ export function AnalyticsPage() {
 
       {data && isEmptyData(data) && (
         <EmptyState
+          icon={<span aria-hidden="true">&#x1F4CA;</span>}
           title="No data for this period"
-          description="Try selecting a wider date range."
+          description="Try a wider date range or record a sale first."
         />
       )}
 

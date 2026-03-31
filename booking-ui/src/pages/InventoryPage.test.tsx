@@ -1,8 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { AuthProvider } from '../auth/AuthContext'
 import { InventoryPage } from './InventoryPage'
 
@@ -52,6 +52,10 @@ describe('InventoryPage', () => {
     mockGetItems.mockResolvedValue(testItems)
   })
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('Add Item form is hidden by default', async () => {
     renderPage()
     await waitFor(() => {
@@ -84,25 +88,76 @@ describe('InventoryPage', () => {
     expect(screen.queryByText('Add Item', { selector: 'h2' })).not.toBeInTheDocument()
   })
 
-  it('delete button shows confirmation then calls deleteItem', async () => {
-    mockDeleteItem.mockResolvedValue(undefined)
+  it('optimistic delete removes item immediately and shows undo toast', async () => {
     renderPage()
     const user = userEvent.setup()
     await waitFor(() => {
       expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
     })
-    const deleteBtn = screen.getByRole('button', { name: /delete/i })
-    await user.click(deleteBtn)
 
-    // Should show confirmation, not call deleteItem yet
+    // Click Delete, then confirm
+    await user.click(screen.getByRole('button', { name: /delete/i }))
+    await user.click(screen.getByRole('button', { name: /yes, delete/i }))
+
+    // Item disappears immediately (optimistic)
+    await waitFor(() => {
+      expect(screen.queryByText('Gucci Bag')).not.toBeInTheDocument()
+    })
+
+    // Toast with Undo appears
+    expect(screen.getByText('Item deleted.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /undo/i })).toBeInTheDocument()
+
+    // deleteItem has NOT been called yet
     expect(mockDeleteItem).not.toHaveBeenCalled()
-    expect(screen.getByText(/permanently delete/i)).toBeInTheDocument()
+  })
 
-    // Confirm the deletion
+  it('clicking Undo restores the item in the list', async () => {
+    renderPage()
+    const user = userEvent.setup()
+    await waitFor(() => {
+      expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: /delete/i }))
     await user.click(screen.getByRole('button', { name: /yes, delete/i }))
 
     await waitFor(() => {
-      expect(mockDeleteItem).toHaveBeenCalledWith('1', undefined)
+      expect(screen.queryByText('Gucci Bag')).not.toBeInTheDocument()
     })
+
+    // Click Undo
+    await user.click(screen.getByRole('button', { name: /undo/i }))
+
+    // Item reappears
+    await waitFor(() => {
+      expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
+    })
+
+    // deleteItem was never called
+    expect(mockDeleteItem).not.toHaveBeenCalled()
+  })
+
+  it('deleteItem is called after 5 seconds if undo is not clicked', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    mockDeleteItem.mockResolvedValue(undefined)
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByText('Gucci Bag')).toBeInTheDocument()
+    })
+
+    const deleteBtn = screen.getByRole('button', { name: /delete/i })
+    await act(async () => { deleteBtn.click() })
+
+    const confirmBtn = screen.getByRole('button', { name: /yes, delete/i })
+    await act(async () => { confirmBtn.click() })
+
+    expect(mockDeleteItem).not.toHaveBeenCalled()
+
+    // Advance past the 5-second undo window
+    await act(async () => { vi.advanceTimersByTime(5000) })
+
+    expect(mockDeleteItem).toHaveBeenCalledWith('1', undefined)
   })
 })

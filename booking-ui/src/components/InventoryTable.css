@@ -45,6 +45,12 @@
   color: var(--color-text-muted);
 }
 
+.search-empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
 .search-empty-state p {
   margin-bottom: 0.5rem;
 }
@@ -102,11 +108,21 @@
 }
 
 .status-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.2rem 0.7rem;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+.status-badge::before {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
 }
 
 .status-badge-available {
@@ -115,10 +131,50 @@
   border: 1px solid var(--color-brand);
 }
 
+.status-badge-available::before {
+  background-color: var(--color-profit);
+}
+
 .status-badge-sold {
   background: var(--color-text-muted-faint);
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
+}
+
+.status-badge-sold::before {
+  background-color: var(--color-text-muted);
+}
+
+.row-delete-confirm {
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.row-delete-confirm:hover {
+  background: rgba(248, 113, 113, 0.15);
+}
+
+.btn-confirm-delete {
+  margin-left: 0.5rem;
+  background: var(--color-loss);
+  border-color: var(--color-loss);
+  color: #fff;
+}
+
+.btn-confirm-delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.btn-ghost {
+  margin-left: 0.5rem;
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.btn-ghost:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
 }
 
 @media (max-width: 599px) {

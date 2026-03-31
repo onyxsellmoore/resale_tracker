@@ -133,7 +133,7 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
           </thead>
           <tbody>
             {sorted.map((item) => (
-              <tr key={item.id} data-testid={`item-row-${item.id}`}>
+              <tr key={item.id} data-testid={`item-row-${item.id}`} className={confirmingDeleteId === item.id ? 'row-delete-confirm' : ''}>
                 <td>{item.name}</td>
                 <td>{item.brand}</td>
                 <td className="hide-mobile">{item.category}</td>
@@ -145,7 +145,7 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                     data-testid={`status-badge-${item.id}`}
                     className={badgeClass[item.status] ?? 'status-badge status-badge-sold'}
                   >
-                    {item.status}
+                    {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
                   </span>
                 </td>
                 <td>
@@ -154,26 +154,22 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                     <>
                       <Link to={`/sales/new?itemId=${item.id}`} className="btn-action" style={{ marginLeft: '0.5rem' }}>Mark Sold</Link>
                       {onDelete && confirmingDeleteId === item.id ? (
-                        <div style={{ marginTop: '0.25rem' }}>
-                          <div style={{ fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-                            Permanently delete {item.name}? This cannot be undone.
-                          </div>
+                        <>
                           <button
                             type="button"
-                            className="btn-action btn-danger"
+                            className="btn-action btn-confirm-delete"
                             onClick={() => { onDelete(item.id); setConfirmingDeleteId(null) }}
                           >
                             Yes, delete
                           </button>
                           <button
                             type="button"
-                            className="btn-action"
-                            style={{ marginLeft: '0.5rem' }}
+                            className="btn-action btn-ghost"
                             onClick={() => setConfirmingDeleteId(null)}
                           >
                             Cancel
                           </button>
-                        </div>
+                        </>
                       ) : onDelete && (
                         <button
                           type="button"
@@ -193,6 +189,7 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
         </table>
         {debouncedSearch && sorted.length === 0 && (
           <div className="search-empty-state" data-testid="search-empty-state">
+            <div className="search-empty-icon" aria-hidden="true">&#x1F50D;</div>
             <p>No items matching &apos;{debouncedSearch}&apos;</p>
             <button type="button" className="btn-action" onClick={() => setSearchQuery('')}>
               Clear

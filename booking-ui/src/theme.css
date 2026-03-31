@@ -45,6 +45,21 @@
   --shadow-focus: 0 0 0 2px var(--color-brand-focus);
 }
 
+@keyframes slideInRight {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.25s ease-out;
+}
+
 /* Uniform action button for table rows and page headers */
 .btn-action {
   display: inline-flex;

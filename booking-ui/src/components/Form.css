@@ -35,6 +35,12 @@
   box-shadow: var(--shadow-focus);
 }
 
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 4px;
+}
+
 .form-error {
   color: var(--color-loss);
   margin-bottom: 4px;
