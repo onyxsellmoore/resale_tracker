@@ -280,7 +280,8 @@
       "Bash(DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun simctl install booted ~/Library/Developer/Xcode/DerivedData/Booking-*/Build/Products/Debug-iphonesimulator/Booking.app)",
       "Bash(DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun simctl launch booted com.tav.booking)",
       "Bash(DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild test -scheme Booking -destination 'platform=iOS Simulator,name=iPhone 16 Pro' -quiet)",
-      "Bash(xcodebuild build:*)"
+      "Bash(xcodebuild build:*)",
+      "Bash(./mvnw -B test -pl . -Dtest=\"CorsPreflightTest\")"
     ]
   }
 }

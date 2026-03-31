@@ -80,8 +80,15 @@ export function OrgSetupPage() {
 
       login(auth.accessToken)
       navigate('/analytics', { replace: true })
-    } catch {
-      setErrors(['Registration failed'])
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        setErrors(['Unable to reach the server. Please check your connection and try again.'])
+      } else if (msg.includes('NotAllowedError') || msg.includes('cancelled')) {
+        setErrors(['Passkey setup was cancelled. Please try again.'])
+      } else {
+        setErrors([msg || 'Registration failed. Please try again.'])
+      }
     } finally {
       setSubmitting(false)
     }

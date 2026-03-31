@@ -1,0 +1,29 @@
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.inventory-body {
+  display: flex;
+  gap: 40px;
+}
+
+.inventory-main {
+  flex: 2;
+}
+
+.inventory-sidebar {
+  flex: 1;
+  max-width: 380px;
+}
+
+.edit-item-container {
+  max-width: 600px;
+}
+
+.edit-item-back-link {
+  margin-bottom: 8px;
+  display: inline-block;
+}
