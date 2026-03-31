@@ -3,10 +3,29 @@ import Charts
 
 struct AnalyticsView: View {
     @ObservedObject var vm: AnalyticsViewModel
+    @State private var selectedPreset: DatePreset? = .thisMonth
+    @State private var isApplyingPreset = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: AppTheme.Spacing.md) {
+                // Date presets
+                Picker("Date Range", selection: Binding(
+                    get: { selectedPreset ?? .thisMonth },
+                    set: { newValue in
+                        selectedPreset = newValue
+                        isApplyingPreset = true
+                        vm.applyPreset(newValue)
+                        isApplyingPreset = false
+                    }
+                )) {
+                    ForEach(DatePreset.allCases) { preset in
+                        Text(preset.rawValue).tag(preset)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, AppTheme.Spacing.md)
+
                 // Date pickers
                 HStack(spacing: AppTheme.Spacing.sm) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
@@ -15,6 +34,7 @@ struct AnalyticsView: View {
                             .foregroundStyle(AppTheme.Colors.textMuted)
                         DatePicker("", selection: $vm.from, displayedComponents: .date)
                             .labelsHidden()
+                            .onChange(of: vm.from) { if !isApplyingPreset { selectedPreset = nil } }
                     }
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                         Text("To")
@@ -22,6 +42,7 @@ struct AnalyticsView: View {
                             .foregroundStyle(AppTheme.Colors.textMuted)
                         DatePicker("", selection: $vm.to, displayedComponents: .date)
                             .labelsHidden()
+                            .onChange(of: vm.to) { if !isApplyingPreset { selectedPreset = nil } }
                     }
                     Spacer()
                     Button("Fetch") {
@@ -48,6 +69,14 @@ struct AnalyticsView: View {
                                     valueColor: summary.totalProfit.value >= 0 ? AppTheme.Colors.profit : AppTheme.Colors.loss)
                         SummaryCard(title: "Total Sales", value: "\(summary.totalSales)")
                         SummaryCard(title: "Avg Profit", value: summary.averageProfit.value.currencyFormatted())
+                        SummaryCard(
+                            title: "Profit Margin",
+                            value: AnalyticsViewModel.profitMarginText(
+                                revenue: summary.totalRevenue.value,
+                                profit: summary.totalProfit.value
+                            ),
+                            valueColor: summary.totalProfit.value >= 0 ? AppTheme.Colors.profit : AppTheme.Colors.loss
+                        )
                     }
                     .padding(.horizontal, AppTheme.Spacing.md)
 

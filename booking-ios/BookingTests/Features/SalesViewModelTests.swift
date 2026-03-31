@@ -55,6 +55,44 @@ final class SalesViewModelTests: XCTestCase {
         XCTAssertEqual(vm.sales.count, 0)
     }
 
+    // MARK: - Filtered Sales (search)
+
+    private func loadTestSales() async {
+        let sales: [[String: Any]] = [
+            ["id": "1", "itemId": "1", "platform": "eBay",
+             "salePrice": 150.0, "platformFees": 15.0,
+             "netProceeds": 135.0, "profit": 35.0],
+            ["id": "2", "itemId": "2", "platform": "Poshmark",
+             "salePrice": 200.0, "platformFees": 40.0,
+             "netProceeds": 160.0, "profit": 60.0],
+            ["id": "3", "itemId": "3", "platform": "eBay",
+             "salePrice": 80.0, "platformFees": 10.0,
+             "netProceeds": 70.0, "profit": -30.0]
+        ]
+        MockURLProtocol.requestHandler = { request in
+            let data = try JSONSerialization.data(withJSONObject: sales)
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, data)
+        }
+        await vm.fetchSales()
+    }
+
+    func testFilteredSales_emptySearchText_returnsAllSales() async throws {
+        await loadTestSales()
+
+        let result = vm.filteredSales(searchText: "")
+
+        XCTAssertEqual(result.count, 3)
+    }
+
+    func testFilteredSales_matchesByPlatform() async throws {
+        await loadTestSales()
+
+        let result = vm.filteredSales(searchText: "poshmark")
+
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result.first?.platform, "Poshmark")
+    }
+
     func testSaleProfit_formatsAsCurrency_nonEmpty() async throws {
         let sale = Sale(id: "1", itemId: "1", platform: "eBay",
                         salePrice: MoneyDecimal(Decimal(150)),

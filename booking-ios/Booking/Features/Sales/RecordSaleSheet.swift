@@ -9,6 +9,7 @@ struct RecordSaleSheet: View {
     @State private var platform = ""
     @State private var salePrice = ""
     @State private var platformFees = ""
+    @State private var showSuccess = false
 
     private var salePriceDecimal: Decimal { Decimal(string: salePrice) ?? .zero }
     private var feesDecimal: Decimal { Decimal(string: platformFees) ?? .zero }
@@ -67,7 +68,14 @@ struct RecordSaleSheet: View {
                                 )
                                 if success {
                                     await inventoryVM.fetchItems()
-                                    dismiss()
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        showSuccess = true
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                                        showSuccess = false
+                                        dismiss()
+                                    }
                                 }
                             }
                         }
@@ -86,6 +94,15 @@ struct RecordSaleSheet: View {
                     Button("Cancel") { dismiss() }
                         .foregroundStyle(AppTheme.Colors.textMuted)
                 }
+            }
+        }
+        .overlay {
+            if showSuccess {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 72))
+                    .foregroundStyle(AppTheme.Colors.gold)
+                    .scaleEffect(showSuccess ? 1.0 : 0.5)
+                    .opacity(showSuccess ? 1.0 : 0.0)
             }
         }
     }

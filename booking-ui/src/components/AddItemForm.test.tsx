@@ -36,12 +36,12 @@ const validItemResponse = {
   name: 'Test Bag',
   brand: null,
   category: null,
-  condition: 'GOOD',
+  condition: 'GOOD' as const,
   purchasePrice: 100,
   purchaseDate: '2025-01-15T00:00:00Z',
   description: null,
   notes: null,
-  status: 'AVAILABLE',
+  status: 'AVAILABLE' as const,
   createdAt: '2025-01-15T00:00:00Z',
   updatedAt: '2025-01-15T00:00:00Z',
 }
@@ -120,7 +120,7 @@ describe('AddItemForm', () => {
       name: 'Test Bag',
       brand: 'Gucci',
       category: 'Handbags',
-      condition: 'EXCELLENT',
+      condition: 'EXCELLENT' as const,
       purchasePrice: 250,
     })
 

@@ -4,7 +4,12 @@ struct SalesListView: View {
     @EnvironmentObject var authVM: AuthViewModel
     @ObservedObject var vm: SalesViewModel
     @State private var showRecordSheet = false
+    @State private var searchText = ""
     @ObservedObject var inventoryVM: InventoryViewModel
+
+    private var filteredSales: [Sale] {
+        vm.filteredSales(searchText: searchText)
+    }
 
     var body: some View {
         Group {
@@ -26,7 +31,7 @@ struct SalesListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
-                    ForEach(vm.sales) { sale in
+                    ForEach(filteredSales) { sale in
                         HStack {
                             VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                                 Text(sale.platform)
@@ -37,6 +42,8 @@ struct SalesListView: View {
                                     .foregroundStyle(AppTheme.Colors.textMuted)
                             }
                             Spacer()
+                            Image(systemName: sale.profit.value >= 0 ? "arrow.up" : "arrow.down")
+                                .foregroundStyle(sale.profit.value >= 0 ? AppTheme.Colors.profit : AppTheme.Colors.loss)
                             Text(sale.profit.value.currencyFormatted())
                                 .font(AppTheme.Typography.body)
                                 .foregroundStyle(sale.profit.value >= 0 ? AppTheme.Colors.profit : AppTheme.Colors.loss)
@@ -44,6 +51,7 @@ struct SalesListView: View {
                         .listRowBackground(AppTheme.Colors.surface)
                     }
                 }
+                .searchable(text: $searchText, prompt: "Search platform or item")
                 .refreshable { await vm.fetchSales() }
             }
         }

@@ -79,6 +79,53 @@ final class InventoryViewModelTests: XCTestCase {
         XCTAssertTrue(vm.isEmpty)
     }
 
+    // MARK: - Filtered Items (search)
+
+    private func loadTestItems() async {
+        let items: [[String: Any]] = [
+            ["id": "1", "name": "Leather Bag", "brand": "LV", "category": "Bags",
+             "condition": "EXCELLENT", "purchasePrice": 100.0,
+             "purchaseDate": "2024-01-01", "status": "AVAILABLE"],
+            ["id": "2", "name": "Gold Watch", "brand": "Rolex", "category": "Watches",
+             "condition": "GOOD", "purchasePrice": 500.0,
+             "purchaseDate": "2024-01-02", "status": "SOLD"],
+            ["id": "3", "name": "Silk Scarf", "brand": "LV", "category": "Accessories",
+             "condition": "NEW", "purchasePrice": 50.0,
+             "purchaseDate": "2024-01-03", "status": "AVAILABLE"]
+        ]
+        MockURLProtocol.requestHandler = { request in
+            let data = try JSONSerialization.data(withJSONObject: items)
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, data)
+        }
+        await vm.fetchItems()
+    }
+
+    func testFilteredItems_emptySearchText_returnsAllItems() async throws {
+        await loadTestItems()
+
+        let result = vm.filteredItems(searchText: "")
+
+        XCTAssertEqual(result.count, 3)
+    }
+
+    func testFilteredItems_matchesByName() async throws {
+        await loadTestItems()
+
+        let result = vm.filteredItems(searchText: "leather")
+
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result.first?.name, "Leather Bag")
+    }
+
+    func testFilteredItems_matchesByBrand() async throws {
+        await loadTestItems()
+
+        let result = vm.filteredItems(searchText: "rolex")
+
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result.first?.brand, "Rolex")
+    }
+
     func testAvailableItems_filtersOutSoldItems() async throws {
         let items: [[String: Any]] = [
             ["id": "1", "name": "Bag", "brand": "LV", "category": "Bags",

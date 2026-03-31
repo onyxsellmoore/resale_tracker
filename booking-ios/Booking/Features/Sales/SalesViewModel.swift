@@ -7,6 +7,14 @@ class SalesViewModel: ObservableObject {
     @Published var validationError: String?
     @Published var errorMessage: String?
 
+    func filteredSales(searchText: String) -> [Sale] {
+        guard !searchText.isEmpty else { return sales }
+        let query = searchText.lowercased()
+        return sales.filter {
+            $0.platform.lowercased().contains(query)
+        }
+    }
+
     private let apiClient: APIClient
 
     init(apiClient: APIClient = .shared) {

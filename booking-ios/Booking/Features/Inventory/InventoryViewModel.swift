@@ -10,6 +10,14 @@ class InventoryViewModel: ObservableObject {
     var isEmpty: Bool { !isLoading && items.isEmpty }
     var availableItems: [Item] { items.filter { $0.status == "AVAILABLE" } }
 
+    func filteredItems(searchText: String) -> [Item] {
+        guard !searchText.isEmpty else { return items }
+        let query = searchText.lowercased()
+        return items.filter {
+            $0.name.lowercased().contains(query) || $0.brand.lowercased().contains(query)
+        }
+    }
+
     func canDelete(_ item: Item) -> Bool { item.status != "SOLD" }
 
     private let apiClient: APIClient

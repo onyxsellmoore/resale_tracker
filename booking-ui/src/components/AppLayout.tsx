@@ -1,11 +1,12 @@
 import { Outlet } from 'react-router-dom'
 import { NavBar } from './NavBar'
+import './AppLayout.css'
 
 export function AppLayout() {
   return (
     <div>
       <NavBar />
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 20px' }}>
+      <div className="app-layout-content">
         <Outlet />
       </div>
     </div>

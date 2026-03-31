@@ -12,6 +12,7 @@ struct AddItemSheet: View {
     @State private var purchaseDate = Date()
     @State private var description = ""
     @State private var notes = ""
+    @State private var showSuccess = false
 
     private let conditions = ["EXCELLENT", "GOOD", "FAIR", "POOR"]
 
@@ -81,7 +82,14 @@ struct AddItemSheet: View {
                                 notes: notes.isEmpty ? nil : notes
                             )
                             if vm.validationError == nil {
-                                dismiss()
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showSuccess = true
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                                    showSuccess = false
+                                    dismiss()
+                                }
                             }
                         }
                     }
@@ -99,6 +107,15 @@ struct AddItemSheet: View {
                     Button("Cancel") { dismiss() }
                         .foregroundStyle(AppTheme.Colors.textMuted)
                 }
+            }
+        }
+        .overlay {
+            if showSuccess {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 72))
+                    .foregroundStyle(AppTheme.Colors.gold)
+                    .scaleEffect(showSuccess ? 1.0 : 0.5)
+                    .opacity(showSuccess ? 1.0 : 0.0)
             }
         }
     }
