@@ -282,7 +282,17 @@
       "Bash(DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild test -scheme Booking -destination 'platform=iOS Simulator,name=iPhone 16 Pro' -quiet)",
       "Bash(xcodebuild build:*)",
       "Bash(./mvnw -B test -pl . -Dtest=\"CorsPreflightTest\")",
-      "Bash(./mvnw -B test)"
+      "Bash(./mvnw -B test)",
+      "Bash(curl -s -D - -o /dev/null -X OPTIONS -H \"Origin: https://resale-tracker-pr.web.app\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: Content-Type\" \"https://booking-api-750985631473.us-central1.run.app/api/v1/auth/login/begin\")",
+      "Bash(curl -s -D - -o /dev/null -X POST -H \"Content-Type: application/json\" -d '{\"\"email\"\":\"\"test@test.com\"\"}' \"https://booking-api-750985631473.us-central1.run.app/api/v1/auth/login/begin\")",
+      "Bash(curl -s \"https://booking-api-750985631473.us-central1.run.app/api/v1/auth/login/begin\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(~/Downloads/google-cloud-sdk/bin/gcloud run:*)",
+      "Bash(curl -s -D - -o /dev/null -X OPTIONS -H \"Origin: https://resale-tracker-pr.web.app\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: Content-Type\" \"https://booking-api-sejia6l5ca-uc.a.run.app/api/v1/auth/login/begin\")",
+      "Bash(curl -s -D - -X POST -H \"Content-Type: application/json\" -H \"Origin: https://resale-tracker-pr.web.app\" -d '{\"\"email\"\":\"\"test@test.com\"\"}' \"https://booking-api-sejia6l5ca-uc.a.run.app/api/v1/auth/login/begin\")",
+      "WebFetch(domain:resale-tracker-pr.web.app)",
+      "Bash(grep -o 'booking-api[^\"\"\"\"]*' /Users/jaredmoore/business/tav/resale_tracker/booking-ui/dist/assets/index-*.js)"
     ]
   }
 }
