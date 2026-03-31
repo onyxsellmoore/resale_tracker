@@ -11,6 +11,7 @@ import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { EmptyState } from '../components/EmptyState'
 import { Toast } from '../components/Toast'
+import './InventoryPage.css'
 
 interface PendingDelete {
   itemId: string
@@ -117,7 +118,7 @@ function InventoryListView() {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div className="inventory-header">
         <h1>Inventory</h1>
         <button
           type="button"
@@ -127,10 +128,10 @@ function InventoryListView() {
           {showAddForm ? 'Hide Form' : 'Add Item'}
         </button>
       </div>
-      <div style={{ display: 'flex', gap: 40 }}>
-        <div style={{ flex: 2 }}>{renderContent()}</div>
+      <div className="inventory-body">
+        <div className="inventory-main">{renderContent()}</div>
         {showAddForm && (
-          <div className="slide-in-right" style={{ flex: 1, maxWidth: 380 }}>
+          <div className="slide-in-right inventory-sidebar">
             <AddItemForm businessId={businessId} onItemAdded={handleItemAdded} />
           </div>
         )}
@@ -176,8 +177,8 @@ function EditItemView() {
   }
 
   return (
-    <div style={{ maxWidth: 600 }}>
-      <Link to="/inventory" style={{ marginBottom: 8, display: 'inline-block' }}>&larr; Back to Inventory</Link>
+    <div className="edit-item-container">
+      <Link to="/inventory" className="edit-item-back-link">&larr; Back to Inventory</Link>
       <EditItemForm item={item} onItemUpdated={handleItemUpdated} />
     </div>
   )

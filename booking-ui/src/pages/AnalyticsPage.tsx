@@ -154,7 +154,7 @@ export function AnalyticsPage() {
             </div>
           </div>
 
-          <div style={{ marginTop: '24px' }}>
+          <div className="analytics-category-section">
             <h2>By Category</h2>
             <CategoryTable data={data.byCategory} />
           </div>

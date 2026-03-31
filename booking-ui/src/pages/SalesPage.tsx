@@ -10,6 +10,7 @@ import { ImportSalesPage } from './ImportSalesPage'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { EmptyState } from '../components/EmptyState'
+import './SalesPage.css'
 
 function SalesListView() {
   const { orgId, token } = useAuth()
@@ -32,9 +33,9 @@ function SalesListView() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div className="sales-header">
         <h1>Sales</h1>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div className="sales-header-actions">
           <Link to="/sales/import">
             <button type="button" className="btn-action">Import Sales</button>
           </Link>
@@ -93,8 +94,8 @@ function RecordSaleView() {
   }
 
   return (
-    <div style={{ maxWidth: 600 }}>
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 8 }}>
+    <div className="sales-form-container">
+      <div className="sales-form-nav">
         <Link to="/sales">&larr; Back to Sales</Link>
         <Link to="/sales/import">
           <button type="button" className="btn-secondary">Import Sales</button>
@@ -139,7 +140,7 @@ function EditSaleView() {
   }
 
   return (
-    <div style={{ maxWidth: 600 }}>
+    <div className="sales-form-container">
       <Link to="/sales">&larr; Back to Sales</Link>
       <EditSaleForm sale={sale} onSuccess={handleSuccess} />
     </div>
