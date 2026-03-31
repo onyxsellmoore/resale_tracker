@@ -94,7 +94,7 @@ gcloud iam service-accounts add-iam-policy-binding "${SA_EMAIL}" \
 
 # ── Secret Manager secrets ──────────────────────────────────
 echo "▸ Creating secrets (if needed)..."
-SECRETS=("mongo-uri" "jwt-secret" "webauthn-rp-id" "webauthn-origin" "cors-origins")
+SECRETS=("mongo-uri" "jwt-secret" "webauthn-rp-id" "webauthn-origin" "webauthn-allowed-origins" "cors-origins")
 for SECRET in "${SECRETS[@]}"; do
   gcloud secrets describe "${SECRET}" --format="value(name)" 2>/dev/null \
   || gcloud secrets create "${SECRET}" --replication-policy=automatic --quiet
@@ -128,5 +128,6 @@ echo "  1. Set secret values:  gcloud secrets versions add mongo-uri --data-file
 echo "  2. Set secret values:  gcloud secrets versions add jwt-secret --data-file=-"
 echo "  3. Set secret values:  gcloud secrets versions add webauthn-rp-id --data-file=-"
 echo "  4. Set secret values:  gcloud secrets versions add webauthn-origin --data-file=-"
-echo "  5. Set secret values:  gcloud secrets versions add cors-origins --data-file=-"
-echo "  6. Ensure Firebase Hosting is enabled: firebase init hosting --project resale-tracker-pr"
+echo "  5. Set secret values:  gcloud secrets versions add webauthn-allowed-origins --data-file=-"
+echo "  6. Set secret values:  gcloud secrets versions add cors-origins --data-file=-"
+echo "  7. Ensure Firebase Hosting is enabled: firebase init hosting --project resale-tracker-pr"

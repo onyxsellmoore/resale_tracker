@@ -55,6 +55,9 @@ final class APIClient {
             let decodeData = data.isEmpty ? Data("{}".utf8) : data
             return try JSONDecoder().decode(T.self, from: decodeData)
         case 401:
+            // Only attempt token refresh for authenticated endpoints.
+            // Auth endpoints return 401 to mean "invalid credentials", not "token expired".
+            guard endpoint.requiresAuth else { throw AuthError.unauthorized }
             let newToken = try await refreshInterceptor.refresh()
             urlRequest.setValue("Bearer \(newToken)", forHTTPHeaderField: "Authorization")
             let (retryData, retryResponse) = try await session.data(for: urlRequest)

@@ -26,13 +26,13 @@ import java.util.Set;
 @Priority(Priorities.AUTHENTICATION - 1)
 public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
-    @ConfigProperty(name = "quarkus.http.cors.origins", defaultValue = "http://localhost:5173")
+    @ConfigProperty(name = "booking.cors.origins", defaultValue = "http://localhost:5173")
     Set<String> allowedOrigins;
 
-    @ConfigProperty(name = "quarkus.http.cors.methods", defaultValue = "GET,POST,PATCH,DELETE,OPTIONS")
+    @ConfigProperty(name = "booking.cors.methods", defaultValue = "GET,POST,PATCH,DELETE,OPTIONS")
     Set<String> allowedMethods;
 
-    @ConfigProperty(name = "quarkus.http.cors.headers", defaultValue = "Content-Type,Authorization")
+    @ConfigProperty(name = "booking.cors.headers", defaultValue = "Content-Type,Authorization")
     Set<String> allowedHeaders;
 
     @Override
