@@ -4,3 +4,4 @@
 - Make no mistakes
 - gcloud CLI path: ~/Downloads/google-cloud-sdk/bin/gcloud
 - Document every function including tests
+- Use the definition-of-done skill at the end of every task
