@@ -34,11 +34,13 @@ public class AnalyticsService {
 
         List<Sale> sales = saleRepository.findByBusinessAndSoldAtRange(businessId, start, end);
 
+        long pendingCostItemsCount = itemRepository.count("businessId = ?1 and costEntryPending = ?2", businessId, true);
+
         if (sales.isEmpty()) {
             BigDecimal zero = new BigDecimal("0.00");
             return new AnalyticsResult(
                     new AnalyticsResult.Summary(0, zero, zero, zero, zero, zero, 0.0),
-                    List.of(), List.of(), List.of()
+                    List.of(), List.of(), List.of(), pendingCostItemsCount
             );
         }
 
@@ -60,7 +62,8 @@ public class AnalyticsService {
         BigDecimal totalCostOfGoods = sales.stream()
                 .map(s -> {
                     Item item = itemMap.get(s.itemId);
-                    return item != null ? item.purchasePrice.bigDecimalValue() : BigDecimal.ZERO;
+                    return item != null && item.purchasePrice != null
+                            ? item.purchasePrice.bigDecimalValue() : BigDecimal.ZERO;
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -120,7 +123,7 @@ public class AnalyticsService {
                 .sorted(Comparator.comparing(AnalyticsResult.MonthBreakdown::month))
                 .toList();
 
-        return new AnalyticsResult(summary, byPlatform, byCategory, byMonth);
+        return new AnalyticsResult(summary, byPlatform, byCategory, byMonth, pendingCostItemsCount);
     }
 
     private BigDecimal sumField(List<Sale> sales, java.util.function.Function<Sale, BigDecimal> extractor) {

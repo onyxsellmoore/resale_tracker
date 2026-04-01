@@ -19,6 +19,7 @@ public record ItemDTO(
         String description,
         String notes,
         ItemStatus status,
+        boolean costEntryPending,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -35,6 +36,7 @@ public record ItemDTO(
                 item.description,
                 item.notes,
                 item.status,
+                item.costEntryPending,
                 item.createdAt,
                 item.updatedAt
         );

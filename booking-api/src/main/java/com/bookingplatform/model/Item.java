@@ -19,6 +19,15 @@ public class Item extends PanacheMongoEntity {
     public String description;
     public String notes;
     public ItemStatus status;
+
+    /**
+     * True for imported items whose purchasePrice has not been confirmed by the user.
+     * purchasePrice defaults to $0.00 on import, making profit visible immediately (as an
+     * estimate). After the user's first PATCH setting purchasePrice and purchaseDate,
+     * costEntryPending is set to false and both fields become permanently immutable.
+     */
+    public boolean costEntryPending = false;
+
     public Instant createdAt;
     public Instant updatedAt;
 }

@@ -2,8 +2,11 @@ package com.bookingplatform.resource;
 
 import com.bookingplatform.model.Item;
 import com.bookingplatform.model.ItemStatus;
+import com.bookingplatform.model.Sale;
 import com.bookingplatform.repository.ItemRepository;
+import com.bookingplatform.repository.SaleRepository;
 import com.bookingplatform.security.RoleChecker;
+import com.bookingplatform.util.MoneyUtils;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -15,9 +18,12 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
+import org.jboss.logging.Logger;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -26,8 +32,13 @@ import java.util.Set;
 @Consumes(MediaType.APPLICATION_JSON)
 public class ItemResource {
 
+    private static final Logger LOG = Logger.getLogger(ItemResource.class);
+
     @Inject
     ItemRepository itemRepository;
+
+    @Inject
+    SaleRepository saleRepository;
 
     @Inject
     Validator validator;
@@ -78,6 +89,7 @@ public class ItemResource {
         item.description = request.description;
         item.notes = request.notes;
         item.status = ItemStatus.AVAILABLE;
+        item.costEntryPending = false;
         item.createdAt = Instant.now();
         item.updatedAt = Instant.now();
 
@@ -145,8 +157,7 @@ public class ItemResource {
             return Response.status(400).entity(new ErrorResponse("Validation failed", errors)).build();
         }
 
-        String orgId = getOrgId();
-        String businessId = orgId != null ? orgId : request.businessId;
+        String businessId = getOrgId();
 
         Item item;
         try {
@@ -159,14 +170,72 @@ public class ItemResource {
             return Response.status(404).build();
         }
 
-        // purchasePrice and purchaseDate are immutable after creation
-        if (request.purchasePrice != null || request.purchaseDate != null) {
-            return Response.status(400)
-                    .entity(new ErrorResponse("purchasePrice and purchaseDate are immutable after creation", List.of()))
-                    .build();
+        // ── Cost entry block ──────────────────────────────────────
+        boolean priceInBody = request.purchasePrice != null;
+        boolean dateInBody = request.purchaseDate != null;
+
+        if (priceInBody || dateInBody) {
+            if (!item.costEntryPending) {
+                return Response.status(400)
+                        .entity(new ErrorResponse("purchasePrice and purchaseDate are immutable after creation", List.of()))
+                        .build();
+            }
+            if (!priceInBody || !dateInBody) {
+                return Response.status(400)
+                        .entity(new ErrorResponse("purchasePrice and purchaseDate must be set together", List.of()))
+                        .build();
+            }
+            if (request.purchasePrice.compareTo(BigDecimal.ZERO) < 0) {
+                return Response.status(400)
+                        .entity(new ErrorResponse("purchasePrice cannot be negative", List.of()))
+                        .build();
+            }
+            if (request.purchaseDate.isAfter(Instant.now())) {
+                return Response.status(400)
+                        .entity(new ErrorResponse("purchaseDate cannot be in the future", List.of()))
+                        .build();
+            }
+
+            item.purchasePrice = MoneyUtils.toDecimal128(request.purchasePrice);
+            item.purchaseDate = request.purchaseDate;
+
+            List<Sale> linked = saleRepository.findByItemIdAndBusinessId(
+                    item.id.toHexString(), businessId);
+
+            if (linked.isEmpty()) {
+                LOG.warnf("Cost update: no linked sale for item %s in business %s", item.id, businessId);
+                item.costEntryPending = false;
+                item.updatedAt = Instant.now();
+                itemRepository.update(item);
+                return Response.ok(ItemDTO.from(item)).build();
+            }
+
+            Response.ResponseBuilder rb = Response.ok();
+            if (linked.size() > 1) {
+                LOG.warnf("Cost update: %d sales for item %s — expected 1, updating latest only", linked.size(), item.id);
+                linked.sort(Comparator.comparing((Sale s) -> s.soldAt).reversed());
+                rb = Response.ok().header("X-Warning", "multiple-sales-found");
+            }
+
+            Sale sale = linked.get(0);
+            BigDecimal net = MoneyUtils.toBigDecimal(sale.netProceeds);
+            sale.profit = MoneyUtils.toDecimal128(net.subtract(request.purchasePrice));
+            try {
+                saleRepository.update(sale);
+            } catch (Exception e) {
+                LOG.errorf(e, "Cost update: failed to recompute sale profit for item %s", item.id);
+                return Response.status(500)
+                        .entity(new ErrorResponse("Failed to recompute sale profit — no changes saved, please retry", List.of()))
+                        .build();
+            }
+
+            item.costEntryPending = false;
+            item.updatedAt = Instant.now();
+            itemRepository.update(item);
+            return rb.entity(ItemDTO.from(item)).build();
         }
 
-        // Update mutable fields when non-null
+        // ── Mutable-field update (no cost fields) ─────────────────
         if (request.name != null) item.name = request.name;
         if (request.brand != null) item.brand = request.brand;
         if (request.category != null) item.category = request.category;

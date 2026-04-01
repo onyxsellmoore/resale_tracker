@@ -8,7 +8,11 @@ public final class MoneyUtils {
 
     private MoneyUtils() {}
 
+    /** Converts a BigDecimal to Decimal128 for MongoDB storage. Returns null if input is null. */
     public static Decimal128 toDecimal128(BigDecimal value) {
+        if (value == null) {
+            return null;
+        }
         return new Decimal128(value);
     }
 

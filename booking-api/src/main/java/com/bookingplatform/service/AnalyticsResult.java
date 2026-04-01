@@ -7,7 +7,8 @@ public record AnalyticsResult(
         Summary summary,
         List<PlatformBreakdown> byPlatform,
         List<CategoryBreakdown> byCategory,
-        List<MonthBreakdown> byMonth
+        List<MonthBreakdown> byMonth,
+        long pendingCostItemsCount
 ) {
 
     public record Summary(

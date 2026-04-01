@@ -18,6 +18,10 @@ public class Sale extends PanacheMongoEntity {
     public Decimal128 profit;
     public Instant soldAt;
     public String platformOrderId;
+
+    /** Nullable; null for manual-entry sales. Used for duplicate import detection. */
+    public String externalOrderId;
+
     public String notes;
     public Instant createdAt;
 }
