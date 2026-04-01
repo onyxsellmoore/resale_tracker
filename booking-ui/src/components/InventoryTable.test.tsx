@@ -38,6 +38,23 @@ const mockItems: ItemDTO[] = [
   },
 ]
 
+/** Item with legacy/unrecognized status that the backend maps to UNKNOWN. */
+const unknownItem: ItemDTO = {
+  id: '3',
+  businessId: 'biz1',
+  name: 'Legacy Chanel Bag',
+  brand: 'Chanel',
+  category: 'Bags',
+  condition: 'FAIR',
+  purchasePrice: 300.0,
+  purchaseDate: '2025-03-01T00:00:00Z',
+  description: null,
+  notes: null,
+  status: 'UNKNOWN',
+  createdAt: '2025-03-01T00:00:00Z',
+  updatedAt: '2025-03-01T00:00:00Z',
+}
+
 function renderTable(items: ItemDTO[] = mockItems) {
   return render(
     <MemoryRouter>
@@ -275,5 +292,53 @@ describe('InventoryTable', () => {
     expect(editBtn.className).toContain('btn-action')
     expect(markSoldBtn.className).toContain('btn-action')
     expect(deleteBtn.className).toContain('btn-action')
+  })
+
+  describe('UNKNOWN status (legacy items)', () => {
+    /** Renders the table with all mock items including the UNKNOWN-status item. */
+    function renderWithUnknown(onDelete?: (id: string) => void) {
+      return render(
+        <MemoryRouter>
+          <InventoryTable items={[...mockItems, unknownItem]} onDelete={onDelete} />
+        </MemoryRouter>
+      )
+    }
+
+    it('UNKNOWN item shows gold badge with title-case text', () => {
+      renderWithUnknown()
+      const badge = screen.getByTestId('status-badge-3')
+      expect(badge).toHaveTextContent('Unknown')
+      expect(badge.className).toContain('status-badge-unknown')
+    })
+
+    it('UNKNOWN item shows Edit link', () => {
+      renderWithUnknown()
+      const row = screen.getByTestId('item-row-3')
+      const editLink = within(row).getByText('Edit')
+      expect(editLink).toHaveAttribute('href', '/inventory/edit/3')
+    })
+
+    it('UNKNOWN item does NOT show Mark Sold link', () => {
+      renderWithUnknown()
+      const row = screen.getByTestId('item-row-3')
+      expect(within(row).queryByText('Mark Sold')).not.toBeInTheDocument()
+    })
+
+    it('UNKNOWN item shows Delete button when onDelete is provided', () => {
+      const onDelete = vi.fn()
+      renderWithUnknown(onDelete)
+      const row = screen.getByTestId('item-row-3')
+      expect(within(row).getByRole('button', { name: /delete/i })).toBeInTheDocument()
+    })
+
+    it('status filter "Unknown" shows only UNKNOWN items', async () => {
+      const user = userEvent.setup()
+      renderWithUnknown()
+      const filter = screen.getByLabelText('Status filter')
+      await user.selectOptions(filter, 'UNKNOWN')
+      expect(screen.getByText('Legacy Chanel Bag')).toBeInTheDocument()
+      expect(screen.queryByText('Gucci Bag')).not.toBeInTheDocument()
+      expect(screen.queryByText('Prada Shoes')).not.toBeInTheDocument()
+    })
   })
 })

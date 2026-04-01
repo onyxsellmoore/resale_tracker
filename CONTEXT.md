@@ -54,7 +54,7 @@ Item  (collection: "items")
   purchaseDate Instant     — (immutable after create)
   description  String
   notes        String
-  status       ItemStatus  — AVAILABLE | SOLD
+  status       ItemStatus  — AVAILABLE | SOLD | UNKNOWN
 
 Sale  (collection: "sales")
   businessId   String     — org/business scope key

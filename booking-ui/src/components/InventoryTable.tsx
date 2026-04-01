@@ -11,6 +11,7 @@ interface InventoryTableProps {
 const badgeClass: Record<string, string> = {
   AVAILABLE: 'status-badge status-badge-available',
   SOLD: 'status-badge status-badge-sold',
+  UNKNOWN: 'status-badge status-badge-unknown',
 }
 
 type FilterValue = 'ALL' | ItemStatus
@@ -109,6 +110,7 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
             <option value="ALL">All</option>
             <option value="AVAILABLE">Available</option>
             <option value="SOLD">Sold</option>
+            <option value="UNKNOWN">Unknown</option>
           </select>
         </div>
       </div>
@@ -143,7 +145,7 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                 <td>
                   <span
                     data-testid={`status-badge-${item.id}`}
-                    className={badgeClass[item.status] ?? 'status-badge status-badge-sold'}
+                    className={badgeClass[item.status] ?? 'status-badge status-badge-unknown'}
                   >
                     {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
                   </span>
@@ -152,8 +154,10 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                   <div className="actions-cell">
                     <Link to={`/inventory/edit/${item.id}`} className="btn-action">Edit</Link>
                     {item.status === 'AVAILABLE' && (
+                      <Link to={`/sales/new?itemId=${item.id}`} className="btn-action">Mark Sold</Link>
+                    )}
+                    {item.status !== 'SOLD' && (
                       <>
-                        <Link to={`/sales/new?itemId=${item.id}`} className="btn-action">Mark Sold</Link>
                         {onDelete && confirmingDeleteId === item.id ? (
                           <>
                             <button
