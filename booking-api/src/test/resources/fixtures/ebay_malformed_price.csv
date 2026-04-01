@@ -1,0 +1,6 @@
+﻿Order number,Item title,Sale date,Unit price,Final value fee - fixed,Final value fee - variable
+28-11111-22222,Item with bad price,2024-11-15,N/A,0.30,5.00
+28-33333-44444,Item with dollar sign,2024-11-16,$75.00,0.30,9.45
+28-55555-66666,Item with blank price,2024-11-17,,0.30,5.00
+28-77777-88888,Item with blank fixed fee,2024-11-18,60.00,,7.50
+28-99999-00000,Item with whitespace price,2024-11-19,   ,0.30,5.00

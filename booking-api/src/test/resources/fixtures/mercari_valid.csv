@@ -1,0 +1,4 @@
+Transaction ID,Item,Date,Selling price,Transaction fee
+m12345678901234,Adidas Yeezy 350,2024-11-15,200.00,20.00
+m98765432109876,Supreme Box Logo Tee,2024-11-16,300.00,30.00
+m11223344556677,Cancelled Item,2024-11-17,$0.00,0.00

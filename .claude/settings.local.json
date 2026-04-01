@@ -300,7 +300,8 @@
       "Bash(mongosh 'mongodb+srv://onyxAdmin:Y%26ABzk8zWx3!lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker' --quiet --eval 'db.items.find\\({status: \"\"DELETED\"\"}, {name: 1, status: 1}\\).toArray\\(\\)')",
       "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.items.find\\({status: \"\"DELETED\"\"}, {name: 1, status: 1}\\).toArray\\(\\)')",
       "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.getCollectionNames\\(\\)')",
-      "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.items.distinct\\(\"\"status\"\"\\)')"
+      "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.items.distinct\\(\"\"status\"\"\\)')",
+      "Bash(xxd /Users/jaredmoore/business/tav/resale_tracker/booking-api/src/test/resources/fixtures/ebay_valid.csv)"
     ]
   }
 }
