@@ -52,6 +52,7 @@ function isEmptyData(data: Awaited<ReturnType<typeof getAnalytics>>): boolean {
   return data.summary.itemsSold === 0
 }
 
+/** Analytics dashboard with date-range filtering and chart breakdowns. */
 export function AnalyticsPage() {
   const { orgId, token } = useAuth()
   const businessId = orgId ?? 'default'
@@ -59,6 +60,7 @@ export function AnalyticsPage() {
   const [from, setFrom] = useState(defaults.from)
   const [to, setTo] = useState(defaults.to)
   const [activePreset, setActivePreset] = useState<Preset>('this-month')
+  const [pendingBannerDismissed, setPendingBannerDismissed] = useState(false)
   const queryClient = useQueryClient()
 
   function applyPreset(preset: 'this-month' | 'last-month' | 'this-year') {
@@ -141,6 +143,23 @@ export function AnalyticsPage() {
 
       {data && !isEmptyData(data) && (
         <>
+          {data.summary.pendingCostItemsCount > 0 && !pendingBannerDismissed && (
+            <div className="analytics-pending-banner" role="status">
+              <p>
+                <span data-testid="pending-count">{data.summary.pendingCostItemsCount}</span>{' '}
+                items have an estimated $0 purchase price.
+                Profit totals may be overstated until purchase prices are added.
+              </p>
+              <button
+                type="button"
+                className="analytics-pending-dismiss"
+                aria-label="Dismiss"
+                onClick={() => setPendingBannerDismissed(true)}
+              >
+                &times;
+              </button>
+            </div>
+          )}
           <SummaryCards summary={data.summary} />
 
           <div className="chart-grid">

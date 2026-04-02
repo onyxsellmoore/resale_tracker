@@ -6,6 +6,7 @@ import './InventoryTable.css'
 interface InventoryTableProps {
   items: ItemDTO[]
   onDelete?: (itemId: string) => void
+  onCostEntry?: (item: ItemDTO) => void
 }
 
 const badgeClass: Record<string, string> = {
@@ -35,11 +36,11 @@ function compareItems(a: ItemDTO, b: ItemDTO, key: SortKey, dir: SortDir): numbe
   if (key === 'name') cmp = (a.name ?? '').localeCompare(b.name ?? '')
   else if (key === 'brand') cmp = (a.brand ?? '').localeCompare(b.brand ?? '')
   else if (key === 'purchasePrice') cmp = a.purchasePrice - b.purchasePrice
-  else if (key === 'purchaseDate') cmp = a.purchaseDate.localeCompare(b.purchaseDate)
+  else if (key === 'purchaseDate') cmp = (a.purchaseDate ?? '').localeCompare(b.purchaseDate ?? '')
   return dir === 'desc' ? -cmp : cmp
 }
 
-export function InventoryTable({ items, onDelete }: InventoryTableProps) {
+export function InventoryTable({ items, onDelete, onCostEntry }: InventoryTableProps) {
   const [statusFilter, setStatusFilter] = useState<FilterValue>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -141,7 +142,7 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                 <td className="hide-mobile">{item.category}</td>
                 <td className="hide-mobile">{item.condition}</td>
                 <td>${item.purchasePrice.toFixed(2)}</td>
-                <td>{new Date(item.purchaseDate).toLocaleDateString()}</td>
+                <td>{item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '—'}</td>
                 <td>
                   <span
                     data-testid={`status-badge-${item.id}`}
@@ -152,6 +153,15 @@ export function InventoryTable({ items, onDelete }: InventoryTableProps) {
                 </td>
                 <td>
                   <div className="actions-cell">
+                    {item.costEntryPending && onCostEntry && (
+                      <button
+                        type="button"
+                        className="cost-pending-badge"
+                        onClick={() => onCostEntry(item)}
+                      >
+                        Cost Pending
+                      </button>
+                    )}
                     <Link to={`/inventory/edit/${item.id}`} className="btn-action">Edit</Link>
                     {item.status === 'AVAILABLE' && (
                       <Link to={`/sales/new?itemId=${item.id}`} className="btn-action">Mark Sold</Link>

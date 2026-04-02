@@ -113,6 +113,14 @@ export function SalesTable({ sales, onDelete }: SalesTableProps) {
                   className={sale.profit >= 0 ? 'profit-positive' : 'profit-negative'}
                 >
                   {formatCurrency(sale.profit)}
+                  {sale.costEntryPending && (
+                    <span
+                      className="est-indicator"
+                      aria-label="Estimated profit — purchase price is $0.00 until updated"
+                    >
+                      {' '}Est.
+                    </span>
+                  )}
                 </td>
                 <td>{new Date(sale.soldAt).toLocaleDateString()}</td>
                 <td>

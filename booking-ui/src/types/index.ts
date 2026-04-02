@@ -1,6 +1,11 @@
 export type ItemCondition = 'NEW' | 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR'
 export type ItemStatus = 'AVAILABLE' | 'SOLD' | 'UNKNOWN'
 
+/**
+ * costEntryPending=true means purchasePrice is still the $0.00 import default.
+ * Profit figures for this item are estimates. After the user's PATCH, both
+ * purchasePrice and purchaseDate become immutable.
+ */
 export interface ItemDTO {
   id: string
   businessId: string
@@ -9,10 +14,11 @@ export interface ItemDTO {
   category: string | null
   condition: ItemCondition
   purchasePrice: number
-  purchaseDate: string
+  purchaseDate: string | null
   description: string | null
   notes: string | null
   status: ItemStatus
+  costEntryPending: boolean
   createdAt: string
   updatedAt: string
 }
@@ -74,6 +80,8 @@ export interface SaleDTO {
   platformOrderId: string | null
   notes: string | null
   createdAt: string
+  /** True when linked item still has the $0 import-default purchase price. */
+  costEntryPending?: boolean
 }
 
 export interface ParsedSaleRow {
@@ -98,6 +106,8 @@ export interface AnalyticsSummary {
   totalCostOfGoods: number
   totalProfit: number
   averageMargin: number
+  /** Number of items still using the $0 import-default purchase price. */
+  pendingCostItemsCount: number
 }
 
 export interface PlatformBreakdown {

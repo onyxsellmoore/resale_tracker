@@ -42,6 +42,7 @@ const validItemResponse = {
   description: null,
   notes: null,
   status: 'AVAILABLE' as const,
+  costEntryPending: false,
   createdAt: '2025-01-15T00:00:00Z',
   updatedAt: '2025-01-15T00:00:00Z',
 }

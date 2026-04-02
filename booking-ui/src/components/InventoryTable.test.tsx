@@ -18,6 +18,7 @@ const mockItems: ItemDTO[] = [
     description: null,
     notes: null,
     status: 'AVAILABLE',
+    costEntryPending: false,
     createdAt: '2025-01-15T00:00:00Z',
     updatedAt: '2025-01-15T00:00:00Z',
   },
@@ -33,6 +34,7 @@ const mockItems: ItemDTO[] = [
     description: null,
     notes: null,
     status: 'SOLD',
+    costEntryPending: false,
     createdAt: '2025-02-10T00:00:00Z',
     updatedAt: '2025-03-01T00:00:00Z',
   },
@@ -51,6 +53,7 @@ const unknownItem: ItemDTO = {
   description: null,
   notes: null,
   status: 'UNKNOWN',
+  costEntryPending: false,
   createdAt: '2025-03-01T00:00:00Z',
   updatedAt: '2025-03-01T00:00:00Z',
 }

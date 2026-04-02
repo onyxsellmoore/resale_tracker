@@ -308,7 +308,10 @@
       "Bash(echo \"JAVA_HOME=$JAVA_HOME\")",
       "Bash(export JAVA_HOME=/Users/jaredmoore/.sdkman/candidates/java/25.0.1-tem)",
       "Bash($JAVA_HOME/bin/java -version)",
-      "Bash(./mvnw dependency:tree -DfailIfNoTests=false)"
+      "Bash(./mvnw dependency:tree -DfailIfNoTests=false)",
+      "Bash(node -e \"console.log\\(JSON.stringify\\(new Intl.NumberFormat\\(''en-US'', { style: ''currency'', currency: ''USD'', minimumFractionDigits: 2 }\\).format\\(65.25\\)\\)\\)\")",
+      "Bash(/opt/homebrew/bin/npx tsc:*)",
+      "Bash(/opt/homebrew/bin/npx vitest:*)"
     ]
   }
 }

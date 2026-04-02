@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from 'react'
-import { Routes, Route, Link, useNavigate, useParams } from 'react-router-dom'
+import { useState, useCallback, useRef, useMemo } from 'react'
+import { Routes, Route, Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
 import { getItems, getItem, deleteItem } from '../api/inventoryApi'
@@ -7,6 +7,7 @@ import type { ItemDTO } from '../types'
 import { InventoryTable } from '../components/InventoryTable'
 import { AddItemForm } from '../components/AddItemForm'
 import { EditItemForm } from '../components/EditItemForm'
+import { CostEntryModal } from '../components/CostEntryModal'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { EmptyState } from '../components/EmptyState'
@@ -19,19 +20,50 @@ interface PendingDelete {
   timer: ReturnType<typeof setTimeout>
 }
 
+/** Returns the sessionStorage key for the import-banner dismissal. */
+function bannerKey(businessId: string): string {
+  return `importBannerDismissed_${businessId}`
+}
+
 function InventoryListView() {
   const { orgId, token } = useAuth()
   const businessId = orgId ?? 'default'
   const queryClient = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const filter = searchParams.get('filter')
+  const importedRaw = searchParams.get('imported')
+  const importedCount = importedRaw && /^\d+$/.test(importedRaw) ? importedRaw : null
+
   const [showAddForm, setShowAddForm] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [undoHandler, setUndoHandler] = useState<(() => void) | null>(null)
   const pendingDeleteRef = useRef<PendingDelete | null>(null)
+  const [modalItem, setModalItem] = useState<ItemDTO | null>(null)
+  const [bannerDismissed, setBannerDismissed] = useState(() =>
+    sessionStorage.getItem(bannerKey(businessId)) === '1',
+  )
+
+  const showBanner = importedCount && !bannerDismissed
 
   const { data: items = [], isLoading, error } = useQuery({
     queryKey: ['items', businessId],
     queryFn: () => getItems(businessId, undefined, token ?? undefined),
   })
+
+  /** Client-side filter for costPending items (MVP). */
+  const displayItems = useMemo(() => {
+    if (filter === 'costPending') return items.filter((i) => i.costEntryPending)
+    return items
+  }, [items, filter])
+
+  /** Dismisses the import banner and cleans the URL. */
+  function handleDismissBanner() {
+    sessionStorage.setItem(bannerKey(businessId), '1')
+    setBannerDismissed(true)
+    const next = new URLSearchParams(searchParams)
+    next.delete('imported')
+    setSearchParams(next, { replace: true })
+  }
 
   const handleDismissToast = useCallback(() => {
     setToast(null)
@@ -113,11 +145,40 @@ function InventoryListView() {
         />
       )
     }
-    return <InventoryTable items={items} onDelete={handleDeleteItem} />
+    return (
+      <InventoryTable
+        items={displayItems}
+        onDelete={handleDeleteItem}
+        onCostEntry={setModalItem}
+      />
+    )
   }
 
   return (
     <>
+      {showBanner && (
+        <div className="import-banner" role="status">
+          <p>
+            You imported <strong>{importedCount}</strong> sales with estimated profit.
+            Add purchase prices to see accurate totals.{' '}
+            <button
+              type="button"
+              className="import-banner-link"
+              onClick={() => setSearchParams({ filter: 'costPending' }, { replace: true })}
+            >
+              Review pending items
+            </button>
+          </p>
+          <button
+            type="button"
+            className="import-banner-dismiss"
+            aria-label="Dismiss"
+            onClick={handleDismissBanner}
+          >
+            &times;
+          </button>
+        </div>
+      )}
       <div className="inventory-header">
         <h1>Inventory</h1>
         <button
@@ -136,6 +197,9 @@ function InventoryListView() {
           </div>
         )}
       </div>
+      {modalItem && (
+        <CostEntryModal item={modalItem} onClose={() => setModalItem(null)} />
+      )}
       {toast && (
         <Toast
           message={toast}
@@ -184,6 +248,7 @@ function EditItemView() {
   )
 }
 
+/** Inventory page with nested routes for list and edit views. */
 export function InventoryPage() {
   return (
     <div className="page-enter">
