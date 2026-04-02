@@ -19,15 +19,17 @@ public final class RoleChecker {
     public static final String DELETE_SALE = "DELETE_SALE";
     public static final String VIEW_ANALYTICS = "VIEW_ANALYTICS";
     public static final String MANAGE_USERS = "MANAGE_USERS";
+    public static final String IMPORT = "IMPORT";
 
-    private static final Map<String, Set<String>> OPERATION_ROLES = Map.of(
-        CREATE_ITEM, Set.of("ADMIN", "BUYER"),
-        DELETE_ITEM, Set.of("ADMIN"),
-        CREATE_SALE, Set.of("ADMIN", "SELLER"),
-        UPDATE_SALE, Set.of("ADMIN", "SELLER"),
-        DELETE_SALE, Set.of("ADMIN", "SELLER"),
-        VIEW_ANALYTICS, Set.of("ADMIN", "ACCOUNTANT"),
-        MANAGE_USERS, Set.of("ADMIN")
+    private static final Map<String, Set<String>> OPERATION_ROLES = Map.ofEntries(
+        Map.entry(CREATE_ITEM, Set.of("ADMIN", "BUYER")),
+        Map.entry(DELETE_ITEM, Set.of("ADMIN")),
+        Map.entry(CREATE_SALE, Set.of("ADMIN", "SELLER")),
+        Map.entry(UPDATE_SALE, Set.of("ADMIN", "SELLER")),
+        Map.entry(DELETE_SALE, Set.of("ADMIN", "SELLER")),
+        Map.entry(VIEW_ANALYTICS, Set.of("ADMIN", "ACCOUNTANT")),
+        Map.entry(MANAGE_USERS, Set.of("ADMIN")),
+        Map.entry(IMPORT, Set.of("ADMIN"))
     );
 
     /**

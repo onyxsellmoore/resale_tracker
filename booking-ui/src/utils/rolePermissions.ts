@@ -1,7 +1,7 @@
 import type { Role } from '../auth/AuthContext'
 
 const ROLE_PERMISSIONS: Record<Role, Set<string>> = {
-  ADMIN: new Set(['inventory', 'sales', 'analytics', 'users', 'recordSale', 'addItem']),
+  ADMIN: new Set(['inventory', 'sales', 'analytics', 'users', 'recordSale', 'addItem', 'import']),
   BUYER: new Set(['inventory', 'addItem']),
   SELLER: new Set(['inventory', 'sales', 'recordSale']),
   ACCOUNTANT: new Set(['inventory', 'sales', 'analytics']),

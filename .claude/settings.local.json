@@ -301,7 +301,14 @@
       "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.items.find\\({status: \"\"DELETED\"\"}, {name: 1, status: 1}\\).toArray\\(\\)')",
       "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.getCollectionNames\\(\\)')",
       "Bash(mongosh \"mongodb+srv://onyxAdmin:Y%26ABzk8zWx3%21lk9F@salestracker.cq3tdwt.mongodb.net/booking?appName=SalesTracker\" --quiet --eval 'db.items.distinct\\(\"\"status\"\"\\)')",
-      "Bash(xxd /Users/jaredmoore/business/tav/resale_tracker/booking-api/src/test/resources/fixtures/ebay_valid.csv)"
+      "Bash(xxd /Users/jaredmoore/business/tav/resale_tracker/booking-api/src/test/resources/fixtures/ebay_valid.csv)",
+      "Read(//Library/Java/JavaVirtualMachines/**)",
+      "Read(//Users/jaredmoore/Library/Java/**)",
+      "Read(//Users/jaredmoore/.sdkman/candidates/java/**)",
+      "Bash(echo \"JAVA_HOME=$JAVA_HOME\")",
+      "Bash(export JAVA_HOME=/Users/jaredmoore/.sdkman/candidates/java/25.0.1-tem)",
+      "Bash($JAVA_HOME/bin/java -version)",
+      "Bash(./mvnw dependency:tree -DfailIfNoTests=false)"
     ]
   }
 }

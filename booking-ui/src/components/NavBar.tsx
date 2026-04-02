@@ -32,6 +32,7 @@ export function NavBar() {
   const canSeeUsers = canAccess(role, 'users')
   const canRecordSale = canAccess(role, 'recordSale')
   const canAddItem = canAccess(role, 'addItem')
+  const canImport = canAccess(role, 'import')
 
   // Close drawer on route change
   useEffect(() => {
@@ -56,6 +57,7 @@ export function NavBar() {
       {canSeeSales && <NavLinkItem to="/sales" label="Sales" />}
       {canSeeAnalytics && <NavLinkItem to="/analytics" label="Analytics" />}
       {canSeeUsers && <NavLinkItem to="/users" label="Users" />}
+      {canImport && <NavLinkItem to="/import" label="Import" />}
     </>
   )
 

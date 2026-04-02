@@ -7,6 +7,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage'
 import { LoginPage } from './pages/LoginPage'
 import { OrgSetupPage } from './pages/OrgSetupPage'
 import { UsersPage } from './pages/UsersPage'
+import { ImportPage } from './pages/ImportPage'
 
 export function AppRoutes() {
   return (
@@ -41,6 +42,14 @@ export function AppRoutes() {
           element={
             <ProtectedRoute requiredRoles={['ADMIN']}>
               <UsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/import"
+          element={
+            <ProtectedRoute requiredRoles={['ADMIN']}>
+              <ImportPage />
             </ProtectedRoute>
           }
         />
