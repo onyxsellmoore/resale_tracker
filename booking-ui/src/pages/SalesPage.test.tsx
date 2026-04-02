@@ -74,4 +74,65 @@ describe('SalesPage', () => {
       expect(recordBtn.className).toContain('btn-action')
     })
   })
+
+  it('sale with cost pending item shows estimated profit indicator', async () => {
+    mockGetSales.mockResolvedValue([
+      {
+        id: 's1', businessId: 'biz1', itemId: 'i1', itemName: 'Air Max 90', itemBrand: 'Nike',
+        platform: 'eBay', salePrice: 75.00, platformFees: 9.75, netProceeds: 65.25,
+        profit: 65.25, soldAt: '2025-06-15T00:00:00Z', platformOrderId: null, notes: null,
+        createdAt: '2025-06-15T00:00:00Z', costEntryPending: true,
+      },
+    ])
+    renderPage(['/sales'])
+    await waitFor(() => {
+      expect(screen.getByTestId('profit-s1')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('profit-s1').textContent).toMatch(/\$65\.25/)
+    expect(screen.getByText(/est\./i)).toBeInTheDocument()
+  })
+
+  it('sale with confirmed cost shows real profit, no indicator', async () => {
+    mockGetSales.mockResolvedValue([
+      {
+        id: 's2', businessId: 'biz1', itemId: 'i2', itemName: 'Gucci Bag', itemBrand: 'Gucci',
+        platform: 'Poshmark', salePrice: 300.00, platformFees: 60.00, netProceeds: 240.00,
+        profit: 15.25, soldAt: '2025-06-15T00:00:00Z', platformOrderId: null, notes: null,
+        createdAt: '2025-06-15T00:00:00Z', costEntryPending: false,
+      },
+    ])
+    renderPage(['/sales'])
+    await waitFor(() => {
+      expect(screen.getByTestId('profit-s2')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('profit-s2').textContent).toMatch(/\$15\.25/)
+    expect(screen.queryByText(/est\./i)).not.toBeInTheDocument()
+  })
+
+  it('profit is always visible, never a dash', async () => {
+    mockGetSales.mockResolvedValue([
+      {
+        id: 's1', businessId: 'biz1', itemId: 'i1', itemName: 'Item A', itemBrand: null,
+        platform: 'eBay', salePrice: 50.00, platformFees: 5.00, netProceeds: 45.00,
+        profit: 45.00, soldAt: '2025-06-15T00:00:00Z', platformOrderId: null, notes: null,
+        createdAt: '2025-06-15T00:00:00Z', costEntryPending: true,
+      },
+      {
+        id: 's2', businessId: 'biz1', itemId: 'i2', itemName: 'Item B', itemBrand: null,
+        platform: 'eBay', salePrice: 100.00, platformFees: 10.00, netProceeds: 90.00,
+        profit: 20.00, soldAt: '2025-06-15T00:00:00Z', platformOrderId: null, notes: null,
+        createdAt: '2025-06-15T00:00:00Z', costEntryPending: false,
+      },
+    ])
+    renderPage(['/sales'])
+    await waitFor(() => {
+      expect(screen.getByText('Item A')).toBeInTheDocument()
+    })
+    // No dash should appear for any profit cell
+    const profitCells = screen.getAllByTestId(/^profit-/)
+    for (const cell of profitCells) {
+      expect(cell.textContent).not.toBe('—')
+      expect(cell.textContent).toMatch(/\$/)
+    }
+  })
 })

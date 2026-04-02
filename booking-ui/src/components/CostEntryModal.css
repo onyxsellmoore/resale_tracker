@@ -1,0 +1,66 @@
+.cost-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.cost-modal-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: var(--shadow-card);
+}
+
+.cost-modal-box h2 {
+  font-family: var(--font-display);
+  color: var(--color-text);
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+}
+
+.cost-modal-label {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-body);
+}
+
+.cost-modal-input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.cost-modal-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: var(--shadow-focus);
+}
+
+.cost-modal-error {
+  color: var(--color-loss);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.cost-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}

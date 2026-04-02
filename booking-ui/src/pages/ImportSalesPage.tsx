@@ -279,7 +279,7 @@ export function ImportSalesPage() {
                         items={availableItems}
                         value={rs.matchedItemId}
                         onChange={(item) => {
-                          const hasDateError = item != null && new Date(rs.row.soldAt) < new Date(item.purchaseDate)
+                          const hasDateError = item != null && item.purchaseDate != null && new Date(rs.row.soldAt) < new Date(item.purchaseDate)
                           updateRowState(idx, { matchedItemId: item?.id ?? null, newItem: null, dateError: hasDateError })
                         }}
                         aria-label={`Match ${rs.row.title}`}

@@ -38,7 +38,7 @@ describe('AnalyticsPage', () => {
       key: vi.fn(),
     })
     mockGetAnalytics.mockResolvedValue({
-      summary: { itemsSold: 0, totalRevenue: 0, totalFees: 0, totalNetProceeds: 0, totalCostOfGoods: 0, totalProfit: 0, averageMargin: 0 },
+      summary: { itemsSold: 0, totalRevenue: 0, totalFees: 0, totalNetProceeds: 0, totalCostOfGoods: 0, totalProfit: 0, averageMargin: 0, pendingCostItemsCount: 0 },
       byPlatform: [],
       byCategory: [],
       byMonth: [],
@@ -47,6 +47,44 @@ describe('AnalyticsPage', () => {
 
   it('renders without throwing', () => {
     expect(() => renderPage()).not.toThrow()
+  })
+
+  it('shows pending cost banner when pendingCostItemsCount > 0', async () => {
+    mockGetAnalytics.mockResolvedValue({
+      summary: { itemsSold: 3, totalRevenue: 300, totalFees: 30, totalNetProceeds: 270, totalCostOfGoods: 0, totalProfit: 270, averageMargin: 90, pendingCostItemsCount: 5 },
+      byPlatform: [], byCategory: [], byMonth: [],
+    })
+    renderPage()
+    await waitFor(() => {
+      expect(screen.getByTestId('pending-count')).toHaveTextContent('5')
+    })
+    expect(screen.getByText(/estimated \$0 purchase price/i)).toBeInTheDocument()
+  })
+
+  it('hides pending cost banner after dismiss click', async () => {
+    mockGetAnalytics.mockResolvedValue({
+      summary: { itemsSold: 3, totalRevenue: 300, totalFees: 30, totalNetProceeds: 270, totalCostOfGoods: 0, totalProfit: 270, averageMargin: 90, pendingCostItemsCount: 2 },
+      byPlatform: [], byCategory: [], byMonth: [],
+    })
+    renderPage()
+    const user = userEvent.setup()
+    await waitFor(() => {
+      expect(screen.getByTestId('pending-count')).toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: /dismiss/i }))
+    expect(screen.queryByTestId('pending-count')).not.toBeInTheDocument()
+  })
+
+  it('does not show pending banner when pendingCostItemsCount is 0', async () => {
+    mockGetAnalytics.mockResolvedValue({
+      summary: { itemsSold: 3, totalRevenue: 300, totalFees: 30, totalNetProceeds: 270, totalCostOfGoods: 100, totalProfit: 170, averageMargin: 56.7, pendingCostItemsCount: 0 },
+      byPlatform: [], byCategory: [], byMonth: [],
+    })
+    renderPage()
+    await waitFor(() => {
+      expect(screen.getByTestId('card-totalProfit')).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('pending-count')).not.toBeInTheDocument()
   })
 
   it('clicking "This Month" sets from to first day and to to last day of current month', async () => {

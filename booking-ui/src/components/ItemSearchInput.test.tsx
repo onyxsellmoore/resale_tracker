@@ -8,17 +8,17 @@ const items: ItemDTO[] = [
   {
     id: '1', businessId: 'b1', name: 'Gucci Bag', brand: 'Gucci', category: 'Handbags',
     condition: 'EXCELLENT', purchasePrice: 250, purchaseDate: '2025-01-01T00:00:00Z',
-    description: null, notes: null, status: 'AVAILABLE', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
+    description: null, notes: null, status: 'AVAILABLE', costEntryPending: false, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
   },
   {
     id: '2', businessId: 'b1', name: 'Prada Shoes', brand: 'Prada', category: 'Shoes',
     condition: 'GOOD', purchasePrice: 100, purchaseDate: '2025-02-01T00:00:00Z',
-    description: null, notes: null, status: 'AVAILABLE', createdAt: '2025-02-01T00:00:00Z', updatedAt: '2025-02-01T00:00:00Z',
+    description: null, notes: null, status: 'AVAILABLE', costEntryPending: false, createdAt: '2025-02-01T00:00:00Z', updatedAt: '2025-02-01T00:00:00Z',
   },
   {
     id: '3', businessId: 'b1', name: 'Louis Vuitton Wallet', brand: 'Louis Vuitton', category: 'Accessories',
     condition: 'FAIR', purchasePrice: 300, purchaseDate: '2025-03-01T00:00:00Z',
-    description: null, notes: null, status: 'AVAILABLE', createdAt: '2025-03-01T00:00:00Z', updatedAt: '2025-03-01T00:00:00Z',
+    description: null, notes: null, status: 'AVAILABLE', costEntryPending: false, createdAt: '2025-03-01T00:00:00Z', updatedAt: '2025-03-01T00:00:00Z',
   },
 ]
 
@@ -26,7 +26,7 @@ const items: ItemDTO[] = [
 const manyItems: ItemDTO[] = Array.from({ length: 10 }, (_, i) => ({
   id: `id-${i}`, businessId: 'b1', name: `Item ${i}`, brand: 'TestBrand', category: 'Cat',
   condition: 'GOOD' as const, purchasePrice: 10, purchaseDate: '2025-01-01T00:00:00Z',
-  description: null, notes: null, status: 'AVAILABLE' as const, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
+  description: null, notes: null, status: 'AVAILABLE' as const, costEntryPending: false, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
 }))
 
 describe('ItemSearchInput', () => {

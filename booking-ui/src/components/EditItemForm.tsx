@@ -16,7 +16,7 @@ export function EditItemForm({ item, onItemUpdated }: EditItemFormProps) {
   const [category, setCategory] = useState(item.category ?? '')
   const [condition, setCondition] = useState<ItemCondition>(item.condition)
   const [purchasePrice, setPurchasePrice] = useState(item.purchasePrice.toString())
-  const [purchaseDate, setPurchaseDate] = useState(item.purchaseDate.split('T')[0])
+  const [purchaseDate, setPurchaseDate] = useState(item.purchaseDate?.split('T')[0] ?? '')
   const [description, setDescription] = useState(item.description ?? '')
   const [notes, setNotes] = useState(item.notes ?? '')
   const [errors, setErrors] = useState<string[]>([])

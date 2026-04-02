@@ -37,7 +37,7 @@ const testItems: ItemDTO[] = [
   {
     id: 'item1', businessId: 'biz1', name: 'Gucci Bag', brand: 'Gucci', category: 'Handbags',
     condition: 'EXCELLENT', purchasePrice: 250, purchaseDate: '2025-01-01T00:00:00Z',
-    description: null, notes: null, status: 'AVAILABLE', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
+    description: null, notes: null, status: 'AVAILABLE', costEntryPending: false, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z',
   },
 ]
 

@@ -11,6 +11,7 @@ const positiveSummary: AnalyticsSummary = {
   totalCostOfGoods: 800.0,
   totalProfit: 1350.0,
   averageMargin: 54.0,
+  pendingCostItemsCount: 0,
 }
 
 const zeroRevenueSummary: AnalyticsSummary = {
@@ -21,6 +22,7 @@ const zeroRevenueSummary: AnalyticsSummary = {
   totalCostOfGoods: 0,
   totalProfit: 0,
   averageMargin: 0,
+  pendingCostItemsCount: 0,
 }
 
 const negativeSummary: AnalyticsSummary = {
@@ -31,6 +33,7 @@ const negativeSummary: AnalyticsSummary = {
   totalCostOfGoods: 200.0,
   totalProfit: -130.0,
   averageMargin: -130.0,
+  pendingCostItemsCount: 0,
 }
 
 describe('SummaryCards', () => {

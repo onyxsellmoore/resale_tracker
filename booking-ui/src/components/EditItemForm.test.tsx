@@ -25,6 +25,7 @@ const testItem: ItemDTO = {
   description: 'Vintage leather',
   notes: 'Slight patina',
   status: 'AVAILABLE',
+  costEntryPending: false,
   createdAt: '2025-01-15T00:00:00Z',
   updatedAt: '2025-01-15T00:00:00Z',
 }
