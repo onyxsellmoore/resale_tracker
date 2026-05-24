@@ -1,2 +1,9 @@
 planning_docs
 planning_docs/*
+.DS_Store
+.env*
+.firebase/
+node_modules/
+*.pem
+*.key
+serviceAccount*.json

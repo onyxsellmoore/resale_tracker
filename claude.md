@@ -2,9 +2,6 @@
 - Test driven development always
 - Default data structure is a set.  Use a list only for UIs or if order matters.
 - Make no mistakes
-- Important CLI paths:
-    - gcloud CLI path: ~/Downloads/google-cloud-sdk/bin/gcloud
-    - npm at /opt/homebrew/bin/npm
-    - java at /Users/jaredmoore/.sdkman/candidates/java/current/bin/java
+- Run `source ~/.zprofile` before the first CLI command in each terminal
 - Document every function including tests
 - Use the definition-of-done skill at the end of every task
